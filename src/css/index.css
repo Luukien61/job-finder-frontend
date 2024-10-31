@@ -27,7 +27,7 @@ select:-webkit-autofill {
   height: 7px;
 }
 body{
-  font-family: "Roboto Light", sans-serif;
+  font-family: SegoeuiPc, Segoe UI, San Francisco, Helvetica Neue, Helvetica, Lucida Grande, Roboto, Ubuntu, Tahoma, Microsoft Sans Serif, Arial, sans-serif;
 }
 /* Track */
 ::-webkit-scrollbar-track {

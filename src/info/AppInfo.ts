@@ -129,6 +129,7 @@ export const fields = [
     "Dược Phẩm/Mỹ Phẩm",
     "Sáng Tạo/Nghệ Thuật"
 ];
+export const backEndPage: string = import.meta.env.VITE_BACKEND_URL
 
 
 

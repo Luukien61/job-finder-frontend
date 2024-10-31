@@ -28,7 +28,8 @@ type JobCardProps = {
     role: string;
     quantity: number;
     gender: string;
-    report: number
+    report: number;
+
 }
 export const JobCard=()=>{
     return(
