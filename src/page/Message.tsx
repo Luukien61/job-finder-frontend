@@ -69,9 +69,12 @@ const Message = () => {
     }
     const getMessageByConversationId = async (conversationId: string) => {
         const messagesPage = await getMessages(conversationId, 0)
-        const messages: ChatMessage[] = messagesPage.content
+        let messages: ChatMessage[] = messagesPage.content
         if(messages.length > 0){
-            messages.reverse()
+            messages=messages.reverse()
+            messages=messages.filter((element, index, self) =>
+                index === self.findIndex((e) => e.id === element.id)
+            );
         }
         setPrivateChats(messages)
         handleScroll()
@@ -179,25 +182,27 @@ const Message = () => {
                 {/*content*/}
                 <div className={`flex-1 overflow-hidden relative h-full w-full`}>
                     <div className={`absolute inset-0 overflow-scroll ml-3 pr-3`}>
-                        <div className={`min-h-[100%] flex pb-[28px] flex-col gap-y-4 justify-end`}>
-                            {/*message card*/}
-                            {
-                                privateChats.length > 0 &&
-                                privateChats.map((value, index) => (
-                                    <div
-                                        key={index}
-                                        className={`m-x-[16px] w-full flex ${value.senderId != currentUserId ? 'justify-start' : 'justify-end'}`}>
+                        <div className={`min-h-[100%] flex pb-[28px] flex-col  justify-end`}>
+                            <div className={`min-h-full flex pb-[48px] gap-y-4 flex-col justify-end `}>
+                                {/*message card*/}
+                                {
+                                    privateChats.length > 0 &&
+                                    privateChats.map((value, index) => (
                                         <div
-                                            className={`w-fit min-w-[80px]  max-w-[50%]  drop-shadow relative block p-[12px] rounded-[8px] ${value.senderId != currentUserId ? 'bg-white' : 'bg-chat_me'}`}>
-                                            <p className={`break-words`}>{value.content} </p>
-                                            <p className={`text-[#476285] text-[12px]`}>{new Date(value.timestamp).getHours().toString().padStart(2, '0') + ":" + new Date(value.timestamp).getMinutes().toString().padStart(2, '0')}</p>
+                                            key={index}
+                                            className={`m-x-[16px] w-full flex ${value.senderId != currentUserId ? 'justify-start' : 'justify-end'}`}>
+                                            <div
+                                                className={`w-fit min-w-[80px]  max-w-[50%]  drop-shadow relative block p-[12px] rounded-[8px] ${value.senderId != currentUserId ? 'bg-white' : 'bg-chat_me'}`}>
+                                                <p className={`break-words`}>{value.content} </p>
+                                                <p className={`text-[#476285] text-[12px]`}>{new Date(value.timestamp).getHours().toString().padStart(2, '0') + ":" + new Date(value.timestamp).getMinutes().toString().padStart(2, '0')}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            }
+                                    ))
+                                }
+                            </div>
 
                         </div>
-                        <div className={`h-[14px]  break-words mb-8`} ref={bottomRef}></div>
+                        <div className={`h-[14px] break-words `} ref={bottomRef}></div>
                     </div>
                 </div>
                 {/*type*/}
