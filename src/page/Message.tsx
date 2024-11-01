@@ -4,7 +4,8 @@ import {
     ChatMessage,
     connectWebSocket,
     Conversation,
-    Participant, sendMessage,
+    Participant,
+    sendMessage,
     subscribeToTopic
 } from "@/service/WebSocketService.ts";
 import {getAllConversations, getMessages, getParticipant} from "@/axios/Request.ts";
@@ -36,10 +37,10 @@ const Message = () => {
     const onPrivateMessage = (payload: ChatMessage) => {
         setPrivateChats(prevState => [...prevState, payload]);
         handleScroll()
+        updateQuickMessage(payload)
     };
     const handleScroll =()=>{
-        console.log("Some thing force me scroll")
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        bottomRef.current?.scrollIntoView({ behavior: "instant" });
     }
     const getAllConversation = async () => {
         const conversations: Conversation[] = await getAllConversations(currentUserId);
@@ -59,17 +60,28 @@ const Message = () => {
                 name: participant.name,
                 text: value.lastMessage,
                 recipientId: participantId,
-                conversationId: value.id
+                conversationId: value.id,
+                time:value.modifiedAt
             };
             return quickMessage;
         });
         const quickMessages = await Promise.all(quickMessagePromises);
+        quickMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         setAllQuickMessages(quickMessages);
 
     }
+    const updateQuickMessage=(payload: ChatMessage) => {
+        allQuickMessages.forEach((message) => {
+            if(message.conversationId==payload.conversationId){
+                message.text=payload.content
+                message.time=payload.timestamp
+            }
+        })
+        const updateQuickMessage=allQuickMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        setAllQuickMessages(updateQuickMessage)
+    }
     const getMessageByConversationId = async (conversationId: string) => {
-        const messagesPage = await getMessages(conversationId, 0)
-        let messages: ChatMessage[] = messagesPage.content
+        let messages: ChatMessage[] = await getMessages(conversationId, 0)
         if(messages.length > 0){
             messages=messages.reverse()
             messages=messages.filter((element, index, self) =>
@@ -89,11 +101,12 @@ const Message = () => {
             })
             getMessageByConversationId(conversationId)
         }
-
+        handleScroll()
     }
     useEffect(() => {
         getAllConversation()
     }, [currentUserId])
+    useEffect(()=>{handleScroll()},[privateChats])
     const sendMessages = () => {
         const messageItem: ChatMessage = {
             id: new Date().getMilliseconds().toString(),
@@ -107,6 +120,7 @@ const Message = () => {
         setTypingMessage('')
         setPrivateChats(prevState => [...prevState,messageItem])
         handleScroll()
+        updateQuickMessage(messageItem)
     }
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -200,9 +214,9 @@ const Message = () => {
                                     ))
                                 }
                             </div>
-
+                            <div className={`h-[14px] break-words `} ref={bottomRef}></div>
                         </div>
-                        <div className={`h-[14px] break-words `} ref={bottomRef}></div>
+
                     </div>
                 </div>
                 {/*type*/}
