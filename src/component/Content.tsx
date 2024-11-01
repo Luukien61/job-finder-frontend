@@ -12,8 +12,9 @@ const Content = () => {
         <div className={`flex justify-center rounded`}>
             <div className={`custom-container mt-2 `}>
                 <Search/>
-                <Filter/>
+
                 <JobList/>
+
             </div>
         </div>
     );
@@ -86,7 +87,7 @@ const Filter = () => {
     })
     return (
         <div className={`flex-col`}>
-            <div className={`border-gray-300 my-2  w-full flex gap-y-2`}>
+            <div className={`border-gray-300 my-2  w-full items-center flex gap-y-2`}>
                 <FilterItem items={provinces} isOpen={locationOpen} handleOpen={handleOpenLocation}
                             handleChoose={handleLocationChoose} value={locationChoose}/>
                 <FilterItem items={processedSalary} isOpen={isSalaryOpen} handleOpen={handleSalaryClick}
@@ -96,24 +97,24 @@ const Filter = () => {
 
                 <button
                     type={"button"}
-                    className={`rounded-xl cursor-pointer hover:bg-white hover:text-green-500 hover:border-green-500 hover:border hover:font-bold bg-primary px-8  py-1 my-1 h-[40px] text-white`}>
+                    className={`rounded-xl cursor-pointer hover:bg-gray-100 bg-white text-green-500 border-green-500 border font-bold  px-8  py-1 my-1 h-[40px]`}>
                     View
                 </button>
             </div>
-            <div className={`flex gap-x-3 mx-3`}>
+            <div className={`flex gap-x-3 mr-3`}>
                 <p className={`font-bold`}>Ưu tiên hiển thị theo:</p>
-                <RadioGroup className={`flex`} defaultValue="new" >
+                <RadioGroup className={`flex `} defaultValue="new" >
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem className={`text-green-500 border-green-500`}  value="new" id="r1" />
-                        <Label htmlFor="r1">Ngay dang</Label>
+                        <Label htmlFor="r1" className={`!text-[16px] font-bold`}>Ngay dang</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem className={`text-green-500 border-green-500`} value="salary" id="r2" />
-                        <Label htmlFor="r2">Luong cao den thap</Label>
+                        <Label htmlFor="r2" className={`!text-[16px] font-bold`}>Luong cao den thap</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem className={`text-green-500 border-green-500`} value="urgent" id="r3" />
-                        <Label htmlFor="r3">Can tuyen gap</Label>
+                        <Label htmlFor="r3" className={`!text-[16px] font-bold`}>Can tuyen gap</Label>
                     </div>
                 </RadioGroup>
             </div>
@@ -131,7 +132,7 @@ type FilterProps = {
 const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleOpen, items, style}) => {
 
     return (
-        <div className={`mx-3 gap-x-2 items-center py-1 rounded flex-col justify-start `}>
+        <div className={`mr-3 gap-x-2 items-center py-1 rounded flex-col justify-start `}>
             <div
                 onClick={handleOpen}
                 className={`bg-white h-full hover:bg-gray-50 cursor-pointer rounded-xl w-40 flex justify-center`}>
@@ -142,13 +143,13 @@ const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleO
             </div>
             <div className={`relative z-[100] w-full `}>
                 <div
-                    className={`absolute inset-0 max-h-52 grid overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl w-full ${style && style }  ${ isOpen ? 'block' : 'hidden'} `}>
+                    className={`absolute mt-2 inset-0 max-h-52 grid overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl w-full ${style && style }  ${ isOpen ? 'block' : 'hidden'} `}>
                     {
                         Object.values(items).map((item, index) => (
                             <div
                                 onClick={() => handleChoose(item, index)}
                                 key={index}
-                                className={`rounded hover:text-green-300 flex items-center cursor-pointer py-1 px-1 ${item == value ? 'text-green-300' : 'text-black'}`}>
+                                className={`rounded hover:text-green-500 flex items-center cursor-pointer py-1 px-1 ${item == value ? 'text-green-500 font-bold' : 'text-black'}`}>
                                 <p>{item}</p>
                             </div>
                         ))

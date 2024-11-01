@@ -108,19 +108,22 @@ const Message = () => {
     }, [currentUserId])
     useEffect(()=>{handleScroll()},[privateChats])
     const sendMessages = () => {
-        const messageItem: ChatMessage = {
-            id: new Date().getMilliseconds().toString(),
-            content: typingMessage,
-            timestamp: new Date(),
-            recipientId: currentRecipient.id,
-            senderId: currentUserId,
-            conversationId: currentConversationId
+        if(typingMessage.trim()!==""){
+            const messageItem: ChatMessage = {
+                id: new Date().getMilliseconds().toString(),
+                content: typingMessage,
+                timestamp: new Date(),
+                recipientId: currentRecipient.id,
+                senderId: currentUserId,
+                conversationId: currentConversationId
+            }
+            sendMessage("/app/private-message", messageItem)
+            setTypingMessage('')
+            setPrivateChats(prevState => [...prevState,messageItem])
+            handleScroll()
+            updateQuickMessage(messageItem)
         }
-        sendMessage("/app/private-message", messageItem)
-        setTypingMessage('')
-        setPrivateChats(prevState => [...prevState,messageItem])
-        handleScroll()
-        updateQuickMessage(messageItem)
+
     }
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -195,7 +198,7 @@ const Message = () => {
                 </div>
                 {/*content*/}
                 <div className={`flex-1 overflow-hidden relative h-full w-full`}>
-                    <div className={`absolute inset-0 overflow-scroll ml-3 pr-3`}>
+                    <div className={`absolute inset-0 overflow-y-scroll overflow-x-hidden ml-3 pr-3`}>
                         <div className={`min-h-[100%] flex pb-[28px] flex-col  justify-end`}>
                             <div className={`min-h-full flex pb-[48px] gap-y-4 flex-col justify-end `}>
                                 {/*message card*/}
@@ -207,7 +210,7 @@ const Message = () => {
                                             className={`m-x-[16px] w-full flex ${value.senderId != currentUserId ? 'justify-start' : 'justify-end'}`}>
                                             <div
                                                 className={`w-fit min-w-[80px]  max-w-[50%]  drop-shadow relative block p-[12px] rounded-[8px] ${value.senderId != currentUserId ? 'bg-white' : 'bg-chat_me'}`}>
-                                                <p className={`break-words`}>{value.content} </p>
+                                                <pre className={`break-words `}>{value.content} </pre>
                                                 <p className={`text-[#476285] text-[12px]`}>{new Date(value.timestamp).getHours().toString().padStart(2, '0') + ":" + new Date(value.timestamp).getMinutes().toString().padStart(2, '0')}</p>
                                             </div>
                                         </div>
@@ -221,11 +224,10 @@ const Message = () => {
                 </div>
                 {/*type*/}
                 <div className={`bg-white px-3 flex py-2 items-center gap-x-3`}>
-                    <input
+                    <textarea
                         value={typingMessage}
                         onChange={e => setTypingMessage(e.target.value)}
-                        type={"text"}
-                        onKeyDown={handleKeyDown}
+
                         spellCheck={false}
                         placeholder={"Nhap tin nhan..."}
                         className={`w-full px-3 py-2 outline-none flex-1`}/>

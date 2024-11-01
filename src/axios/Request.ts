@@ -24,7 +24,7 @@ export const getParticipant = async (id:string) => {
 
 export const getMessages= async (id: string, page: number) => {
     try {
-        return await instance.get(`/message/${id}/${page}`)
+        return await instance.get(`/message/${id}`)
             .then(response => response.data)
     } catch (error) {
         console.log(error)
