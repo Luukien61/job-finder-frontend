@@ -9,6 +9,8 @@ export default {
   	extend: {
   		colors: {
   			bg_default: '#F0F0F0',
+			green_default: "#00b14f",
+			highlight_default: "#f2fbf6",
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
   				foreground: 'hsl(var(--primary-foreground))'
