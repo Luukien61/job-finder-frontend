@@ -65,14 +65,10 @@ export const JobCard: React.FC<ImplicitJobCardProps>=(item )=>{
     useEffect(() => {
         let timer;
         if (isHovered) {
-            console.log("Enter")
-            // Set a timer for 2 seconds when the hover starts
             timer = setTimeout(() => {
                 setShowOtherDiv(true);
             }, 10000); // 2 seconds
         } else {
-            console.log("Leave")
-            // Clear the timer and hide the other div if hover stops
             clearTimeout(timer);
             setShowOtherDiv(false);
         }
@@ -109,7 +105,7 @@ export const JobCard: React.FC<ImplicitJobCardProps>=(item )=>{
                                 </div>
                                 <div
                                     className={`rounded-[8px] bg-bg_default py-1 px-2 flex items-center justify-center`}>
-                                    <p className={`text-black text-[14px] truncate `}>{job.experience + " năm"}</p>
+                                    <p className={`text-black text-[14px] truncate `}>{"Kinh nghiệm: "+job.experience + " năm"}</p>
                                 </div>
 
                             </div>

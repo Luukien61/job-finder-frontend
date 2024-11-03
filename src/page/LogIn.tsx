@@ -20,7 +20,7 @@ const LogIn = () => {
         window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}`;
     };
     return (
-        <div className={`flex justify-center rounded bg-gradient-to-b min-h-screen from-green-400 to-green-300`}>
+        <div className={`flex justify-center rounded  min-h-screen bg-bg_default`}>
             <div className={`custom-container mt-2 flex justify-center `}>
                 <div className={`w-2/3 rounded bg-white drop-shadow `}>
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>

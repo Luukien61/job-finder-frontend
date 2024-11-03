@@ -4,17 +4,20 @@ import {CiLocationOn, CiSearch} from "react-icons/ci";
 import {IoIosArrowDown} from "react-icons/io";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
 import {Label} from "@/components/ui/label.tsx";
+import CarouselBanner, {Banner} from "@/component/CarouselBanner.tsx";
 import JobList from "@/component/JobList.tsx";
 
 const Content = () => {
 
     return (
-        <div className={`flex justify-center rounded`}>
-            <div className={`custom-container mt-2 `}>
+        <div className={`flex justify-center `}>
+            <div className={`w-full`}>
                 <Search/>
-
-                <JobList/>
-
+                <div className={`flex items-center justify-center `}>
+                    <div className={`custom-container px-2`}>
+                        <JobList/>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -143,7 +146,7 @@ const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleO
             </div>
             <div className={`relative z-[100] w-full `}>
                 <div
-                    className={`absolute mt-2 inset-0 max-h-52 grid overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl w-full ${style && style }  ${ isOpen ? 'block' : 'hidden'} `}>
+                    className={`absolute inset-0 top-2 max-h-60 grid overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl w-full ${style && style }  ${ isOpen ? 'block' : 'hidden'} `}>
                     {
                         Object.values(items).map((item, index) => (
                             <div
@@ -159,11 +162,33 @@ const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleO
         </div>
     )
 }
+
+const carouselBannerItem : Banner = {
+    id: 1,
+    imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png",
+    title: "abc",
+    targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
+}
+const carouselBannerItem2 : Banner = {
+    id: 2,
+    imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/f88.png",
+    title: "abc",
+    targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
+}
+const carouselBannerItem3 : Banner = {
+    id: 2,
+    imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Banner%201.png",
+    title: "abc",
+    targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
+}
+const carouselBannerItems = [carouselBannerItem, carouselBannerItem2,carouselBannerItem3]
+
+
 const Search = () => {
     const [search, setSearch] = useState("");
     const [locationOpen, setLocationOpen] = useState<boolean>(false)
     const [locationChoose, setLocationChoose] = useState<string>('Toàn quốc')
-    const [field, setField] = useState<string>("Field")
+    const [field, setField] = useState<string>("Ngành nghề")
     const [isFieldOpen, setIsFieldOpen] = useState<boolean>(false)
     const handleOpenLocation = () => {
         setLocationOpen(!locationOpen);
@@ -179,50 +204,59 @@ const Search = () => {
         setIsFieldOpen(!isFieldOpen);
     }
     return (
-        <div className={`block bg-gradient-to-r from-primary to-green-400 h-24 static py-4 rounded-t-md`}>
-            <div className={`rounded-2xl bg-white flex items-center mx-4 h-12 `}>
-                <FilterItem items={fields} value={field} handleChoose={handleFieldChoose} handleOpen={handleFieldClick}
-                            isOpen={isFieldOpen}  style={"!w-[1200px] grid-cols-4 mt-4"}/>
-                <div className={`border h-[60%] bg-black`}>
+        <div className={`bg-gradient-to-tr relative from-primary to-green-400 flex justify-center `}>
+            <div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}>
 
-                </div>
-                <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    spellCheck={false}
-                    className={`bg-transparent shadow-none font-medium flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
-                    placeholder="Search your jobs here..."
-                />
-                <div
-                    onClick={handleOpenLocation}
-                    className={`border-r border-l border-gray-300 my-2  w-40 flex-col gap-y-2`}>
-                    <div
-                        className={`mx-1 gap-x-2 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
-                        <CiLocationOn/>
-                        <p>{locationChoose}</p>
+            </div>
+            <div className={`flex flex-col h-fit gap-5 custom-container static py-4 `}>
+                <div className={`rounded-2xl bg-white flex items-center mx-4 h-16 `}>
+                    <FilterItem items={fields} value={field} handleChoose={handleFieldChoose}
+                                handleOpen={handleFieldClick}
+                                isOpen={isFieldOpen} style={"!w-[1200px] grid-cols-4 mt-4"}/>
+                    <div className={`border h-[60%] bg-black`}>
+
                     </div>
-                    <div className={` relative  z-[100]`}>
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        spellCheck={false}
+                        className={`bg-transparent shadow-none  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
+                        placeholder="Search your jobs here..."
+                    />
+                    <div
+                        onClick={handleOpenLocation}
+                        className={`border-r border-l border-gray-300 my-2  w-40 flex-col gap-y-2`}>
                         <div
-                            className={`absolute inset-0 max-h-32 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
-                            {
-                                Object.values(provinces).map((province, index) => (
-                                    <div
-                                        onClick={handleLocationChoose.bind(null, province)}
-                                        key={index}
-                                        className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
-                                        <p>{province}</p>
-                                    </div>
-                                ))
-                            }
+                            className={`mx-1 gap-x-2 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
+                            <CiLocationOn/>
+                            <p>{locationChoose}</p>
+                        </div>
+                        <div className={` relative  z-[100]`}>
+                            <div
+                                className={`absolute inset-0 max-h-32 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
+                                {
+                                    Object.values(provinces).map((province, index) => (
+                                        <div
+                                            onClick={handleLocationChoose.bind(null, province)}
+                                            key={index}
+                                            className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
+                                            <p>{province}</p>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div className={`mx-2 my-2`}>
+                        <div
+                            className={`bg-primary rounded-2xl hover:bg-green-600 text-white font-medium px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
+                            <CiSearch/>
+                            <p className={`cursor-pointer`}>Tìm kiếm</p>
                         </div>
                     </div>
                 </div>
-                <div className={`mx-2 my-2`}>
-                    <div
-                        className={`bg-primary rounded-2xl hover:bg-green-600 text-white font-medium px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
-                        <CiSearch/>
-                        <p className={`cursor-pointer`}>Search</p>
-                    </div>
+                <div className={`flex justify-center items-center px-4`}>
+                    <CarouselBanner imgSource={carouselBannerItems}/>
                 </div>
             </div>
         </div>

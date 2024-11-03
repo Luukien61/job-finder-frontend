@@ -5,6 +5,7 @@ import Signup from "../page/SignUp.tsx";
 import LogIn from "../page/LogIn.tsx";
 import Message from "@/page/Message.tsx";
 import JobDetail from "@/page/JobDetail.tsx";
+import Test from "@/page/Test.tsx";
 
 const AppRouter = () => {
     return (
@@ -14,6 +15,7 @@ const AppRouter = () => {
             <Route path={'/signup'} element={<Signup/>}/>
             <Route path={'/message'} element={<Message/>}/>
             <Route path={'/job/detail/:id'} element={<JobDetail/>}/>
+            <Route path={'/test'} element={<Test/>}/>
         </Routes>
     );
 };

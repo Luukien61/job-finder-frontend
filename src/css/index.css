@@ -37,6 +37,8 @@ pre {
     font-size: 16px;
 }
 
+
+
 /* Track */
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
@@ -192,6 +194,9 @@ pre {
     }
     .text-color-default {
         @apply text-[#212f3f]
+    }
+    .inter{
+        font-family: Inter, sans-serif;
     }
 }
 

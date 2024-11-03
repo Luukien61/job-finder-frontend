@@ -32,18 +32,18 @@ const Header = () => {
                         onClick={()=>handleButtonClick("login")}
                         type={"button"}
                         className={`rounded bg-white border-2 border-primary hover:bg-gray-100 text-primary text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
-                        Log In
+                        Đăng nhập
                     </button>
                     <button
                         onClick={()=>handleButtonClick("signup")}
                         type={"button"}
                         className={`rounded bg-primary hover:bg-green-400 text-white text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
-                        Sign Up
+                        Đăng ký
                     </button>
                     <button
                         type={"button"}
                         className={`rounded bg-black hover:bg-gray-900 text-white text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
-                        Employer
+                        Nhà tuyển dụng
                     </button>
                 </div>
             </div>
