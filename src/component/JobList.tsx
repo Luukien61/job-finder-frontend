@@ -80,6 +80,7 @@ export const JobCard: React.FC<ImplicitJobCardProps>=(item )=>{
     return(
         <div className={`w-1/3  relative py-1 px-1`}>
             <a
+                href={"/job/detail/1"}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 className={`cursor-pointer peer`}>

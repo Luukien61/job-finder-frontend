@@ -221,7 +221,7 @@ const Search = () => {
                         onChange={(e) => setSearch(e.target.value)}
                         spellCheck={false}
                         className={`bg-transparent shadow-none  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
-                        placeholder="Search your jobs here..."
+                        placeholder="Tìm công việc ..."
                     />
                     <div
                         onClick={handleOpenLocation}

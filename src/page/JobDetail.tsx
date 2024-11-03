@@ -8,7 +8,7 @@ import {BiSolidCube} from "react-icons/bi";
 
 const JobDetail = () => {
     return (
-        <div>
+        <div className={`mt-4`}>
             <JobDetailContent/>
         </div>
     );

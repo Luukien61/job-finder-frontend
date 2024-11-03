@@ -6,15 +6,19 @@ import LogIn from "../page/LogIn.tsx";
 import Message from "@/page/Message.tsx";
 import JobDetail from "@/page/JobDetail.tsx";
 import Test from "@/page/Test.tsx";
+import App from "@/page/App.tsx";
 
 const AppRouter = () => {
     return (
         <Routes>
-            <Route path="/" element={<HomePage/>} />
+            <Route path="/" element={<App/>} >
+                <Route path="/" element={<HomePage/>} />
+                <Route path={'/job/detail/:id'} element={<JobDetail/>}/>
+            </Route>
             <Route path={'/login'} element={<LogIn/>}/>
             <Route path={'/signup'} element={<Signup/>}/>
             <Route path={'/message'} element={<Message/>}/>
-            <Route path={'/job/detail/:id'} element={<JobDetail/>}/>
+
             <Route path={'/test'} element={<Test/>}/>
         </Routes>
     );
