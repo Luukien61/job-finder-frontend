@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {experiences, fields, provinces, salaries} from "../info/AppInfo.ts";
+import React, {useEffect, useRef, useState} from 'react';
+import {experiences, provinces, salaries} from "../info/AppInfo.ts";
 import {CiLocationOn, CiSearch} from "react-icons/ci";
 import {IoIosArrowDown} from "react-icons/io";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
@@ -7,10 +7,14 @@ import {Label} from "@/components/ui/label.tsx";
 import CarouselBanner, {Banner} from "@/component/CarouselBanner.tsx";
 import JobList from "@/component/JobList.tsx";
 import {PiShoppingBagOpen} from "react-icons/pi";
-import Footer from "@/component/Footer.tsx";
 import {GrNext, GrPrevious} from "react-icons/gr";
+import {useInView} from "react-intersection-observer";
+import CountUp from "react-countup";
 
 const Content = () => {
+    const {ref, inView} = useInView({
+        triggerOnce: true,
+    });
 
     return (
         <div className={`flex justify-center `}>
@@ -19,11 +23,15 @@ const Content = () => {
                 <div className={`flex flex-col mt-4 items-center justify-center `}>
                     <div className={`custom-container px-2 flex flex-col gap-10`}>
                         <JobList/>
+
                         <CompanyList/>
                     </div>
-                    <div className={`bg-impress rounded shadow-2xl custom-container relative w-screen my-10 bg-cover min-h-fit bg-no-repeat `}>
+                    <div
+                        className={`bg-impress rounded shadow-2xl custom-container relative w-screen my-10 bg-cover min-h-fit bg-no-repeat `}>
                         <div className={`p-12 items-start justify-center flex flex-col gap-10`}>
-                            <svg className={`fill-[#217353]  absolute left-0`} version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 984 984" width="500" height="500"
+                            <svg className={`fill-[#217353]  absolute left-0`} version="1.1" id="Layer_1"
+                                 xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 984 984" width="500"
+                                 height="500"
                             >
                                 <g>
                                     <path className="st0" d="M968.5,492c0,31.2-3.1,62.4-9.2,93c-6.1,30.6-15.2,60.6-27.2,89.4c-23.9,57.6-59.3,110.4-103.5,154.4
@@ -51,10 +59,15 @@ const Content = () => {
                                      alt=""/>
                             </div>
                             <div className={`flex w-full items-start gap-9 justify-center`}>
-                                <div
-                                    className={`bg-impress-item bg-no-repeat inline-block w-[497px] relative h-[166px] cursor-pointer bg-cover `}>
+                                <div ref={ref}
+                                     className={`bg-impress-item bg-no-repeat inline-block w-[497px] relative h-[166px] cursor-pointer bg-cover `}>
                                     <span className="flex flex-col h-full justify-center pt-5 pr-6 pb-4 pl-16 w-full">
-                                        <div className="text-white text-3xl font-bold mb-1 ">1000+</div>
+                                            {inView && (
+                                                <div className="*:text-white *:text-3xl *:font-bold *:mb-1 ">
+                                                    <CountUp start={0} end={500} duration={1.5}/>
+                                                    <span>+</span>
+                                                </div>
+                                            )}
                                         <div className="text-[#01d660] text-[16px] font-bold mb-0.5 leading-6">Nhà tuyển dụng uy tín</div>
                                         <div className="text-white">Các nhà tuyển dụng đến từ tất cả các ngành nghề và được xác thực bởi JobFinder</div>
                                     </span>
@@ -63,17 +76,32 @@ const Content = () => {
                                 <div
                                     className={`bg-impress-item bg-no-repeat inline-block w-[497px] relative h-[166px] cursor-pointer bg-cover `}>
                                     <span className="flex flex-col h-full justify-center pt-5 pr-6 pb-4 pl-16 w-full">
-                                        <div className="text-white text-3xl font-bold mb-1 ">2.000+</div>
+                                        {
+                                            inView && (
+                                                <div className="*:text-white *:text-3xl *:font-bold *:mb-1 ">
+                                                    <CountUp start={0} end={2000} duration={1.5}/>
+                                                    <span>+</span>
+                                                </div>
+                                            )
+                                        }
                                         <div className="text-[#01d660] text-[16px] font-bold mb-0.5 leading-6">Việc làm đã được kết nối</div>
                                         <div className="text-white">JobFinder đồng hành và kết nối hàng nghìn ứng viên với những cơ hội việc làm hấp dẫn từ các doanh nghiệp uy tín.</div>
                                     </span>
 
                                 </div>
-                            </div><div className={`flex w-full items-start gap-9 justify-center`}>
+                            </div>
+                            <div className={`flex w-full items-start gap-9 justify-center`}>
                                 <div
                                     className={`bg-impress-item bg-no-repeat inline-block w-[497px] relative h-[166px] cursor-pointer bg-cover `}>
                                     <span className="flex flex-col h-full justify-center pt-5 pr-6 pb-4 pl-16 w-full">
-                                        <div className="text-white text-3xl font-bold mb-1 ">100.000+</div>
+                                        {
+                                            inView && (
+                                                <div className="*:text-white *:text-3xl *:font-bold *:mb-1 ">
+                                                    <CountUp start={0} end={1000} duration={1.5}/>
+                                                    <span>+</span>
+                                                </div>
+                                            )
+                                        }
                                         <div className="text-[#01d660] text-[16px] font-bold mb-0.5 leading-6">Ứng viên hoạt động hàng tháng</div>
                                         <div className="text-white">Các ứng viên tiềm năng từ khắp mọi nơi luôn chọn JobFinder là một người bạn đồng hành</div>
                                     </span>
@@ -396,5 +424,6 @@ const CompanyList = () => {
         </div>
     )
 }
+
 
 export default Content;

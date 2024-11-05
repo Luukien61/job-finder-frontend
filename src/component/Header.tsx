@@ -1,5 +1,4 @@
 import React from 'react';
-import {AppInfo} from "../info/AppInfo.ts";
 import {useNavigate} from "react-router-dom";
 
 const Header = () => {
