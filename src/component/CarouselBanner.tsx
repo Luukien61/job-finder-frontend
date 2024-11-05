@@ -28,10 +28,10 @@ export const CarouselBanner : React.FC<CarouselProps> = ({imgSource}) => {
         >
             <CarouselContent  >
                 {imgSource.map((item, index) => (
-                    <CarouselItem key={index} className={`bg-transparent rounded-3xl`} >
+                    <CarouselItem key={index} >
                         <div className="w-full ">
                             <Card>
-                                <CardContent className="!p-0 !rounded-3xl items-center justify-center">
+                                <CardContent className="!p-0    items-center justify-center">
                                     <img
                                         className={`h-full w-full object-fill rounded-3xl`}
                                         src={item.imageUrl} alt={item.title}/>

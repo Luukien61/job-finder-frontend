@@ -342,12 +342,12 @@ const Search = () => {
                             </div>
                         </div>
                         <div
-                            className={`mr-2 font-bold rounded-r-2xl bg-green_default hover:bg-green-600 text-white px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
+                            className={` font-bold rounded-r-2xl bg-green_default hover:bg-green-600 text-white px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
                             <CiSearch/>
                             <p className={`cursor-pointer`}>Tìm kiếm</p>
                         </div>
                     </div>
-                    <div className={`flex mt-4 justify-center items-center px-4`}>
+                    <div className={`flex mt-4 justify-center items-center pl-3`}>
                         <CarouselBanner imgSource={carouselBannerItems}/>
                     </div>
                 </div>
