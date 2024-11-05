@@ -168,9 +168,11 @@ pre {
 }
 
 .custom-container {
-    width: 1250px;
+    width: 1170px;
 }
-
+.custom-shadow{
+    box-shadow : -2px 4px 16px 0 rgba(0, 0, 0, .08)
+}
 @layer base {
     * {
         @apply border-border text-[16px];

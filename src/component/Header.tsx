@@ -19,7 +19,7 @@ const Header = () => {
                         className="mr-3 flex-none overflow-hidden w-auto flex items-center gap-2"
                     >
                         <img
-                            src="/public/job-finder.png"
+                            src="/public/job-finder.jpg"
                             alt="App Home page"
                             className="object-cover w-[70%] max-w-[128px] "
                         />
@@ -43,7 +43,7 @@ const Header = () => {
                     <button
                         onClick={()=>handleButtonClick("signup")}
                         type={"button"}
-                        className={`rounded hover:bg-green_default bg-green-400 text-white text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
+                        className={`rounded hover:bg-green-600 bg-green_default text-white text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
                         Đăng ký
                     </button>
                     <button

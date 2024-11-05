@@ -1,5 +1,8 @@
+import {zalo} from "@/url/Url.ts";
+
 export const AppInfo = {
-    appName: "Job Finder"
+    appName: "Job Finder",
+    description: "JobFinder là công ty công nghệ nhân sự (HR Tech) hàng đầu Việt Nam. Với năng lực lõi là công nghệ, đặc biệt là trí tuệ nhân tạo (AI), sứ mệnh của JobFinder đặt ra cho mình là thay đổi thị trường tuyển dụng - nhân sự ngày một hiệu quả hơn.",
 }
 
 export const GoogleClientId: string = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -130,6 +133,73 @@ export const fields = [
     "Sáng Tạo/Nghệ Thuật"
 ];
 export const backEndPage: string = import.meta.env.VITE_BACKEND_URL
+
+
+type item = {
+    name: string,
+    link: string
+}
+type footerProps = {
+    title: string,
+    child: item[]
+}
+export const footerContent: footerProps[] = [
+    {
+        title: "Liên hệ",
+        child: [
+            {
+                name: "0386888888",
+                link: "tel:+842345678"
+            },
+            {
+                name: "jobfinder@gmail.com",
+                link: "mailto:kienluu61@gmail.com"
+            },
+            {
+                name: "Zalo",
+                link: `${zalo}`
+            }
+        ]
+    },
+    {
+        title: "Theo dõi",
+        child: [
+            {
+                name: "Facebook",
+                link: "https://www.facebook.com"
+            },
+            {
+                name: "Youtube",
+                link: "https://www.youtube.com"
+            },
+            {
+                name: "Tiktok",
+                link: "https://www.tiktok.com"
+            }
+        ]
+    },
+    {
+        title: "Về chúng tôi ",
+        child: [
+            {
+                name: "Chính sách bảo mật",
+                link: "/"
+            },
+            {
+                name: "Quyền riêng tư",
+                link: "/"
+            },
+            {
+                name: "",
+                link: "/"
+            },
+            {
+                name: "",
+                link: "/"
+            }
+        ]
+    }
+]
 
 
 
