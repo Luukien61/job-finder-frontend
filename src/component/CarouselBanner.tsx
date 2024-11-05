@@ -22,18 +22,18 @@ export const CarouselBanner : React.FC<CarouselProps> = ({imgSource}) => {
     return (
         <Carousel
             plugins={[plugin.current]}
-            className="w-full flex-1 bg-transparent"
+            className="w-full flex-1 "
             // onMouseEnter={plugin.current.stop}
             // onMouseLeave={plugin.current.reset}
         >
-            <CarouselContent >
+            <CarouselContent  >
                 {imgSource.map((item, index) => (
-                    <CarouselItem key={index} >
-                        <div className="w-full">
+                    <CarouselItem key={index} className={`bg-transparent rounded-3xl`} >
+                        <div className="w-full ">
                             <Card>
-                                <CardContent className="!p-0 rounded-2xl h-[300px] items-center justify-center">
+                                <CardContent className="!p-0 !rounded-3xl items-center justify-center">
                                     <img
-                                        className={`h-full w-full object-fill rounded`}
+                                        className={`h-full w-full object-fill rounded-3xl`}
                                         src={item.imageUrl} alt={item.title}/>
                                 </CardContent>
                             </Card>

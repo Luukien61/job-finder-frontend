@@ -33,7 +33,6 @@ const Filter = () => {
     const [experienceRange, setExperienceRange] = useState<number[]>()
 
 
-
     const handleLocationChoose = (location: string) => {
         setLocationOpen(false)
         setLocationChoose(location)
@@ -45,7 +44,7 @@ const Filter = () => {
 
     }
 
-    const handleSalaryClick = ()  => {
+    const handleSalaryClick = () => {
         setIsSalaryOpen(prevState => !prevState);
         setIsExperienceOpen(false)
         setLocationOpen(false)
@@ -57,7 +56,7 @@ const Filter = () => {
         console.log(salaries[index])
     }
 
-    const handleExperienceClick =() => {
+    const handleExperienceClick = () => {
         setIsExperienceOpen(prevState => !prevState);
         setIsSalaryOpen(false);
         setLocationOpen(false)
@@ -94,9 +93,9 @@ const Filter = () => {
                 <FilterItem items={provinces} isOpen={locationOpen} handleOpen={handleOpenLocation}
                             handleChoose={handleLocationChoose} value={locationChoose}/>
                 <FilterItem items={processedSalary} isOpen={isSalaryOpen} handleOpen={handleSalaryClick}
-                            handleChoose={handleSalaryChoose}  value={salary}/>
+                            handleChoose={handleSalaryChoose} value={salary}/>
                 <FilterItem items={processedExperience} isOpen={isExperienceOpen} handleOpen={handleExperienceClick}
-                            handleChoose={handleExperienceChoose}  value={experience}/>
+                            handleChoose={handleExperienceChoose} value={experience}/>
 
                 <button
                     type={"button"}
@@ -106,17 +105,17 @@ const Filter = () => {
             </div>
             <div className={`flex gap-x-3 mr-3`}>
                 <p className={`font-bold`}>Ưu tiên hiển thị theo:</p>
-                <RadioGroup className={`flex `} defaultValue="new" >
+                <RadioGroup className={`flex `} defaultValue="new">
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem className={`text-green-500 border-green-500`}  value="new" id="r1" />
+                        <RadioGroupItem className={`text-green-500 border-green-500`} value="new" id="r1"/>
                         <Label htmlFor="r1" className={`!text-[16px] font-bold`}>Ngay dang</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem className={`text-green-500 border-green-500`} value="salary" id="r2" />
+                        <RadioGroupItem className={`text-green-500 border-green-500`} value="salary" id="r2"/>
                         <Label htmlFor="r2" className={`!text-[16px] font-bold`}>Luong cao den thap</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem className={`text-green-500 border-green-500`} value="urgent" id="r3" />
+                        <RadioGroupItem className={`text-green-500 border-green-500`} value="urgent" id="r3"/>
                         <Label htmlFor="r3" className={`!text-[16px] font-bold`}>Can tuyen gap</Label>
                     </div>
                 </RadioGroup>
@@ -135,10 +134,10 @@ type FilterProps = {
 const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleOpen, items, style}) => {
 
     return (
-        <div className={`mr-3 gap-x-2 items-center py-1 rounded flex-col justify-start `}>
+        <div className={`gap-x-2 items-center py-1 rounded flex-col justify-start `}>
             <div
                 onClick={handleOpen}
-                className={`bg-white h-full hover:bg-gray-50 cursor-pointer rounded-xl w-40 flex justify-center`}>
+                className={`bg-white h-full hover:bg-gray-50 cursor-pointer rounded-xl  flex justify-center`}>
                 <div className={`px-2 max-w-[80%] py-1 flex justify-between gap-x-2 items-center`}>
                     <p className={`truncate `}>{value}</p>
                     <IoIosArrowDown/>
@@ -146,7 +145,7 @@ const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleO
             </div>
             <div className={`relative z-[100] w-full `}>
                 <div
-                    className={`absolute inset-0 top-2 max-h-60 grid overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl w-full ${style && style }  ${ isOpen ? 'block' : 'hidden'} `}>
+                    className={`absolute inset-0 top-2 max-h-60 grid overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl w-full ${style && style}  ${isOpen ? 'block' : 'hidden'} `}>
                     {
                         Object.values(items).map((item, index) => (
                             <div
@@ -163,25 +162,25 @@ const FilterItem: React.FC<FilterProps> = ({value, handleChoose, isOpen, handleO
     )
 }
 
-const carouselBannerItem : Banner = {
+const carouselBannerItem: Banner = {
     id: 1,
     imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png",
     title: "abc",
     targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
 }
-const carouselBannerItem2 : Banner = {
+const carouselBannerItem2: Banner = {
     id: 2,
     imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/f88.png",
     title: "abc",
     targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
 }
-const carouselBannerItem3 : Banner = {
+const carouselBannerItem3: Banner = {
     id: 2,
     imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Banner%201.png",
     title: "abc",
     targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
 }
-const carouselBannerItems = [carouselBannerItem, carouselBannerItem2,carouselBannerItem3]
+const carouselBannerItems = [carouselBannerItem, carouselBannerItem2, carouselBannerItem3]
 
 
 const Search = () => {
@@ -196,67 +195,70 @@ const Search = () => {
     const handleLocationChoose = (locationChoose: string) => {
         setLocationChoose(locationChoose);
     }
-    const handleFieldChoose=(field: string)=>{
+    const handleFieldChoose = (field: string) => {
         setSearch(field);
         setIsFieldOpen(false)
     }
-    const handleFieldClick=()=>{
+    const handleFieldClick = () => {
         setIsFieldOpen(!isFieldOpen);
     }
     return (
-        <div className={`bg-gradient-to-tr relative from-primary to-green-400 flex justify-center `}>
-            <div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}>
-
-            </div>
-            <div className={`flex flex-col h-fit gap-5 custom-container static py-4 `}>
-                <div className={`rounded-2xl bg-white flex items-center mx-4 h-16 `}>
-                    <FilterItem items={fields} value={field} handleChoose={handleFieldChoose}
-                                handleOpen={handleFieldClick}
-                                isOpen={isFieldOpen} style={"!w-[1200px] grid-cols-4 mt-4"}/>
-                    <div className={`border h-[60%] bg-black`}>
-
-                    </div>
-                    <input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        spellCheck={false}
-                        className={`bg-transparent shadow-none  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
-                        placeholder="Tìm công việc ..."
-                    />
-                    <div
-                        onClick={handleOpenLocation}
-                        className={`border-r border-l border-gray-300 my-2  w-40 flex-col gap-y-2`}>
-                        <div
-                            className={`mx-1 gap-x-2 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
-                            <CiLocationOn/>
-                            <p>{locationChoose}</p>
-                        </div>
-                        <div className={` relative  z-[100]`}>
+        <div className={` relative bg-gradient-to-r from-[#E8F6F9] to-[#D3FFDE] flex justify-center `}>
+            <div className={`custom-container flex`}>
+                <div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}/>
+                <div className={`flex flex-col h-fit gap-5 static pb-4 w-2/3 my-auto`}>
+                    <p className={`ml-4 font-bold  text-[32px]`}>Tìm việc phù hợp với bạn</p>
+                    <div className={`flex w-full `}>
+                        <div className={`rounded-l-2xl bg-white flex items-center flex-1 ml-4 h-14 `}>
+                            {/*<FilterItem items={fields} value={field} handleChoose={handleFieldChoose}*/}
+                            {/*            handleOpen={handleFieldClick}*/}
+                            {/*            isOpen={isFieldOpen} style={"!w-[720px] grid-cols-4 mt-4"}/>*/}
+                            {/*<div className={`border h-[60%] bg-black`}>*/}
+                            {/*</div>*/}
+                            <input
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                spellCheck={false}
+                                className={`bg-transparent shadow-none pl-3  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
+                                placeholder="Tìm công việc ..."
+                            />
                             <div
-                                className={`absolute inset-0 max-h-32 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
-                                {
-                                    Object.values(provinces).map((province, index) => (
-                                        <div
-                                            onClick={handleLocationChoose.bind(null, province)}
-                                            key={index}
-                                            className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
-                                            <p>{province}</p>
-                                        </div>
-                                    ))
-                                }
+                                onClick={handleOpenLocation}
+                                className={`border-r border-l border-gray-300 my-1 w-40 flex-col gap-y-2`}>
+                                <div
+                                    className={`mx-2 gap-x-2 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
+                                    <CiLocationOn/>
+                                    <p>{locationChoose}</p>
+                                </div>
+                                <div className={` relative  z-[100]`}>
+                                    <div
+                                        className={`absolute inset-0 max-h-32 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
+                                        {
+                                            Object.values(provinces).map((province, index) => (
+                                                <div
+                                                    onClick={handleLocationChoose.bind(null, province)}
+                                                    key={index}
+                                                    className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
+                                                    <p>{province}</p>
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className={`mx-2 my-2`}>
                         <div
-                            className={`bg-primary rounded-2xl hover:bg-green-600 text-white font-medium px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
+                            className={`mr-2 font-bold rounded-r-2xl bg-green_default hover:bg-green-600 text-white px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
                             <CiSearch/>
                             <p className={`cursor-pointer`}>Tìm kiếm</p>
                         </div>
                     </div>
+                    <div className={`flex mt-4 justify-center items-center px-4`}>
+                        <CarouselBanner imgSource={carouselBannerItems}/>
+                    </div>
                 </div>
-                <div className={`flex justify-center items-center px-4`}>
-                    <CarouselBanner imgSource={carouselBannerItems}/>
+                <div className={`w-1/3  flex justify-center items-center `}>
+                    <img className={`h-3/4 object-contain`} src={'.././public/img_2.png'} alt={"App"}/>
                 </div>
             </div>
         </div>
