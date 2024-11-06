@@ -18,7 +18,6 @@ const Content = () => {
     const {ref, inView} = useInView({
         triggerOnce: true,
     });
-
     return (
         <div className={`flex justify-center `}>
             <div className={`w-full`}>
@@ -28,6 +27,7 @@ const Content = () => {
                         <JobList/>
                         <SectionBanner/>
                         <CompanyList/>
+                        <CVBuilder/>
                     </div>
                     <div className={`bg-impress rounded shadow-2xl custom-container relative w-screen my-10 bg-cover min-h-fit bg-no-repeat `}>
                         <div className={`p-12 items-start justify-center flex flex-col gap-10`}>
@@ -300,54 +300,12 @@ const Search = () => {
     }
     return (
         <div className={` relative bg-gradient-to-r from-[#E8F6F9] to-[#D3FFDE] flex justify-center `}>
-            <div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}/>
+            {/*<div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}/>*/}
             <div className={`custom-container flex`}>
                 <div className={`flex flex-col h-fit gap-5 static pb-4 w-2/3 my-auto`}>
                     <p className={`ml-4 font-bold  text-[32px]`}>Tìm việc phù hợp với bạn</p>
-                    <div className={`flex w-full `}>
-                        <div className={`rounded-l-2xl bg-white flex items-center flex-1 ml-4 h-14 `}>
-                            {/*<FilterItem items={fields} value={field} handleChoose={handleFieldChoose}*/}
-                            {/*            handleOpen={handleFieldClick}*/}
-                            {/*            isOpen={isFieldOpen} style={"!w-[720px] grid-cols-4 mt-4"}/>*/}
-                            {/*<div className={`border h-[60%] bg-black`}>*/}
-                            {/*</div>*/}
-                            <input
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                spellCheck={false}
-                                className={`bg-transparent shadow-none pl-3  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
-                                placeholder="Tìm công việc ..."
-                            />
-                            <div
-                                onClick={handleOpenLocation}
-                                className={`border-r border-l border-gray-300 my-1 w-40 flex-col gap-y-2`}>
-                                <div
-                                    className={`mx-2 gap-x-4 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
-                                    <CiLocationOn/>
-                                    <p>{locationChoose}</p>
-                                </div>
-                                <div className={` relative  z-[100]`}>
-                                    <div
-                                        className={`absolute inset-0 max-h-48 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
-                                        {
-                                            Object.values(provinces).map((province, index) => (
-                                                <div
-                                                    onClick={handleLocationChoose.bind(null, province)}
-                                                    key={index}
-                                                    className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
-                                                    <p>{province}</p>
-                                                </div>
-                                            ))
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            className={` font-bold rounded-r-2xl bg-green_default hover:bg-green-600 text-white px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
-                            <CiSearch/>
-                            <p className={`cursor-pointer`}>Tìm kiếm</p>
-                        </div>
+                    <div className={`w-full `}>
+                        <SearchBar/>
                     </div>
                     <div className={`flex mt-4 justify-center items-center pl-3`}>
                         <CarouselBanner imgSource={carouselBannerItems}/>
@@ -356,6 +314,65 @@ const Search = () => {
                 <div className={`w-1/3  flex justify-center items-center `}>
                     <img className={`h-3/4 object-contain`} src={'.././public/img_2.png'} alt={"App"}/>
                 </div>
+            </div>
+        </div>
+    )
+}
+
+export const SearchBar=()=>{
+    const [search, setSearch] = useState("");
+    const [locationOpen, setLocationOpen] = useState<boolean>(false)
+    const [locationChoose, setLocationChoose] = useState<string>('Toàn quốc')
+    const handleOpenLocation = () => {
+        setLocationOpen(!locationOpen);
+    }
+    const handleLocationChoose = (locationChoose: string) => {
+        setLocationChoose(locationChoose);
+    }
+    return(
+        <div className={`flex w-full`}>
+            <div className={`rounded-l-2xl bg-white flex items-center flex-1 ml-4 h-14 `}>
+                {/*<FilterItem items={fields} value={field} handleChoose={handleFieldChoose}*/}
+                {/*            handleOpen={handleFieldClick}*/}
+                {/*            isOpen={isFieldOpen} style={"!w-[720px] grid-cols-4 mt-4"}/>*/}
+                {/*<div className={`border h-[60%] bg-black`}>*/}
+                {/*</div>*/}
+                <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    spellCheck={false}
+                    className={`bg-transparent shadow-none pl-3  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
+                    placeholder="Tìm công việc ..."
+                />
+                <div
+                    onClick={handleOpenLocation}
+                    className={`border-r border-l border-gray-300 my-1 w-40 flex-col gap-y-2`}>
+                    <div
+                        className={`mx-2 gap-x-4 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
+                        <CiLocationOn/>
+                        <p>{locationChoose}</p>
+                    </div>
+                    <div className={`relative z-[100]`}>
+                        <div
+                            className={`absolute inset-0 max-h-48 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
+                            {
+                                Object.values(provinces).map((province, index) => (
+                                    <div
+                                        onClick={handleLocationChoose.bind(null, province)}
+                                        key={index}
+                                        className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
+                                        <p>{province}</p>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                className={` font-bold rounded-r-2xl bg-green_default hover:bg-green-600 text-white px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
+                <CiSearch/>
+                <p className={`cursor-pointer`}>Tìm kiếm</p>
             </div>
         </div>
     )
@@ -463,6 +480,59 @@ const SectionBanner=()=>{
             <CarouselPrevious />
             <CarouselNext />
         </Carousel>
+    )
+}
+
+const CVBuilder=()=>{
+    return (
+        <div className="relative ">
+            <h2 className="text-green_default font-bold text-[24px] leading-8">Cùng JobFinder xây dựng thương hiệu cá nhân</h2>
+            <div className="grid grid-cols-2 gap-6 mt-5 pb-6 ">
+                <div className="self-growth__content--item ">
+                    <div className="flex flex-col gap-5">
+                        <h3 className={`text-[20px] font-bold`}>
+                            TopCV Profile
+                        </h3>
+                        <p className={`opacity-70 h-20`}>
+                            Profile là bản hồ sơ năng lực giúp bạn xây dựng thương hiệu cá nhân, thể hiện
+                            thế mạnh của bản thân thông qua việc đính kèm học vấn, kinh nghiệm, dự án, kỹ
+                            năng,... của mình
+                        </p>
+                        <a className="rounded bg-green_default text-white font-bold w-fit px-3 py-2 hover:bg-green-600" href="https://www.topcv.vn/profile">
+                            Tạo Profile
+                            <i className="fa-light fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div className="box-image">
+                        <img className="lazy entered loaded"
+                             data-src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/welcome/sel-growth/profile-desktop.png"
+                             alt="arnh" data-ll-status="loaded"
+                             src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/welcome/sel-growth/profile-desktop.png"/>
+                    </div>
+                </div>
+                <div className="self-growth__content--item">
+                    <div className="flex flex-col gap-5">
+                        <h3 className={`text-[20px] font-bold`}>
+                            CV Builder 2.0
+                        </h3>
+                        <p className={`opacity-70 h-20`}>
+                            Một chiếc CV chuyên nghiệp sẽ giúp bạn gây ấn tượng với nhà tuyển dụng và tăng khả
+                            năng vượt qua vòng lọc CV.
+                        </p>
+                        <a className="rounded bg-green_default text-white font-bold w-fit px-3 py-2 hover:bg-green-600" href="https://www.topcv.vn/mau-cv">
+                            Tạo CV ngay
+                            <i className="fa-light fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div className="box-image">
+                        <img className="lazy entered loaded"
+                             data-src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/welcome/sel-growth/cv-builder-desktop.png"
+                             alt="arnh" data-ll-status="loaded"
+                             src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/welcome/sel-growth/cv-builder-desktop.png"/>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }
 export default Content;

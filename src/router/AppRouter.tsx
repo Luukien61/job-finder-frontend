@@ -7,6 +7,7 @@ import Message from "@/page/Message.tsx";
 import JobDetail from "@/page/JobDetail.tsx";
 import Test from "@/page/Test.tsx";
 import App from "@/page/App.tsx";
+import UserProfile from "@/page/UserProfile.tsx";
 
 const AppRouter = () => {
     return (
@@ -18,7 +19,7 @@ const AppRouter = () => {
             <Route path={'/login'} element={<LogIn/>}/>
             <Route path={'/signup'} element={<Signup/>}/>
             <Route path={'/message'} element={<Message/>}/>
-
+            <Route path={'/me/profile/:id'} element={<UserProfile/>}/>
             <Route path={'/test'} element={<Test/>}/>
         </Routes>
     );

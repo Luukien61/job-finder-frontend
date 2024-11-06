@@ -1,22 +1,126 @@
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {GoClock} from "react-icons/go";
 import {FiSend} from "react-icons/fi";
 import {FaRegHeart} from "react-icons/fa6";
 import {MdReportGmailerrorred} from "react-icons/md";
-import {greasemonkey} from "globals";
-import {BiSolidCube} from "react-icons/bi";
+import {BiSolidCube, BiSolidLeaf} from "react-icons/bi";
+import {SearchBar} from "@/component/Content.tsx";
+import {PiFolderUser} from "react-icons/pi";
+import {IoWarning} from "react-icons/io5";
 
 const JobDetail = () => {
+    const [openModal, setOpenModal] = useState<boolean>(false)
+    const [openCv, setOpenCv] = useState<boolean>(true)
+    const handleModalClicks = useCallback((event: React.MouseEvent) => {
+        event.stopPropagation()
+    }, [])
+    const handleCloseModel = useCallback(() => {
+        setOpenModal(false);
+    }, [])
     return (
-        <div className={`mt-4`}>
-            <JobDetailContent/>
+        <div>
+            <div className={`w-full relative flex justify-center mb-4 bg-[#19734E]`}>
+                <div className={`custom-container py-2 sticky top-0`}>
+                    <SearchBar/>
+                </div>
+            </div>
+            <JobDetailContent handleApplyClicks={() => setOpenModal(true)}/>
+            {/*modal*/}
+            <div onClick={handleCloseModel}
+                 className={`backdrop-blur-sm bg-black bg-opacity-60 flex overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${openModal ? "block" : "hidden"}`}>
+                <div onClick={event => handleModalClicks(event)}
+                     className="relative p-4 max-w-[40%] max-h-full">
+                    <div className="relative bg-[#f5f5f5 rounded-lg flex items-center justify-center min-h-60 shadow ">
+                        <div className={`overflow-hidden `}>
+                            <div className="bg-white border-b rounded-xl shadow p-5 px-0 relative z-10 min-h-4 ">
+                                <div className={`z-10 shadow px-5`}>
+                                    <h4 className="text-[#263a4d] text-[18px] font-bold leading-7">
+                                        Ứng tuyển <span className="text-green_default text-[18px]">Trưởng Phòng QA Làm Việc Tại Hải Phòng (Lương Upto 35 Triệu)</span>
+                                    </h4>
+                                </div>
+                                <div className={`m-0 max-h-[70vh] overflow-y-auto px-8 relative`}>
+                                    <div className={`flex gap-4 py-4 items-end`}>
+                                        <PiFolderUser size={28} color={"green"}/>
+                                        <p className={`text-[16px] font-bold `}>Chọn CV để ứng tuyển</p>
+
+                                    </div>
+                                    <div
+                                        onClick={() => setOpenCv(pre => !pre)}
+                                        className={`rounded relative px-3 py-2 flex  cursor-pointer border hover:bg-bg_default`}>
+                                        <p className={`font-normal text-[16px]`}>CV: Luu Dinh Kien</p>
+                                        <div className={`flex-1 flex items-center justify-end`}>
+                                            <svg className="shrink-0 size-3.5 text-gray-500 dark:text-neutral-500"
+                                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m7 15 5 5 5-5"></path>
+                                                <path d="m7 9 5-5 5 5"></path>
+                                            </svg>
+                                        </div>
+                                        {/*list cv*/}
+                                        <div
+                                            className={`absolute w-full top-10 inset-0 z-50  max-h-48 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${openCv ? 'block' : 'hidden'}`}>
+                                            {
+                                                Array.from(Array(5).keys()).map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={`rounded hover:bg-green_light cursor-pointer py-1 px-1`}>
+                                                        CV: Luu Dinh Kien
+                                                    </div>
+                                                ))
+                                            }
+                                        </div>
+                                    </div>
+                                    <div className={`flex mt-6 gap-4 items-end`}>
+                                        <BiSolidLeaf color={"green"} size={28}/>
+                                        <p className={`font-bold `}>Thư giới thiệu</p>
+                                    </div>
+                                    <div className={`mt-2 flex flex-col gap-2`}>
+                                        <p className={`opacity-70 text-[14px]`}>Một thư giới thiệu ngắn gọn, chỉn chu sẽ
+                                            giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.</p>
+                                        <textarea
+                                            spellCheck={false}
+                                            placeholder={'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.'}
+                                            className={`w-full outline-none font-normal border rounded border-green_default p-3`}></textarea>
+                                    </div>
+                                    <div className={`rounded border flex flex-col gap-2 outline-none p-3 mt-4 w-full`}>
+                                        <div className={`flex gap-4 items-end`}>
+                                            <IoWarning size={28} color={"red"}/>
+                                            <p className={`text-red-500 font-bold text-[16px]`}>Lưu ý</p>
+                                        </div>
+                                        <p className={`text-[14px] opacity-70`}>JobFinder khuyên tất cả các bạn hãy luôn
+                                            cẩn trọng trong quá trình tìm việc và chủ động nghiên cứu về thông tin công
+                                            ty, vị trí việc làm trước khi ứng tuyển.
+                                            Ứng viên cần có trách nhiệm với hành vi ứng tuyển của mình. Nếu bạn gặp phải
+                                            tin tuyển dụng hoặc nhận được liên lạc đáng ngờ của nhà tuyển dụng, hãy báo
+                                            cáo ngay cho JobFinder qua email <span
+                                                className={`text-green-500 text-[14px] opacity-100 font-bold`}>hotro@jobfinder.vn</span> để
+                                            được hỗ trợ kịp thời.</p>
+                                    </div>
+
+                                </div>
+                                <div className={`w-full pt-4 flex items-center justify-center`}>
+                                    <button
+                                        className={`w-full hover:bg-green-600 mx-3 rounded bg-green_default py-2 text-white font-bold`}>Nộp
+                                        hồ sơ ứng tuyển
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
 
 export default JobDetail;
 
-const JobDetailContent = () => {
+type JobCardProps = {
+    handleApplyClicks: () => void;
+}
+const JobDetailContent: React.FC<JobCardProps> = (props: JobCardProps) => {
+
     return (
         <div className={`flex justify-center`}>
             <div className={`w-[1170px] `}>
@@ -133,7 +237,8 @@ const JobDetailContent = () => {
                             </div>
                             {/*apply*/}
                             <div className={`flex flex-wrap items-center text-[14px] gap-3 mt-1`}>
-                                <a className={`bg-green_default cursor-pointer hover:bg-[#009643] rounded-[6px] text-white flex-1 flex font-bold gap-[6px] h-[40px] justify-center items-center tracking-[.175px] leading-[22px] px-2 py-3`}>
+                                <a onClick={props.handleApplyClicks}
+                                   className={`bg-green_default cursor-pointer hover:bg-[#009643] rounded-[6px] text-white flex-1 flex font-bold gap-[6px] h-[40px] justify-center items-center tracking-[.175px] leading-[22px] px-2 py-3`}>
                                     <FiSend/>
                                     <p>Ứng tuyển ngay</p>
                                 </a>
@@ -187,7 +292,8 @@ const JobDetailContent = () => {
                                     </div>
                                     {/*save and apply*/}
                                     <div className={`flex flex-wrap items-center text-[14px] gap-3 mt-1`}>
-                                        <a className={`bg-green_default cursor-pointer hover:bg-[#009643] rounded-[6px] text-white flex font-bold gap-[6px] h-[40px] justify-center items-center tracking-[.175px] leading-[22px] px-2 py-3`}>
+                                        <a onClick={props.handleApplyClicks}
+                                           className={`bg-green_default cursor-pointer hover:bg-[#009643] rounded-[6px] text-white flex font-bold gap-[6px] h-[40px] justify-center items-center tracking-[.175px] leading-[22px] px-2 py-3`}>
                                             <p>Ứng tuyển ngay</p>
                                         </a>
                                         {/*save*/}
@@ -272,11 +378,13 @@ const JobDetailContent = () => {
                                                                     </div>
                                                                     <div
                                                                         className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                        <p className={`text-black text-[14px] truncate `}>Kinh nghiệm: 3 năm</p>
+                                                                        <p className={`text-black text-[14px] truncate `}>Kinh
+                                                                            nghiệm: 3 năm</p>
                                                                     </div>
                                                                     <div
                                                                         className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                        <p className={`text-black text-[14px] truncate `}>Hạn: 29/12/2024</p>
+                                                                        <p className={`text-black text-[14px] truncate `}>Hạn:
+                                                                            29/12/2024</p>
                                                                     </div>
                                                                 </div>
                                                                 {/*<div*/}
@@ -496,5 +604,6 @@ const JobDetailContent = () => {
 
             </div>
         </div>
+
     )
 }

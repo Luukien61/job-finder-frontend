@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {GrNext, GrPrevious} from "react-icons/gr";
 
 const exampleJob : JobCardProps ={
@@ -16,7 +16,7 @@ const exampleJob : JobCardProps ={
 const JobList = () => {
     return (
         <div className={`flex relative shadow-xl  flex-col bg-white rounded-2xl  my-3`}>
-            <div className={`flex pl-8 rounded-t-2xl items-center bg-gradient-to-r from-white to-[#e6ffee]`}>
+            <div className={`flex pl-8 rounded-t-2xl  items-center bg-gradient-to-r from-white to-[#e6ffee]`}>
                 <p className={`font-bold pt-4 text-[28px] text-green-500`}>Việc làm tốt nhất</p>
                 <img alt={""} className={`w-12 aspect-square ml-4`} src={'/public/next-logo.png'}/>
                 <div className={`flex-1 flex items-center justify-end`}>
@@ -99,11 +99,11 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
                 onMouseLeave={() => setIsHovered(false)}
                 className={`cursor-pointer peer`}>
                 <div
-                    className={`border-green-500 shadow  hover:bg-[#F2FBF6] bg-gray-50/5 border hover:border-green-500 hover:border rounded-xl`}>
+                    className={`border-green-500 shadow group hover:bg-[#F2FBF6] bg-gray-50/5 border hover:border-green-500 hover:border rounded-xl`}>
                     <div className={`w-full h-full flex items-start gap-x-[10px] p-[12px]`}>
                         <div
                             className={`aspect-[9/14] bg-white m-auto w-[96px]  flex items-center border border-[#dfdfdf] rounded-xl`}>
-                            <img className={`h-full w-[80px] object-contain`} src={job.image} alt=""/>
+                            <img className={`h-full w-[80px] group-hover:scale-110 duration-300 object-contain`} src={job.image} alt=""/>
                         </div>
                         <div className={`w-[calc(100%-96px)]  box-border h-full`}>
                             <div className={`border-b border-[#dfdfdf] pb-1`}>

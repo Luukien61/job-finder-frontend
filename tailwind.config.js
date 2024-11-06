@@ -11,6 +11,7 @@ export default {
 			    dark : "#0e4a2c",
                 bg_default: '#F0F0F0',
                 green_default: "#00b14f",
+                green_nga: "#25b849",
                 bg_secondary: "#D9D9D9FF",
                 blue_light: "#E8F6F9",
                 green_light: "#D3FFDE",

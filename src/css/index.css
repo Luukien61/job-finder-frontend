@@ -38,7 +38,6 @@ pre {
 }
 
 
-
 /* Track */
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
@@ -170,9 +169,38 @@ pre {
 .custom-container {
     width: 1170px;
 }
-.custom-shadow{
-    box-shadow : -2px 4px 16px 0 rgba(0, 0, 0, .08)
+
+.custom-shadow {
+    box-shadow: -2px 4px 16px 0 rgba(0, 0, 0, .08)
 }
+
+
+.inter-normal {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+.self-growth__content--item {
+    align-items: center;
+    background: linear-gradient(90deg, #ffffff 23.92%, #f0fff5);
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    min-height: 216px;
+    border: #33c172 solid 1px;
+    overflow: hidden;
+    padding: 0 0 0 24px;
+    position: relative;
+    transition: .3s;
+
+}
+
+.self-growth__content--item:hover {
+    box-shadow: 0 10px 30px rgba(0, 177, 79, .2);
+    outline: 1px solid #33c172;
+}
+
 @layer base {
     * {
         @apply border-border text-[16px];
@@ -181,6 +209,7 @@ pre {
     body {
         @apply bg-background text-foreground ;
     }
+
     h3 {
         @apply text-[#212f3f] text-[18px] font-bold tracking-tighter leading-6 m-0
     }
@@ -191,13 +220,16 @@ pre {
     .job_description_item {
         @apply flex flex-col gap-[8px] text-[16px]
     }
+
     .job_description_item_title {
         @apply text-[#212f3f] text-[16px] font-bold tracking-tighter leading-6 m-0
     }
+
     .text-color-default {
         @apply text-[#212f3f]
     }
-    .inter{
+
+    .inter {
         font-family: Inter, sans-serif;
     }
 }
