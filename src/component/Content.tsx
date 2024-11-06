@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {experiences, provinces, salaries} from "../info/AppInfo.ts";
 import {CiLocationOn, CiSearch} from "react-icons/ci";
 import {IoIosArrowDown} from "react-icons/io";
@@ -10,6 +10,9 @@ import {PiShoppingBagOpen} from "react-icons/pi";
 import {GrNext, GrPrevious} from "react-icons/gr";
 import {useInView} from "react-intersection-observer";
 import CountUp from "react-countup";
+import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
+import {Card, CardContent} from "@/components/ui/card.tsx";
+import Autoplay from "embla-carousel-autoplay";
 
 const Content = () => {
     const {ref, inView} = useInView({
@@ -23,11 +26,10 @@ const Content = () => {
                 <div className={`flex flex-col mt-4 items-center justify-center `}>
                     <div className={`custom-container px-2 flex flex-col gap-10`}>
                         <JobList/>
-
+                        <SectionBanner/>
                         <CompanyList/>
                     </div>
-                    <div
-                        className={`bg-impress rounded shadow-2xl custom-container relative w-screen my-10 bg-cover min-h-fit bg-no-repeat `}>
+                    <div className={`bg-impress rounded shadow-2xl custom-container relative w-screen my-10 bg-cover min-h-fit bg-no-repeat `}>
                         <div className={`p-12 items-start justify-center flex flex-col gap-10`}>
                             <svg className={`fill-[#217353]  absolute left-0`} version="1.1" id="Layer_1"
                                  xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 984 984" width="500"
@@ -425,5 +427,42 @@ const CompanyList = () => {
     )
 }
 
+const SectionBanner=()=>{
+    const items =[]
+    for (let i = 1; i < 10; i++) {
+        const item = `/public/banner/banner-${i}.jpg`
+        items.push(item)
+    }
+    return (
+        <Carousel
+            opts={{
+                align: "start",
+                loop: true,
 
+            }}
+            plugins={[
+                Autoplay({
+                    delay: 2000,
+                }),
+            ]}
+            className="!w-full "
+        >
+            <CarouselContent>
+                {items.map((item, index) => (
+                    <CarouselItem key={index} className=" basis-1/3">
+                        <div className="p-1">
+                            <Card>
+                                <CardContent className="flex h-[205px] items-center justify-center">
+                                    <img className={`rounded-xl`} src={item} alt={""}/>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+        </Carousel>
+    )
+}
 export default Content;

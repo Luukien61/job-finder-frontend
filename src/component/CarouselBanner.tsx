@@ -21,6 +21,9 @@ export const CarouselBanner : React.FC<CarouselProps> = ({imgSource}) => {
 
     return (
         <Carousel
+            opts={{
+                loop: true,
+            }}
             plugins={[plugin.current]}
             className="w-full flex-1 "
             // onMouseEnter={plugin.current.stop}
