@@ -280,27 +280,9 @@ const carouselBannerItems = [carouselBannerItem, carouselBannerItem2, carouselBa
 
 
 const Search = () => {
-    const [search, setSearch] = useState("");
-    const [locationOpen, setLocationOpen] = useState<boolean>(false)
-    const [locationChoose, setLocationChoose] = useState<string>('Toàn quốc')
-    const [field, setField] = useState<string>("Ngành nghề")
-    const [isFieldOpen, setIsFieldOpen] = useState<boolean>(false)
-    const handleOpenLocation = () => {
-        setLocationOpen(!locationOpen);
-    }
-    const handleLocationChoose = (locationChoose: string) => {
-        setLocationChoose(locationChoose);
-    }
-    const handleFieldChoose = (field: string) => {
-        setSearch(field);
-        setIsFieldOpen(false)
-    }
-    const handleFieldClick = () => {
-        setIsFieldOpen(!isFieldOpen);
-    }
     return (
         <div className={` relative bg-gradient-to-r from-[#E8F6F9] to-[#D3FFDE] flex justify-center `}>
-            {/*<div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}/>*/}
+            <div className={`w-full h-1/3 absolute bottom-0 bg-gradient-to-b from-transparent to-bg_default`}/>
             <div className={`custom-container flex`}>
                 <div className={`flex flex-col h-fit gap-5 static pb-4 w-2/3 my-auto`}>
                     <p className={`ml-4 font-bold  text-[32px]`}>Tìm việc phù hợp với bạn</p>

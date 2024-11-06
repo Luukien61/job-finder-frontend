@@ -1,13 +1,14 @@
 import React, {useState} from 'react';
 import {RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
-import {AiFillCloud, AiFillSafetyCertificate} from "react-icons/ai";
+import {AiFillCloud, AiFillMessage, AiFillSafetyCertificate} from "react-icons/ai";
 import {BsFileEarmarkPersonFill, BsFillQuestionCircleFill, BsFillTelephoneFill} from "react-icons/bs";
-import {IoMail} from "react-icons/io5";
+import {IoMail, IoNotifications} from "react-icons/io5";
 import {FaLocationDot} from "react-icons/fa6";
 import {IoIosAddCircle} from "react-icons/io";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import Autoplay from "embla-carousel-autoplay";
+import {homePage} from "@/url/Url.ts";
 
 const UserProfile = () => {
     return (
@@ -18,7 +19,7 @@ const UserProfile = () => {
     );
 };
 const sideBarItem = [
-    "Hồ sơ", "Đã lưu", "Đã ứng tuyển", "Cập nhật hồ sơ"
+    "Hồ sơ", "Đã lưu", "Đã ứng tuyển", "Tài khoản"
 ]
 const Sidebar = () => {
     const [itemChoose, setItemChoose] = useState<number>(0);
@@ -26,7 +27,10 @@ const Sidebar = () => {
         <div className={`h-fit fixed min-h-screen w-[270px] bg-white flex`}>
             <div className={`flex flex-col pt-4 bg-green_nga w-[80px]`}>
                 <div className={`w-full flex justify-center `}>
-                    <img className={`w-10 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                    <a href={homePage}>
+                        <img className={`w-10 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                    </a>
+
                 </div>
                 <div className={`flex flex-col gap-8 mt-10`}>
                     <div onClick={() => setItemChoose(0)}
@@ -89,138 +93,165 @@ const Content = () => {
         warningItem.push(item)
     }
     return (
-        <div className={` ml-[300px] my-6 flex-1 flex  mx-6 gap-x-6 relative overflow-y-visible min-h-screen`}>
-            <div className={`flex flex-col w-[67%] min-h-screen`}>
-                <div className={`flex flex-col gap-12 rounded-xl bg-white p-6`}>
-                    {/*info*/}
-                    <div className={`flex gap-4 w-full border-b pb-10`}>
-                        <div className={`rounded-full flex items-center`}>
-                            {/*avatar*/}
-                            <img className={`aspect-square rounded-full w-[120px] object-contain`}
-                                 src={'/public/bunny.jpg'} alt={"logo"}/>
+        <div className={`ml-[270px] w-[calc(100vw-270px)] flex flex-col relative overflow-y-visible min-h-screen`}>
+            <Header/>
+            <div className={`my-6 flex-1 flex mx-6 gap-x-6 elative overflow-y-visible min-h-screen `}>
+                <div className={`flex flex-col w-[67%]`}>
+                    <div className={`flex flex-col gap-12 rounded-xl bg-white p-6`}>
+                        {/*info*/}
+                        <div className={`flex gap-4 w-full border-b pb-10`}>
+                            <div className={`rounded-full flex items-center`}>
+                                {/*avatar*/}
+                                <img className={`aspect-square rounded-full w-[120px] object-contain`}
+                                     src={'/public/bunny.jpg'} alt={"logo"}/>
+                            </div>
+                            <div className={`flex-1 ml-4 flex flex-col`}>
+                                <div>
+                                    <p className={`font-bold text-[28px]`}>Dao Thuy Nga</p>
+                                </div>
+                                <div className={`grid grid-cols-2 mt-2 gap-8 w-full`}>
+                                    <div className={`flex flex-col gap-4`}>
+                                        <div className={`flex gap-3 items-end justify-start`}>
+                                            <IoMail className={`mb-1`} size={20}/>
+                                            <p className={`opacity-70`}>thuyngadao@gmail.com</p>
+                                        </div>
+                                        <div className={`flex gap-3 items-end justify-start`}>
+                                            <FaLocationDot className={`mb-1`} size={20}/>
+                                            <p className={`opacity-70`}>Thanh Xuân, Hà Nội</p>
+                                        </div>
+                                    </div>
+                                    <div className={`flex flex-col gap-4`}>
+                                        <div className={`flex gap-3 items-end justify-start`}>
+                                            <BsFillTelephoneFill className={`mb-1`} size={20}/>
+                                            <p className={`opacity-70`}>0123456789</p>
+                                        </div>
+                                        <div className={`flex gap-3 items-end justify-start`}>
+                                            <RiShoppingBag4Fill className={`mb-1`} size={20}/>
+                                            <p className={`opacity-70`}>Học Viện Kỹ Thuật Mật Mã</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className={`flex-1 ml-4 flex flex-col`}>
-                            <div>
-                                <p className={`font-bold text-[28px]`}>Dao Thuy Nga</p>
-                            </div>
-                            <div className={`grid grid-cols-2 mt-2 gap-8 w-full`}>
-                                <div className={`flex flex-col gap-4`}>
-                                    <div className={`flex gap-3 items-end justify-start`}>
-                                        <IoMail className={`mb-1`} size={20}/>
-                                        <p className={`opacity-70`}>thuyngadao@gmail.com</p>
-                                    </div>
-                                    <div className={`flex gap-3 items-end justify-start`}>
-                                        <FaLocationDot className={`mb-1`} size={20}/>
-                                        <p className={`opacity-70`}>Thanh Xuân, Hà Nội</p>
+                        <div className={`flex flex-col gap-12`}>
+                            <div className={`flex flex-col gap-4 w-full`}>
+                                <div className={`flex gap-4 items-start`}>
+                                    <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                                        CV của tôi
+                                    </h2>
+                                    <div
+                                        data-toggle="tooltip"
+                                        title={"Tải lên CV"}
+                                        className={`w-fit cursor-pointer hover:scale-110 duration-300 transition-transform`}>
+                                        <IoIosAddCircle size={28} fill={"green"}/>
                                     </div>
                                 </div>
-                                <div className={`flex flex-col gap-4`}>
-                                    <div className={`flex gap-3 items-end justify-start`}>
-                                        <BsFillTelephoneFill className={`mb-1`} size={20}/>
-                                        <p className={`opacity-70`}>0123456789</p>
+
+                                <div className={`mx-10 flex gap-10`}>
+                                    {/*cv item*/}
+                                    <div
+                                        className={`rounded bg-white w-fit relative overflow-hidden cursor-pointer group`}>
+                                        <img
+                                            alt={"cv"}
+                                            className={`w-[195px] h-[265px] max-w-full transition-transform  rounded group-hover:scale-110 duration-300`}
+                                            src={`https://snapshot.topcv.vn/cv-online/XAoGAVQHAFYPAAFQBlUAAwQBUQAFVQIFVAdWBge92b/1677502635.webp`}/>
+                                        <div
+                                            className={`absolute flex items-end pl-2 w-full h-full bottom-0 bg-gradient-to-b from-transparent to-[#283545]`}>
+                                            <p className={`text-white font-bold`}>Luu Dinh Kien-CV_1</p>
+                                        </div>
                                     </div>
-                                    <div className={`flex gap-3 items-end justify-start`}>
-                                        <RiShoppingBag4Fill className={`mb-1`} size={20}/>
-                                        <p className={`opacity-70`}>Học Viện Kỹ Thuật Mật Mã</p>
+                                    <div
+                                        className={`rounded bg-white w-fit relative overflow-hidden cursor-pointer group`}>
+                                        <img
+                                            alt={"cv"}
+                                            className={`w-[195px] h-[265px] max-w-full transition-transform  rounded group-hover:scale-110 duration-300`}
+                                            src={`https://snapshot.topcv.vn/cv-online/XAoGAVQHAFYPAAFQBlUAAwQBUQAFVQIFVAdWBge92b/1677502635.webp`}/>
+                                        <div
+                                            className={`absolute flex items-end pl-2 w-full h-full bottom-0 bg-gradient-to-b from-transparent to-[#283545]`}>
+                                            <p className={`text-white font-bold`}>Luu Dinh Kien-CV_1</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            {/*odd CV*/}
+
                         </div>
                     </div>
-                    <div className={`flex flex-col gap-12`}>
-                        <div className={`flex flex-col gap-4 w-full`}>
-                            <div className={`flex gap-4 items-start`}>
-                                <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                    CV của tôi
-                                </h2>
-                                <div
-                                    data-toggle="tooltip"
-                                    title={"Tải lên CV"}
-                                    className={`w-fit cursor-pointer hover:scale-110 duration-300 transition-transform`}>
-                                    <IoIosAddCircle size={28} fill={"green"}/>
-                                </div>
-                            </div>
-
-                            <div className={`mx-10 flex gap-10`}>
-                                {/*cv item*/}
-                                <div className={`rounded bg-white w-fit relative overflow-hidden cursor-pointer group`}>
-                                    <img
-                                        alt={"cv"}
-                                        className={`w-[195px] h-[265px] max-w-full transition-transform  rounded group-hover:scale-110 duration-300`}
-                                        src={`https://snapshot.topcv.vn/cv-online/XAoGAVQHAFYPAAFQBlUAAwQBUQAFVQIFVAdWBge92b/1677502635.webp`}/>
-                                    <div
-                                        className={`absolute flex items-end pl-2 w-full h-full bottom-0 bg-gradient-to-b from-transparent to-[#283545]`}>
-                                        <p className={`text-white font-bold`}>Luu Dinh Kien-CV_1</p>
-                                    </div>
-                                </div>
-                                <div className={`rounded bg-white w-fit relative overflow-hidden cursor-pointer group`}>
-                                    <img
-                                        alt={"cv"}
-                                        className={`w-[195px] h-[265px] max-w-full transition-transform  rounded group-hover:scale-110 duration-300`}
-                                        src={`https://snapshot.topcv.vn/cv-online/XAoGAVQHAFYPAAFQBlUAAwQBUQAFVQIFVAdWBge92b/1677502635.webp`}/>
-                                    <div
-                                        className={`absolute flex items-end pl-2 w-full h-full bottom-0 bg-gradient-to-b from-transparent to-[#283545]`}>
-                                        <p className={`text-white font-bold`}>Luu Dinh Kien-CV_1</p>
-                                    </div>
-                                </div>
-                            </div>
+                </div>
+                <div className={`w-[calc(33%-24px)] sticky top-0 h-fit bg-white rounded-xl border border-green_default p-5`}>
+                    <div className={`flex flex-col gap-4 w-full p-4`}>
+                        <div className={`w-full flex gap-4 items-center justify-start`}>
+                            <BsFillQuestionCircleFill size={24} fill={"green"}/>
+                            <p className={`font-bold text-[20px]`}>Bí kíp tìm việc an toàn</p>
                         </div>
-                        {/*odd CV*/}
-
+                        <div>
+                            <p className={`text-[14px] opacity-70`}>Dưới đây là những dấu hiệu của các tổ chức, cá nhân
+                                tuyển dụng không minh bạch:
+                            </p>
+                        </div>
+                        <div className={`flex flex-col`}>
+                            <p className={`text-green_default font-bold`}>1. Dấu hiệu phổ biến:</p>
+                            <Carousel
+                                plugins={[
+                                    Autoplay({
+                                        delay: 2000,
+                                    }),
+                                ]}
+                                opts={{
+                                    loop: true,
+                                }}
+                                className="w-full max-w-xs">
+                                <CarouselContent>
+                                    {warningItem.map((item, index) => (
+                                        <CarouselItem key={index}>
+                                            <div className="p-1">
+                                                <Card>
+                                                    <CardContent
+                                                        className="aspect-square relative items-center justify-center p-6">
+                                                        <img className={`w-[183px] h-[174px]`} src={item.img} alt={""}/>
+                                                        <div
+                                                            className={`flex items-center justify-center absolute bottom-0 w-[80%]`}>
+                                                            <p className={`text-center text-[14px] opacity-70`}>{item.note}</p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious/>
+                                <CarouselNext/>
+                            </Carousel>
+                        </div>
+                        <div className={`flex flex-col gap-3`}>
+                            <p className={`text-green_default font-bold`}>2. Cần làm gì khi gặp việc làm, công ty không
+                                minh bạch:</p>
+                            <p>- Kiểm tra thông tin về công ty, việc làm trước khi ứng tuyển</p>
+                            <p>- Báo cáo tin tuyển dụng với JobFinder thông qua nút <span
+                                className={`text-green_default`}>Báo cáo tin tuyển dụng</span> để được hỗ trợ và giúp
+                                các ứng viên khác tránh được rủi ro</p>
+                            <p>- Hoặc liên hệ với JobFinder thông qua kênh hỗ trợ ứng viên của JobFinder:<br/>
+                                Email: <span className={`text-green_default`}>hotro@jobfinder.vn</span><br/>
+                                Hotline: <span className={`text-green_default`}>(024) 6680 5588</span></p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className={`w-[calc(33%-24px)] sticky top-0 h-fit bg-white rounded-xl border border-green_default p-5`}>
-                <div className={`flex flex-col gap-4 w-full p-4`}>
-                    <div className={`w-full flex gap-4 items-center justify-start`}>
-                        <BsFillQuestionCircleFill size={24} fill={"green"}/>
-                        <p className={`font-bold text-[20px]`}>Bí kíp tìm việc an toàn</p>
-                    </div>
-                    <div>
-                        <p className={`text-[14px] opacity-70`}>Dưới đây là những dấu hiệu của các tổ chức, cá nhân tuyển dụng không minh bạch:
-                        </p>
-                    </div>
-                    <div className={`flex flex-col`}>
-                        <p className={`text-green_default font-bold`}>1. Dấu hiệu phổ biến:</p>
-                        <Carousel
-                            plugins={[
-                                Autoplay({
-                                    delay: 2000,
-                                }),
-                            ]}
-                            opts={{
-                                loop: true,
-                            }}
-                            className="w-full max-w-xs">
-                            <CarouselContent>
-                                {warningItem.map((item, index) => (
-                                    <CarouselItem key={index}>
-                                        <div className="p-1">
-                                            <Card>
-                                                <CardContent className="aspect-square relative items-center justify-center p-6">
-                                                    <img className={`w-[183px] h-[174px]`} src={item.img} alt={""} />
-                                                    <div className={`flex items-center justify-center absolute bottom-0 w-[80%]`}>
-                                                        <p className={`text-center`}>{item.note}</p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious />
-                            <CarouselNext />
-                        </Carousel>
-                    </div>
-                    <div className={`flex flex-col gap-3`}>
-                        <p className={`text-green_default font-bold`}>2. Cần làm gì khi gặp việc làm, công ty không minh bạch:</p>
-                        <p>- Kiểm tra thông tin về công ty, việc làm trước khi ứng tuyển</p>
-                        <p>- Báo cáo tin tuyển dụng với JobFinder thông qua nút <span className={`text-green_default`}>Báo cáo tin tuyển dụng</span> để được hỗ trợ và giúp các ứng viên khác tránh được rủi ro</p>
-                        <p>- Hoặc liên hệ với JobFinder thông qua kênh hỗ trợ ứng viên của TopCV:<br/>
-                            Email: <span className={`text-green_default`}>hotro@jobfinder.vn</span><br/>
-                            Hotline: <span className={`text-green_default`}>(024) 6680 5588</span> </p>
-                    </div>
-                </div>
+        </div>
+    )
+}
+const Header = () => {
+    return (
+        <div className={`sticky z-50 top-0 bg-white py-3 px-4 shadow-accent-foreground border-b pr-6 flex gap-6 justify-end items-center`}>
+            <div className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 bg-[#E5F7ED]`}>
+                <IoNotifications size={24} fill={"#00B14F"}/>
+            </div>
+            <div className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
+                <AiFillMessage size={24} fill={"#00B14F"}/>
+            </div>
+            <div className={`w-9 cursor-pointer aspect-square rounded-full overflow-y-hidden`}>
+                <img className={`object-cover`} src={`/public/bunny.jpg`} alt="" />
+
             </div>
         </div>
     )
