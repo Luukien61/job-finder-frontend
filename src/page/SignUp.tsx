@@ -21,6 +21,37 @@ const Signup = () => {
     const handleForwardLogin = () => {
         navigate("/login", {replace:false});
     }
+
+    const [file, setFile] = useState(null);
+
+    const handleFileChange = (event) => {
+        setFile(event.target.files[0]);
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (!file) return;
+
+        // Tạo FormData để gửi file PDF
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('http://localhost:8000/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert('File uploaded successfully!');
+            } else {
+                alert('Failed to upload file.');
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        }
+    };
+
     return (
         <div className={`flex justify-center rounded  min-h-screen `}>
             <div className={`custom-container mt-2 flex justify-center `}>
@@ -150,6 +181,26 @@ const Signup = () => {
                                 <p onClick={handleForwardLogin}
                                    className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Log in</p>
                             </div>
+                            {/*file*/}
+                            <div className="p-4 flex items-center justify-center w-full">
+                                <form onSubmit={handleSubmit} className="space-y-4 flex justify-center items-center flex-col">
+                                    <input
+                                        type="file"
+                                        accept="application/pdf"
+                                        onChange={handleFileChange}
+                                        className="block text-sm text-gray-50 w-[120px] file:py-2 file:px-4
+                                                   file:rounded-full file:border-0
+                                                   file:text-sm file:font-semibold
+                                                   file:bg-violet-50 file:text-violet-700
+                                                   hover:file:bg-violet-100"/>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                    >
+                                        Upload
+                                    </button>
+                                </form>
+                            </div>
                         </div>
 
                     </div>
@@ -161,20 +212,22 @@ const Signup = () => {
 
 export default Signup;
 
-type InputProps={
-    icon : ReactNode,
+type InputProps = {
+    icon: ReactNode,
     value: string,
     onChange: (value: string) => void
     style?: string,
     placeholder: string,
 }
-export const Input: React.FC<InputProps> =({icon,value, onChange, placeholder, style})=>{
+export const Input: React.FC<InputProps> = ({icon, value, onChange, placeholder, style}) => {
     return (
         <div className={`flex rounded border items-center py-2 px-2 `}>
             {icon}
             <input
                 value={value}
-                onChange={(e) => {onChange(e.target.value)}}
+                onChange={(e) => {
+                    onChange(e.target.value)
+                }}
                 placeholder={placeholder}
                 spellCheck={false}
                 className={`outline-none text-black max-w-[90%] flex-1 pl-4 ${style}`}
