@@ -10,7 +10,7 @@ import {IoWarning} from "react-icons/io5";
 
 const JobDetail = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
-    const [openCv, setOpenCv] = useState<boolean>(true)
+    const [openCv, setOpenCv] = useState<boolean>(false)
     const handleModalClicks = useCallback((event: React.MouseEvent) => {
         event.stopPropagation()
     }, [])
@@ -81,7 +81,7 @@ const JobDetail = () => {
                                         <textarea
                                             spellCheck={false}
                                             placeholder={'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.'}
-                                            className={`w-full outline-none font-normal border rounded border-green_default p-3`}></textarea>
+                                            className={`w-full h-32 outline-none font-normal border rounded border-green_default p-3`}></textarea>
                                     </div>
                                     <div className={`rounded border flex flex-col gap-2 outline-none p-3 mt-4 w-full`}>
                                         <div className={`flex gap-4 items-end`}>

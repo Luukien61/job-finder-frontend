@@ -4,6 +4,7 @@ import {MdOutlineMail} from "react-icons/md";
 import {FiPhone} from "react-icons/fi";
 import {RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
+import {usePdfItems} from "@/zustand/AppState.ts";
 
 const Signup = () => {
     const [userName, setUserName]= useState('');
@@ -12,6 +13,7 @@ const Signup = () => {
     const [retypePass, setRetypePass] = useState('');
     const [phone, setPhone] = useState('');
     const navigate = useNavigate();
+    const {url, setUrl} = usePdfItems()
     const handleSignup = () => {
 
     }
@@ -43,7 +45,11 @@ const Signup = () => {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                const fileUrl = data.url;
+                setUrl(fileUrl)
                 alert('File uploaded successfully!');
+                navigate("/test")
             } else {
                 alert('Failed to upload file.');
             }

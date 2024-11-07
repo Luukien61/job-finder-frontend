@@ -8,6 +8,7 @@ import JobDetail from "@/page/JobDetail.tsx";
 import Test from "@/page/Test.tsx";
 import App from "@/page/App.tsx";
 import UserProfile from "@/page/UserProfile.tsx";
+import AllPagesPDFViewer from "@/component/AllPagesPDFViewer.tsx";
 
 const AppRouter = () => {
     return (
@@ -21,6 +22,7 @@ const AppRouter = () => {
             <Route path={'/message'} element={<Message/>}/>
             <Route path={'/me/profile/:id'} element={<UserProfile/>}/>
             <Route path={'/test'} element={<Test/>}/>
+            <Route path={'/pdf'} element={<AllPagesPDFViewer/>}/>
         </Routes>
     );
 };

@@ -73,8 +73,6 @@ type ImplicitJobCardProps = {
     item: JobCardProps;
 }
 export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const [showOtherDiv, setShowOtherDiv] = useState(false);
 
     // useEffect(() => {
     //     let timer;
@@ -95,14 +93,12 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
         <div className={`w-1/3 relative px-3 py-2`}>
             <a
                 href={"/job/detail/1"}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
                 className={`cursor-pointer peer`}>
                 <div
                     className={`border-green-500 shadow group hover:bg-[#F2FBF6] bg-gray-50/5 border hover:border-green-500 hover:border rounded-xl`}>
                     <div className={`w-full h-full flex items-start gap-x-[10px] p-[12px]`}>
                         <div
-                            className={`aspect-[9/14] bg-white m-auto w-[96px]  flex items-center border border-[#dfdfdf] rounded-xl`}>
+                            className={`aspect-[9/14] bg-white overflow-hidden transition-transform m-auto w-[96px]  flex items-center border border-[#dfdfdf] rounded-xl`}>
                             <img className={`h-full w-[80px] group-hover:scale-110 duration-300 object-contain`} src={job.image} alt=""/>
                         </div>
                         <div className={`w-[calc(100%-96px)]  box-border h-full`}>
@@ -128,18 +124,18 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
                     </div>
                 </div>
             </a>
-            <div className={`z-50  shadow-2xl ${showOtherDiv ? 'block' : 'hidden'} top-0 bottom-0 absolute w-full h-48 bg-white rounded border border-green-500 ${(index + 1) % 3 == 0 ? 'right-full' : 'left-full'}`}>
-                <div className={`w-full h-full flex items-start gap-x-[10px] p-[12px]`}>
-                    <div className={`flex `}>
-                        <div>
+        {/*    <div className={`z-50  shadow-2xl ${showOtherDiv ? 'block' : 'hidden'} top-0 bottom-0 absolute w-full h-48 bg-white rounded border border-green-500 ${(index + 1) % 3 == 0 ? 'right-full' : 'left-full'}`}>*/}
+        {/*        <div className={`w-full h-full flex items-start gap-x-[10px] p-[12px]`}>*/}
+        {/*            <div className={`flex `}>*/}
+        {/*                <div>*/}
 
-                        </div>
+        {/*                </div>*/}
 
-                    </div>
-                </div>
+        {/*            </div>*/}
+        {/*        </div>*/}
 
 
-        </div>
+        {/*</div>*/}
 </div>
 )
 }
