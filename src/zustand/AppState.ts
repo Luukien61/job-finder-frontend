@@ -12,6 +12,30 @@ const useBearStore = create<BearState>()(
     })
 )
 
+export type PdfProcessed={
+    Name: string,
+    Phone: string,
+    Email: string,
+    Location: string,
+    Organization: string,
+    Date: string,
+    Avatar?: string,
+    pdfUrl?: string,
+}
+
+type PdfProcessedItem ={
+    item: PdfProcessed,
+    setItem : (item: PdfProcessed) => void
+}
+
+export const usePdfProcessed =create<PdfProcessedItem>(
+    (set) => ({
+        item : null,
+        setItem : (item: PdfProcessed) => set({item: item}),
+    })
+)
+
+
 type PdfItems ={
     url: string,
     setUrl: (url: string) => void
