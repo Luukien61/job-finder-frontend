@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {VscSend} from "react-icons/vsc";
 import {
     ChatMessage,
     connectWebSocket,
