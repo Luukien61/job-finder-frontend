@@ -26,9 +26,9 @@ const LogIn = () => {
         googleExchange()
     };
     return (
-        <div className={`flex justify-center rounded  min-h-screen bg-bg_default`}>
+        <div className={`flex justify-center rounded min-h-screen  bg-bg_default`}>
             <div className={`custom-container mt-2 flex justify-center `}>
-                <div className={`w-2/3 rounded bg-white drop-shadow `}>
+                <div className={`w-2/3 rounded bg-white my-auto drop-shadow `}>
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>
                         <div className={`w-3/4 flex-col my-4`}>
                             <div className={`flex justify-center`}>
@@ -56,7 +56,7 @@ const LogIn = () => {
                             {/*password*/}
                             <div className={`my-4`}>
                                 <div>
-                                    <p>Password</p>
+                                    <p>Mật khẩu</p>
                                 </div>
                                 <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
                                     <RiLockPasswordLine color={`green`}/>
@@ -66,7 +66,7 @@ const LogIn = () => {
                                             setPassword(e.target.value)
                                         }}
                                         type={`password`}
-                                        placeholder="Password"
+                                        placeholder="Mật khẩu"
                                         spellCheck={false}
                                         className={`outline-none text-black flex-1`}
                                     />
@@ -78,14 +78,14 @@ const LogIn = () => {
                                     onClick={handleSignup}
                                     type={`button`}
                                     className={`w-full rounded hover:bg-gray-800 text-white bg-primary py-2`}>
-                                    Log in
+                                    Đăng nhập
                                 </button>
                             </div>
                             <div className={`flex justify-center my-4`}>
-                                <p className={`hover:underline text-[16px] cursor-pointer text-blue-400`}>Forgotten password?</p>
+                                <p className={`hover:underline text-[16px] cursor-pointer text-blue-400`}>Quên mật khẩu?</p>
                             </div>
                             <div className={`flex justify-center my-4`}>
-                                <p className={`text-gray-500`}><i>or</i></p>
+                                <p className={`text-gray-500`}><i>hoặc</i></p>
                             </div>
                             {/*Signup with Google*/}
                             <div className={`flex items-center justify-center`}>
@@ -94,13 +94,13 @@ const LogIn = () => {
                                     type={`button`}
                                     className=" flex  gap-x-3 items-center rounded-2xl bg-gray-100 p-2 hover:bg-gray-200">
                                     <img className={`w-6`} src="/public/google.png" alt={`Google Signup`}/>
-                                    Log in with Google
+                                    Đăng nhập với Google
                                 </button>
                             </div>
                             <div className={`flex items-center justify-center my-4 gap-x-1`}>
-                                <p className={`text-[14px] text-gray-700`}>Dont have an account? </p>
+                                <p className={`text-[14px] text-gray-700`}>Chưa có tài khoản? </p>
                                 <p onClick={handleForwardSignup}
-                                   className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Sign up</p>
+                                   className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Đăng ký</p>
                             </div>
                         </div>
 

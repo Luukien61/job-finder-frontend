@@ -1,34 +1,133 @@
-import React, {useState} from 'react';
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {cn} from "@/lib/utils.ts";
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import React, {ChangeEvent, useEffect, useState} from 'react';
+import {DatePickerProps, Select} from 'antd';
+import {DatePicker} from 'antd';
+import {UserCreationState} from "@/zustand/AppState.ts";
+import {SlCamera} from "react-icons/sl";
+import {UserSignupResponse} from "@/page/SignUp.tsx";
+
 
 const CompleteProfile = () => {
+    const [avatar, setAvatar] = useState<string | null>(null);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [date, setDate] = useState<Date>();
     const [gender, setGender] = useState('');
+    const [educationLevel, setEducationLevel] = useState('');
+    const [university, setUniversity] = useState('');
     const [address, setAddress] = useState('');
+    const educationLevelOptions = [
+        {
+            value: 'Đại học',
+            label: 'Đại học',
+        },
+        {
+            value: "Cao đẳng",
+            label: "Cao đẳng"
+        },
+        {
+            value: 'Tiến sĩ',
+            label: 'Tiến sĩ',
+        },
+        {
+            value: 'Thạc sĩ',
+            label: 'Thạc sĩ',
+        },
+        {
+            value: "Trung cấp-nghề",
+            label: "Trung cấp-nghề"
+        },
+        {
+            value: "Trung học phổ thông",
+            label: "Trung học phổ thông"
+        },
+        {
+            value: "Khác",
+            label: "Khác"
+        }
+    ]
+    const genderOptions = [
+        {value: 'Nam', label: 'Nam'},
+        {value: 'Nữ', label: 'Nữ'},
+    ]
+    const {user} = UserCreationState()
+
+    useEffect(() => {
+        if (user) {
+            setAvatar(user.avatar)
+            setEmail(user.email)
+        }
+        else {
+            const localUser : UserSignupResponse = JSON.parse(localStorage.getItem('user'));
+            setAvatar(localUser.avatar)
+            setEmail(localUser.email)
+        }
+    }, [])
+
+    const onDateChange: DatePickerProps['onChange'] = (date, dateString) => {
+        if (typeof dateString === 'string') {
+            const [day, month, year] = dateString.split("-").map(Number);
+            const dateOfBirth = new Date(year, month - 1, day)
+            setDate(dateOfBirth);
+        }
+    };
+
+    const onEducationLevelChange = (value: string) => {
+        setEducationLevel(value);
+    };
+    const onGenderChange = (value: string) => {
+        setGender(value);
+    }
+
+    const handleAvatarUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files
+        if (files) {
+            const file = files[0]
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setAvatar(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
     return (
         <div>
-            <div className={`w-full`}>
+            <div className={`w-full pb-10`}>
                 <img className={`w-full absolute`} src={`https://jobsgo.vn/media/import_cv/background_import_cv.png`}
                      alt={`bg-cv`}/>
-                <div className={`relative max-w-[1190px] m-auto  flex justify-center `}>
-                    <div className={`w-[75%] mt-36 rounded pb-6 shadow-2xl flex flex-col gap-4 bg-white`}>
+                <div className={`relative max-w-[1190px] m-auto items-center  flex justify-center `}>
+                    <div className={`w-[75%] rounded pb-6 shadow-2xl mt-10 flex flex-col gap-4 bg-white`}>
                         <div className={``}>
 
                         </div>
-                        <div className={`flex items-center justify-center w-full`}>
-                            <img alt={`avatar`} src={`https://jobsgo.vn/uploads/avatar/202411/_20241117111605.png`}
-                                 className={`w-[150px] aspect-square rounded-full`}/>
+                        <div className={`flex items-center relative justify-center w-full`}>
+                            <div className={`relative w-[150px] aspect-square`}>
+                                <img alt={`avatar`} src={avatar}
+                                     className={`w-[150px] border-2 object-cover aspect-square rounded-full`}/>
+                                <div
+                                    className={`flex items-center absolute bottom-0 left-[75%] w-fit z-50 justify-start py-1 `}
+                                >
+                                    <label
+                                        className="flex flex-col  items-center justify-start w-fit h-full  rounded-lg cursor-pointer  ">
+                                        <div
+                                            className={`bg-gray-300 w-[30px] flex items-center justify-center border rounded-full aspect-square`}
+                                        >
+                                            <SlCamera size={16}/>
+                                        </div>
+                                        <input
+                                            onChange={handleAvatarUpload}
+                                            type="file"
+                                            accept={'image/*'}
+                                            multiple={false}
+                                            className="hidden outline-none"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         {/*name*/}
-                        <div className={`flex flex-col gap-3 w-full px-4 *:w-full`}>
+                        <div className={`flex flex-col gap-6  w-full px-4 *:w-full`}>
                             <div className={`w-full`}>
                                 <CustomInput value={name}
                                              width={'w-full'}
@@ -52,40 +151,57 @@ const CompleteProfile = () => {
                             <div className={`flex `}>
                                 <div className={`flex flex-col w-1/2 pr-2`}>
                                     <p className={`ml-1 mb-1`}>Ngày sinh</p>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn(
-                                                    "w-full justify-start text-left font-normal",
-                                                    !date && "text-muted-foreground"
-                                                )}
-                                            >
-                                                <CalendarIcon />
-                                                {date ? Intl.DateTimeFormat('vi-VN', {
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric',
-                                                }).format(date) : <span>Ngày sinh</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                fromYear={2000}
-                                                mode="single"
-                                                selected={date}
-                                                onSelect={setDate}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <DatePicker
+                                        placeholder={"Ngày sinh"}
+                                        format="DD-MM-YYYY"
+                                        className={`p-[9px]`}
+                                        onChange={onDateChange}/>
+
                                 </div>
                                 <div className={`flex flex-col w-1/2 pl-2`}>
-                                    <CustomInput value={phone}
+                                    <CustomInput value={address}
                                                  width={'w-full'}
-                                                 onChange={(e) => setPhone(e.target.value)}
-                                                 label={'Số điện thoại'}/>
+                                                 onChange={(e) => setAddress(e.target.value)}
+                                                 label={'Địa chỉ'}/>
                                 </div>
+                            </div>
+
+                            <div className={`flex `}>
+                                <div className={`flex flex-col w-1/2 pr-2`}>
+                                    <p className={`ml-1 mb-1`}>Trình độ học vấn</p>
+                                    <Select
+                                        className={`h-[42px]`}
+                                        value={educationLevel}
+                                        optionFilterProp="label"
+                                        onChange={onEducationLevelChange}
+                                        options={educationLevelOptions}
+                                    />
+
+                                </div>
+                                <div className={`flex flex-col w-1/2 pl-2`}>
+                                    <p className={`ml-1 mb-1`}>Giới tính</p>
+                                    <Select
+                                        className={`h-[42px]`}
+                                        value={gender}
+                                        optionFilterProp="label"
+                                        onChange={onGenderChange}
+                                        options={genderOptions}
+                                    />
+                                </div>
+                            </div>
+                            <div className={`flex `}>
+                                <div className={`flex flex-col w-full pl-2`}>
+                                    <CustomInput value={university}
+                                                 width={'w-full'}
+                                                 onChange={(e) => setUniversity(e.target.value)}
+                                                 label={'Trường học'}/>
+                                </div>
+                            </div>
+                            <div className={`flex w-full mt-4`}>
+                                <button
+                                    className={`w-full hover:bg-green_default text-white font-bold p-2 text-[18px] text-center rounded bg-green_nga`}>Hoàn
+                                    thành
+                                </button>
                             </div>
 
                         </div>

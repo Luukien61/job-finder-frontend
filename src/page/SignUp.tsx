@@ -1,15 +1,21 @@
 import React, {ReactNode, useEffect, useRef, useState} from 'react';
-import {IoPersonOutline} from "react-icons/io5";
+import {IoCloudUploadOutline, IoPersonOutline} from "react-icons/io5";
 import {MdOutlineMail} from "react-icons/md";
 import {FiPhone} from "react-icons/fi";
 import {RiFileCodeLine, RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
-import {PdfProcessed, usePdfProcessed} from "@/zustand/AppState.ts";
+import {PdfProcessed, usePdfProcessed, UserCreationState} from "@/zustand/AppState.ts";
 import {googleExchange, UserResponse} from "@/page/GoogleCode.tsx";
 import {toast, ToastContainer} from "react-toastify";
 import {getSignupCode, signUpUser} from "@/axios/Request.ts";
 import {AppLogo} from "@/info/AppInfo.ts";
 import {CgCloseO} from "react-icons/cg";
+export type UserSignupResponse = {
+    id: string,
+    email: string,
+    password: string,
+    avatar: string,
+}
 
 const Signup = () => {
     const [userName, setUserName] = useState('');
@@ -28,6 +34,8 @@ const Signup = () => {
     const intervalTimer = useRef<NodeJS.Timeout | null>(null)
     const [userSignUp, setUserSignUp] = useState<any>()
     const {item, setItem} = usePdfProcessed()
+    const [fileName, setFileName] = useState("");
+    const {setUser}=UserCreationState()
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem("user"));
@@ -35,13 +43,11 @@ const Signup = () => {
     }, []);
 
     const handleSignup = async () => {
-        if (userName && email && password && retypePass) {
+        if (email && password && retypePass) {
             if (password === retypePass) {
                 const userCreationRequest = {
-                    email: email,
                     password: password,
-                    phone: phone,
-                    name: userName,
+                    email: email,
                 }
                 try {
                     const code = await getSignupCode({to: email, useCase: "Tạo tài khoản"})
@@ -53,7 +59,6 @@ const Signup = () => {
                         setTimer((prev) => prev - 1)
                     }, 1000)
                 } catch (err) {
-                    console.log(err.response.data)
                     toast.error("An error occurred while signing up");
                 }
 
@@ -77,9 +82,10 @@ const Signup = () => {
             if (userCode == verificationCode && !expired) {
                 setTimeout(() => setIsDone(true), 1000)
                 if (userSignUp) {
-                    const response :UserResponse= await signUpUser(userSignUp)
+                    const response :UserSignupResponse= await signUpUser(userSignUp)
                     localStorage.setItem('user', JSON.stringify(response))
-                    navigate('/')
+                    setUser(response)
+                    navigate('/profile/complete')
                 }
             } else {
                 toast.error('The verification code is incorrect', {
@@ -103,11 +109,14 @@ const Signup = () => {
 
     const [file, setFile] = useState(null);
 
-    const handleFileChange = (event) => {
-        setFile(event.target.files[0]);
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setFile(event.target.files[0]);
+            setFileName(event.target.files[0].name);
+        }
     };
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!file) return;
 
@@ -140,39 +149,23 @@ const Signup = () => {
         clearInterval(intervalTimer.current)
         intervalTimer.current = null
         setExpired(false)
+        setUserCode('')
         setTimer(60)
     }
 
     return (
-        <div className={`flex justify-center rounded  min-h-screen `}>
+        <div className={`flex justify-center rounded min-h-screen`}>
             <div className={`custom-container mt-2 flex justify-center `}>
-                <div className={`w-2/3 rounded bg-white drop-shadow `}>
+                <div className={`w-2/3 rounded bg-white my-auto drop-shadow `}>
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>
                         <div className={`w-3/4 flex-col my-4`}>
                             <div className={`flex justify-center`}>
                                 <img className={`w-28`} src={AppLogo} alt={`${userName} logo`}/>
                             </div>
                             {/*name*/}
-                            <div>
-                                <div>
-                                    <p>Your Name</p>
-                                </div>
-                                <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
-                                    <IoPersonOutline color={`green`}/>
-                                    <input
-                                        value={userName}
-                                        onChange={(e) => {
-                                            setUserName(e.target.value)
-                                        }}
-                                        placeholder="Your Name"
-                                        spellCheck={false}
-                                        className={`outline-none text-black flex-1`}
-                                    />
-                                </div>
-                            </div>
                             {/*email and phone*/}
                             <div className={`flex my-4`}>
-                                <div className={`w-1/2 pr-2`}>
+                                <div className={`w-full`}>
                                     <div>
                                         <p>Email</p>
                                     </div>
@@ -189,28 +182,11 @@ const Signup = () => {
                                         />
                                     </div>
                                 </div>
-                                <div className={`w-1/2 pl-2`}>
-                                    <div>
-                                        <p>Phone</p>
-                                    </div>
-                                    <div className={`flex rounded border items-center py-2 px-2 `}>
-                                        <FiPhone color={`green`}/>
-                                        <input
-                                            value={phone}
-                                            onChange={(e) => {
-                                                setPhone(e.target.value)
-                                            }}
-                                            placeholder="Phone"
-                                            spellCheck={false}
-                                            className={`outline-none text-black max-w-[90%] flex-1 pl-4`}
-                                        />
-                                    </div>
-                                </div>
                             </div>
                             {/*password*/}
                             <div className={`my-4`}>
                                 <div>
-                                    <p>Password</p>
+                                    <p>Mật khẩu</p>
                                 </div>
                                 <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
                                     <RiLockPasswordLine color={`green`}/>
@@ -220,7 +196,7 @@ const Signup = () => {
                                             setPassword(e.target.value)
                                         }}
                                         type={`password`}
-                                        placeholder="Password"
+                                        placeholder="Mật khẩu"
                                         spellCheck={false}
                                         className={`outline-none text-black flex-1`}
                                     />
@@ -229,7 +205,7 @@ const Signup = () => {
                             {/*retype password*/}
                             <div>
                                 <div>
-                                    <p>Retype password</p>
+                                    <p>Xác nhận mật khẩu</p>
                                 </div>
                                 <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
                                     <RiLockPasswordLine color={`green`}/>
@@ -239,7 +215,7 @@ const Signup = () => {
                                             setRetypePass(e.target.value)
                                         }}
                                         type={`password`}
-                                        placeholder="Retype password"
+                                        placeholder="Xác nhận mật khẩu"
                                         spellCheck={false}
                                         className={`outline-none text-black flex-1`}
                                     />
@@ -251,53 +227,63 @@ const Signup = () => {
                                     onClick={handleSignup}
                                     type={`button`}
                                     className={`w-full rounded hover:bg-gray-800 text-white bg-primary py-2`}>
-                                    Sign up
+                                    Đăng ký
                                 </button>
                             </div>
                             <div className={`flex justify-center my-4`}>
-                                <p className={`text-gray-500`}><i>or</i></p>
+                                <p className={`text-gray-500`}><i>hoặc</i></p>
                             </div>
                             {/*Signup with Google*/}
-                            <div className={`flex items-center justify-center`}>
+                            <div className={`flex items-center w-full justify-center`}>
                                 <button
                                     onClick={handleSignupWithGoogle}
                                     type={`button`}
-                                    className=" flex  gap-x-3 items-center rounded-2xl bg-gray-100 p-2 hover:bg-gray-200">
+                                    className=" flex w-fit px-4 justify-center gap-x-3 items-center rounded-lg bg-gray-100 p-2 hover:bg-gray-200">
                                     <img className={`w-6`} src="/public/google.png" alt={`Google Signup`}/>
-                                    Sign up with Google
+                                    Đăng ký với Google
                                 </button>
+                                {/*<div className="pl-4 flex items-center justify-center text-[16px] w-1/2">*/}
+                                {/*    <form*/}
+                                {/*        onSubmit={handleSubmit}*/}
+                                {/*        className="space-y-4 flex  w-full rounded justify-center items-center"*/}
+                                {/*    >*/}
+                                {/*        <div className="relative flex-1  w-full overflow-hidden">*/}
+                                {/*            <input*/}
+                                {/*                type="file"*/}
+                                {/*                accept="application/pdf"*/}
+                                {/*                onChange={handleFileChange}*/}
+                                {/*                className="absolute inset-0 w-full cursor-pointer h-full opacity-0 "*/}
+                                {/*            />*/}
+                                {/*            <button*/}
+                                {/*                type="button"*/}
+                                {/*                className="block  h-[40px] truncate text-[16px] cursor-pointer text-black w-full py-1 px-4 rounded-l-lg bg-gray-100 text-center file:font-semibold hover:bg-gray-200"*/}
+                                {/*            >*/}
+                                {/*                {fileName || "Chọn CV của bạn..."}*/}
+                                {/*            </button>*/}
+                                {/*        </div>*/}
+                                {/*        <button*/}
+                                {/*            type="submit"*/}
+                                {/*            className="px-4 flex items-center justify-between gap-2 bg-gray-100 h-[40px] rounded-r-lg !mt-0 hover:bg-gray-200"*/}
+                                {/*        >*/}
+                                {/*            Tải lên*/}
+                                {/*            <IoCloudUploadOutline size={24} color={"#00b14f"}/>*/}
+                                {/*        </button>*/}
+                                {/*    </form>*/}
+                                {/*</div>*/}
                             </div>
-                            <div className={`flex items-center justify-center my-4 gap-x-1`}>
-                                <p className={`text-[14px] text-gray-700`}>Already have an account? </p>
+                            <div className={`flex items-center justify-center mt-10 gap-x-1`}>
+                                <p className={`text-[14px] text-gray-700`}>Đã có tài khoản? </p>
                                 <p onClick={handleForwardLogin}
-                                   className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Log in</p>
+                                   className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Đăng nhập</p>
                             </div>
                             {/*file*/}
-                            <div className="p-4 flex items-center justify-center w-full">
-                                <form onSubmit={handleSubmit}
-                                      className="space-y-4 flex justify-center items-center flex-col">
-                                    <input
-                                        type="file"
-                                        accept="application/pdf"
-                                        onChange={handleFileChange}
-                                        className="block text-sm text-gray-50 w-[120px] file:py-2 file:px-4
-                                                   file:rounded-full file:border-0
-                                                   file:text-sm file:font-semibold
-                                                   file:bg-violet-50 file:text-violet-700
-                                                   hover:file:bg-violet-100"/>
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                    >
-                                        Upload
-                                    </button>
-                                </form>
-                            </div>
+
                         </div>
                     </div>
                 </div>
 
-                <div className={`backdrop-blur-sm bg-black bg-opacity-60 flex overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${sendCode ? "block" : "hidden"}`}>
+                <div
+                    className={`backdrop-blur-sm bg-black bg-opacity-60 flex overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${sendCode ? "block" : "hidden"}`}>
                     <div className="relative p-4 w-[700px] max-h-full">
                         <div
                             className="relative bg-[#f5f5f5] rounded-lg flex items-center justify-center min-h-60 shadow ">
@@ -305,7 +291,7 @@ const Signup = () => {
                                 <div className={`flex-col  my-4`}>
                                     <div className={`flex flex-col gap-4`}>
                                         <div className={`flex justify-center`}>
-                                            <p>Xác nhận mã đã được gửi đến email của bạn</p>
+                                        <p>Xác nhận mã đã được gửi đến email của bạn</p>
                                         </div>
                                         <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
                                             <RiFileCodeLine color={`green`}/>

@@ -1,5 +1,6 @@
 import {create} from 'zustand'
 import {UserDto} from "@/page/UserProfile.tsx";
+import {UserSignupResponse} from "@/page/SignUp.tsx";
 
 interface BearState {
     bears: number
@@ -57,5 +58,17 @@ export const UserDtoState=create<UserDtoState>(
     (set) => ({
         user : null,
         setUser : (user: UserDto) => set({user:user}),
+    })
+)
+
+
+type UserCreationProps = {
+    user: UserSignupResponse,
+    setUser: (user: UserSignupResponse) => void
+}
+export const UserCreationState=create<UserCreationProps>(
+    (set) => ({
+        user : null,
+        setUser : (user: UserSignupResponse) => set({user:user}),
     })
 )
