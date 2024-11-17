@@ -134,7 +134,7 @@ export const fields = [
 ];
 export const backEndPage: string = import.meta.env.VITE_BACKEND_URL
 
-
+export const AppLogo = '/public/job-finder.jpg'
 type item = {
     name: string,
     link: string

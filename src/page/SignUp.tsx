@@ -1,27 +1,104 @@
-import React, {ReactNode, useState} from 'react';
+import React, {ReactNode, useEffect, useRef, useState} from 'react';
 import {IoPersonOutline} from "react-icons/io5";
 import {MdOutlineMail} from "react-icons/md";
 import {FiPhone} from "react-icons/fi";
-import {RiLockPasswordLine} from "react-icons/ri";
+import {RiFileCodeLine, RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
 import {PdfProcessed, usePdfProcessed} from "@/zustand/AppState.ts";
+import {googleExchange, UserResponse} from "@/page/GoogleCode.tsx";
+import {toast, ToastContainer} from "react-toastify";
+import {getSignupCode, signUpUser} from "@/axios/Request.ts";
+import {AppLogo} from "@/info/AppInfo.ts";
+import {CgCloseO} from "react-icons/cg";
 
 const Signup = () => {
-    const [userName, setUserName]= useState('');
+    const [userName, setUserName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [retypePass, setRetypePass] = useState('');
     const [phone, setPhone] = useState('');
     const navigate = useNavigate();
-    const {item, setItem}= usePdfProcessed()
-    const handleSignup = () => {
+    const [timer, setTimer] = useState<number>(60)
+    const [expired, setExpired] = useState<boolean>(false)
+    const [userCode, setUserCode] = useState<string>('')
+    const [verificationCode, setVerificationCode] = useState<string>('')
+    const [, setIsDone] = useState<boolean>(false)
+    const [sendCode, setSendCode] = useState<boolean>(false)
+    // eslint-disable-next-line no-undef
+    const intervalTimer = useRef<NodeJS.Timeout | null>(null)
+    const [userSignUp, setUserSignUp] = useState<any>()
+    const {item, setItem} = usePdfProcessed()
 
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if(user) navigate("/")
+    }, []);
+
+    const handleSignup = async () => {
+        if (userName && email && password && retypePass) {
+            if (password === retypePass) {
+                const userCreationRequest = {
+                    email: email,
+                    password: password,
+                    phone: phone,
+                    name: userName,
+                }
+                try {
+                    const code = await getSignupCode({to: email, useCase: "Tạo tài khoản"})
+                    console.log(code)
+                    setVerificationCode(code)
+                    setUserSignUp(userCreationRequest)
+                    setSendCode(true)
+                    intervalTimer.current = setInterval(() => {
+                        setTimer((prev) => prev - 1)
+                    }, 1000)
+                } catch (err) {
+                    console.log(err.response.data)
+                    toast.error("An error occurred while signing up");
+                }
+
+            } else {
+                toast.error("Please enter your password");
+            }
+        } else {
+            toast.error("Please enter require fields");
+        }
     }
-    const handleSignupWithGoogle = () => {
+    useEffect(() => {
+        if (timer === 0 && intervalTimer.current) {
+            setExpired(true)
+            clearInterval(intervalTimer.current)
+            intervalTimer.current = null
+        }
+    }, [timer])
 
+    const handleVerifyCode = async () => {
+        if (userCode.length === 6 && !expired) {
+            if (userCode == verificationCode && !expired) {
+                setTimeout(() => setIsDone(true), 1000)
+                if (userSignUp) {
+                    const response :UserResponse= await signUpUser(userSignUp)
+                    localStorage.setItem('user', JSON.stringify(response))
+                    navigate('/')
+                }
+            } else {
+                toast.error('The verification code is incorrect', {
+                    hideProgressBar: true,
+                    autoClose: 1000
+                })
+            }
+        } else {
+            toast.error('Either verification code or expired', { hideProgressBar: true, autoClose: 1000 })
+        }
+    }
+
+
+    const handleSignupWithGoogle = () => {
+        localStorage.setItem("action", "signup")
+        googleExchange()
     }
     const handleForwardLogin = () => {
-        navigate("/login", {replace:false});
+        navigate("/login", {replace: false});
     }
 
     const [file, setFile] = useState(null);
@@ -55,6 +132,16 @@ const Signup = () => {
             console.error('Error uploading file:', error);
         }
     };
+    const closeModal=()=>{
+        setSendCode(false)
+        setIsDone(false)
+        setUserSignUp(undefined)
+        setVerificationCode(undefined)
+        clearInterval(intervalTimer.current)
+        intervalTimer.current = null
+        setExpired(false)
+        setTimer(60)
+    }
 
     return (
         <div className={`flex justify-center rounded  min-h-screen `}>
@@ -63,7 +150,7 @@ const Signup = () => {
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>
                         <div className={`w-3/4 flex-col my-4`}>
                             <div className={`flex justify-center`}>
-                                <img className={`w-32`} src={"/public/job-finder.png"} alt={`${userName} logo`}/>
+                                <img className={`w-28`} src={AppLogo} alt={`${userName} logo`}/>
                             </div>
                             {/*name*/}
                             <div>
@@ -187,7 +274,8 @@ const Signup = () => {
                             </div>
                             {/*file*/}
                             <div className="p-4 flex items-center justify-center w-full">
-                                <form onSubmit={handleSubmit} className="space-y-4 flex justify-center items-center flex-col">
+                                <form onSubmit={handleSubmit}
+                                      className="space-y-4 flex justify-center items-center flex-col">
                                     <input
                                         type="file"
                                         accept="application/pdf"
@@ -206,10 +294,65 @@ const Signup = () => {
                                 </form>
                             </div>
                         </div>
-
                     </div>
                 </div>
+
+                <div className={`backdrop-blur-sm bg-black bg-opacity-60 flex overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${sendCode ? "block" : "hidden"}`}>
+                    <div className="relative p-4 w-[700px] max-h-full">
+                        <div
+                            className="relative bg-[#f5f5f5] rounded-lg flex items-center justify-center min-h-60 shadow ">
+                            <div className={`overflow-hidden `}>
+                                <div className={`flex-col  my-4`}>
+                                    <div className={`flex flex-col gap-4`}>
+                                        <div className={`flex justify-center`}>
+                                            <p>Xác nhận mã đã được gửi đến email của bạn</p>
+                                        </div>
+                                        <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
+                                            <RiFileCodeLine color={`green`}/>
+                                            <input
+                                                value={userCode}
+                                                onChange={(e) => {
+                                                    setUserCode(e.target.value)
+                                                }}
+                                                placeholder="Code"
+                                                spellCheck={false}
+                                                className={`outline-none p-2 text-black flex-1`}
+                                            />
+                                        </div>
+                                        <div className={`flex justify-center`}>
+                                            <p className={`mt-1 text-red-500 `}>
+                                                Valid timer: <span className={`font-bold`}>{timer}</span>
+                                            </p>
+                                        </div>
+                                        <div className={``}>
+                                            <button
+                                                onClick={handleVerifyCode}
+                                                type={`button`}
+                                                className={`w-full rounded hover:bg-green-600 text-white bg-green-500 py-2`}
+                                            >
+                                                Verify
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div onClick={closeModal}
+                                className={`absolute top-2 cursor-pointer right-2`}>
+                                <CgCloseO size={28}/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
+            <ToastContainer
+                position="top-center"
+                autoClose={1000}
+                hideProgressBar={true}
+                newestOnTop={true}
+                closeOnClick
+            />
         </div>
     );
 };

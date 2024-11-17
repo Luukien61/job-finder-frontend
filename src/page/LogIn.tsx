@@ -1,12 +1,20 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {MdOutlineMail} from "react-icons/md";
 import {RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
+import {googleExchange} from "@/page/GoogleCode.tsx";
+import {ToastContainer} from "react-toastify";
+import {AppLogo} from "@/info/AppInfo.ts";
 
 const LogIn = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if(user) navigate("/")
+    }, []);
     const handleSignup = () => {
 
     }
@@ -14,10 +22,8 @@ const LogIn = () => {
         navigate("/signup",{replace: false});
     }
     const googleLogin = () => {
-        const clientId: string = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        const redirectUri: string = import.meta.env.VITE_GOOGLE_REDIRECT_URL;
-        const scope: string = import.meta.env.VITE_GOOGLE_SCOPE;
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}`;
+        localStorage.setItem('action', 'login')
+        googleExchange()
     };
     return (
         <div className={`flex justify-center rounded  min-h-screen bg-bg_default`}>
@@ -26,7 +32,7 @@ const LogIn = () => {
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>
                         <div className={`w-3/4 flex-col my-4`}>
                             <div className={`flex justify-center`}>
-                                <img className={`w-32`} src={"/public/job-finder.png"} alt={`logo`}/>
+                                <img className={`w-28`} src={AppLogo} alt={`logo`}/>
                             </div>
 
                             {/*email and phone*/}
@@ -101,6 +107,13 @@ const LogIn = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer
+                position="top-center"
+                autoClose={1000}
+                hideProgressBar={true}
+                newestOnTop={true}
+                closeOnClick
+            />
         </div>
     );
 };

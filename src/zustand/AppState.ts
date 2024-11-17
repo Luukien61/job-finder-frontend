@@ -1,5 +1,6 @@
 import {create} from 'zustand'
-import {persist} from 'zustand/middleware'
+import {UserDto} from "@/page/UserProfile.tsx";
+
 interface BearState {
     bears: number
     increase: (by: number) => void
@@ -44,5 +45,17 @@ export const usePdfItems =create<PdfItems>(
     (set) => ({
         url : '',
         setUrl : (url: string) => set(() => ({url:url}))
+    })
+)
+
+type UserDtoState={
+    user: UserDto,
+    setUser: (user: UserDto) => void
+}
+
+export const UserDtoState=create<UserDtoState>(
+    (set) => ({
+        user : null,
+        setUser : (user: UserDto) => set({user:user}),
     })
 )

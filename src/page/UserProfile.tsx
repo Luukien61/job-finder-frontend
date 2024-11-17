@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
 import {AiFillCloud, AiFillMessage, AiFillSafetyCertificate} from "react-icons/ai";
 import {BsFileEarmarkPersonFill, BsFillQuestionCircleFill, BsFillTelephoneFill} from "react-icons/bs";
@@ -9,12 +9,69 @@ import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious}
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import Autoplay from "embla-carousel-autoplay";
 import {homePage} from "@/url/Url.ts";
+import {useNavigate} from "react-router-dom";
+import useAuthRedirect from "@/hook/useAuthRedirect.ts";
+import {getUserDto} from "@/axios/Request.ts";
+import {UserResponse} from "@/page/GoogleCode.tsx";
+import {toast, ToastContainer} from "react-toastify";
+import {UserDtoState} from "@/zustand/AppState.ts";
+export interface UserDto {
+    userId: string;
+    name: string;
+    avatar: string;
+    email: string;
+    address: string;
+    password: string;
+    phone: string;
+    university: string;
+    dateOfBirth: string; // Hoặc `Date` nếu cần kiểu Date
+    gender: string;
+    role: string;
+    cv: string[]; // Danh sách URL hoặc đường dẫn CV
+    savedJobs: number[]; // Set các ID công việc đã lưu
+    appliedJobs: number[]; // Set các ID công việc đã ứng tuyển
+    searchHistory: string[]; // Danh sách các lịch sử tìm kiếm
+}
+
 
 const UserProfile = () => {
+    const {setUser}= UserDtoState()
+    const navigate = useNavigate();
+    useAuthRedirect()
+    const getUserInfo =async () => {
+        const logInUser : UserResponse = JSON.parse(localStorage.getItem("user"));
+        if(logInUser){
+            try{
+                const userInfo : UserDto = await getUserDto(logInUser.userId);
+                if(userInfo){
+                    setUser(userInfo);
+                }else {
+                    toast.error("An error occurred.");
+                    localStorage.clear()
+                    navigate("/login");
+                }
+            }catch(e){
+                toast.error(e.response.data);
+                localStorage.clear()
+                navigate("/login");
+            }
+
+        }
+    }
+    useEffect(() => {
+        getUserInfo()
+    }, []);
     return (
         <div className={`flex`}>
             <Sidebar/>
             <Content/>
+            <ToastContainer
+                position="top-center"
+                autoClose={1000}
+                hideProgressBar={true}
+                newestOnTop={true}
+                closeOnClick
+            />
         </div>
     );
 };
@@ -22,10 +79,11 @@ const sideBarItem = [
     "Hồ sơ", "Đã lưu", "Đã ứng tuyển", "Tài khoản"
 ]
 const Sidebar = () => {
+    const navigate = useNavigate();
     const [itemChoose, setItemChoose] = useState<number>(0);
     return (
         <div className={`h-fit fixed min-h-screen w-[270px] bg-white flex`}>
-            <div className={`flex flex-col pt-4 bg-green_nga w-[80px]`}>
+            <div className={`flex flex-col pt-4 bg-green_sidebar w-[80px]`}>
                 <div className={`w-full flex justify-center `}>
                     <a href={homePage}>
                         <img className={`w-10 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
@@ -52,7 +110,8 @@ const Sidebar = () => {
                 </div>
             </div>
             <div className={`flex-1 flex flex-col pt-4`}>
-                <div className={`w-full flex mb-2 justify-start pl-4`}>
+                <div onClick={()=>navigate("/")}
+                    className={`w-full cursor-pointer flex mb-2 justify-start pl-4`}>
                     <p className={`font-bold text-[24px] font-inter`}>JobFinder</p>
                 </div>
                 <div className={`flex flex-col gap-4 mt-8`}>
@@ -84,7 +143,9 @@ type WarningNote ={
     note: string,
 }
 const Content = () => {
+    const {user}=UserDtoState()
     const warningItem : WarningNote[] =[]
+
     for(let i=1;i<7;i++){
         const item : WarningNote={
             img: `/public/warning/${i}.webp`,
@@ -95,25 +156,25 @@ const Content = () => {
     return (
         <div className={`ml-[270px] w-[calc(100vw-270px)] flex flex-col relative overflow-y-visible min-h-screen`}>
             <Header/>
-            <div className={`my-6 flex-1 flex mx-6 gap-x-6 elative overflow-y-visible min-h-screen `}>
-                <div className={`flex flex-col w-[67%]`}>
-                    <div className={`flex flex-col gap-12 rounded-xl bg-white p-6`}>
+            <div className={`my-6 flex-1 flex mx-6 gap-x-6 relative overflow-y-visible min-h-screen `}>
+                <div className={`flex flex-col w-[67%] `}>
+                    <div className={`flex flex-col gap-12 rounded-xl min-h-[calc(100vh-100px)] bg-white p-6`}>
                         {/*info*/}
                         <div className={`flex gap-4 w-full border-b pb-10`}>
                             <div className={`rounded-full flex items-center`}>
                                 {/*avatar*/}
                                 <img className={`aspect-square rounded-full w-[120px] object-contain`}
-                                     src={'/public/bunny.jpg'} alt={"logo"}/>
+                                     src={user&&user.avatar} alt={"logo"}/>
                             </div>
                             <div className={`flex-1 ml-4 flex flex-col`}>
                                 <div>
-                                    <p className={`font-bold text-[28px]`}>Dao Thuy Nga</p>
+                                    <p className={`font-bold text-[28px]`}>{user&&user.name}</p>
                                 </div>
                                 <div className={`grid grid-cols-2 mt-2 gap-8 w-full`}>
                                     <div className={`flex flex-col gap-4`}>
                                         <div className={`flex gap-3 items-end justify-start`}>
                                             <IoMail className={`mb-1`} size={20}/>
-                                            <p className={`opacity-70`}>thuyngadao@gmail.com</p>
+                                            <p className={`opacity-70`}>{user&&user.email}</p>
                                         </div>
                                         <div className={`flex gap-3 items-end justify-start`}>
                                             <FaLocationDot className={`mb-1`} size={20}/>
@@ -237,12 +298,20 @@ const Content = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer
+                position="top-center"
+                autoClose={1000}
+                hideProgressBar={true}
+                newestOnTop={true}
+                closeOnClick
+            />
         </div>
     )
 }
 const Header = () => {
+    const {user}=UserDtoState()
     return (
-        <div className={`sticky z-50 top-0 bg-white py-3 px-4 shadow-accent-foreground border-b pr-6 flex gap-6 justify-end items-center`}>
+        <div className={`sticky z-50 top-0 h-[70px] bg-white py-3 px-4 shadow-accent-foreground border-b pr-6 flex gap-6 justify-end items-center`}>
             <div className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 bg-[#E5F7ED]`}>
                 <IoNotifications size={24} fill={"#00B14F"}/>
             </div>
@@ -250,8 +319,7 @@ const Header = () => {
                 <AiFillMessage size={24} fill={"#00B14F"}/>
             </div>
             <div className={`w-9 cursor-pointer aspect-square rounded-full overflow-y-hidden`}>
-                <img className={`object-cover`} src={`/public/bunny.jpg`} alt="" />
-
+                <img className={`object-cover`} src={user&&user.avatar} alt="" />
             </div>
         </div>
     )
