@@ -9,7 +9,7 @@ import {toast, ToastContainer} from "react-toastify";
 import dayjs, {Dayjs} from 'dayjs';
 import {default_avatar} from "@/info/AppInfo.ts";
 import imageUpload from "@/axios/ImageUpload.ts";
-import {completeProfile, updateCv, uploadCvToAWS} from "@/axios/Request.ts";
+import {completeProfile, updateCv, uploadCvToAWS, uploadCvToAWSSpring} from "@/axios/Request.ts";
 import {UserResponse} from "@/page/GoogleCode.tsx";
 
 
@@ -205,7 +205,7 @@ const CompleteProfile = () => {
                 if(file){
                     const formData = new FormData();
                     formData.append('file', file);
-                    const raw_url = await uploadCvToAWS(formData);
+                    const raw_url = await uploadCvToAWSSpring(user_id,formData);
                     if(raw_url){
                         const url = raw_url.url
                         await updateCv(userId,{value: url})
