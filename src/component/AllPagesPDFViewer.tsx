@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {Document, Page, pdfjs} from 'react-pdf';
-import {usePdfItems} from "@/zustand/AppState.ts";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -13,24 +12,19 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     import.meta.url,
 ).toString();
 
-// const pdfjsDistPath = path.dirname(require.resolve('pdfjs-dist/package.json'));
-// const pdfWorkerPath = path.join(pdfjsDistPath, 'build', 'pdf.worker.mjs');
-//
-// fs.cpSync(pdfWorkerPath, './dist/pdf.worker.mjs', { recursive: true });
 
-const FlexStickyLayout = () => {
+const FlexStickyLayout = ({url}) => {
     const [numPages, setNumPages] = useState<number>();
-    const {url,setUrl} = usePdfItems()
-    if(url==='') setUrl('https://jobfinder-kienluu.s3.ap-southeast-1.amazonaws.com/nhan-dang-thuc-the.pdf')
 
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    function onDocumentLoadSuccess({numPages}: { numPages: number }): void {
         setNumPages(numPages);
     }
+
     return (
-        <div className={`h-full max-h-[500px] overflow-y-auto w-fit`}>
+        <div className={`max-h-[650px] w-fit`}>
             <Document   file={`${url}`} onLoadSuccess={onDocumentLoadSuccess}>
                 {Array.from(new Array(numPages), (_, index) => (
-                    <Page   key={`page_${index + 1}`} pageNumber={index + 1} />
+                    <Page scale={1.4} key={`page_${index + 1}`} pageNumber={index + 1}/>
                 ))}
             </Document>
         </div>
@@ -38,3 +32,13 @@ const FlexStickyLayout = () => {
 };
 
 export default FlexStickyLayout;
+
+export const OnePageCv = ({url}) => {
+    return (
+        <div className={`w-fit overflow-y-auto object-cover h-fit`}>
+            <Document file={`${url}`} >
+                <Page scale={0.3} pageNumber={1}/>
+            </Document>
+        </div>
+    );
+}

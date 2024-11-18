@@ -1,9 +1,16 @@
 import React, {ChangeEvent, useEffect, useState} from 'react';
-import {DatePickerProps, Select} from 'antd';
-import {DatePicker} from 'antd';
-import {UserCreationState} from "@/zustand/AppState.ts";
+import {DatePicker, DatePickerProps, Select, Spin} from 'antd';
+import {PdfProcessed, UserCreationState} from "@/zustand/AppState.ts";
 import {SlCamera} from "react-icons/sl";
 import {UserSignupResponse} from "@/page/SignUp.tsx";
+import {IoCloudUploadOutline} from "react-icons/io5";
+import {useNavigate} from "react-router-dom";
+import {toast, ToastContainer} from "react-toastify";
+import dayjs, {Dayjs} from 'dayjs';
+import {default_avatar} from "@/info/AppInfo.ts";
+import imageUpload from "@/axios/ImageUpload.ts";
+import {completeProfile, updateCv, uploadCvToAWS} from "@/axios/Request.ts";
+import {UserResponse} from "@/page/GoogleCode.tsx";
 
 
 const CompleteProfile = () => {
@@ -50,17 +57,23 @@ const CompleteProfile = () => {
         {value: 'Nam', label: 'Nam'},
         {value: 'Nữ', label: 'Nữ'},
     ]
-    const {user} = UserCreationState()
-
+    const {user,setUser} = UserCreationState()
+    const [fileName, setFileName] = useState("");
+    const [file, setFile] = useState(null);
+    const [dayJs, setDayJs] = useState<Dayjs | null>(null);
+    const navigate = useNavigate();
+    const [userId, setUserId] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     useEffect(() => {
+        setAvatar(default_avatar)
         if (user) {
-            setAvatar(user.avatar)
             setEmail(user.email)
+            setUserId(user.userId)
         }
         else {
             const localUser : UserSignupResponse = JSON.parse(localStorage.getItem('user'));
-            setAvatar(localUser.avatar)
             setEmail(localUser.email)
+            setUserId(localUser.userId)
         }
     }, [])
 
@@ -68,7 +81,9 @@ const CompleteProfile = () => {
         if (typeof dateString === 'string') {
             const [day, month, year] = dateString.split("-").map(Number);
             const dateOfBirth = new Date(year, month - 1, day)
+            const dateJs = dayjs(dateOfBirth)
             setDate(dateOfBirth);
+            setDayJs(dateJs)
         }
     };
 
@@ -91,15 +106,167 @@ const CompleteProfile = () => {
         }
     }
 
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setFile(event.target.files[0]);
+            setFileName(event.target.files[0].name);
+        }
+    };
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        setIsLoading(true)
+        event.preventDefault();
+        if (!file) return;
+
+        // Tạo FormData để gửi file PDF
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('http://localhost:8000/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            setIsLoading(false);
+
+            if (response.ok) {
+                const data: PdfProcessed = await response.json();
+                if(data){
+                    const rawDate = data.date
+                    setName(data.name);
+                    setPhone(data.phone);
+                    setAddress(data.location)
+                    setGender(data.gender);
+                    setUniversity(data.organization)
+                    if(!data.image.startsWith("not_found"))
+                        setAvatar(`data:image/png;base64,${data.image}`)
+
+                    if(rawDate){
+                        const [day, month, year] = rawDate.split(/[-/]/);
+                        const dayjsDate = dayjs(`${year}-${month}-${day}`);
+                        console.log(dayjsDate)
+                        setDayJs(dayjsDate);
+                        const date = new Date(`${year}-${month}-${day}`);
+                        setDate(date);
+                    }
+                    else {
+                        setDayJs(null)
+                    }
+                    if(data.email&& data.email!=email){
+                        toast.error("Dùng email đã đăng ký tài khoản")
+                    }
+                }
+            } else {
+
+                toast.error("Có lỗi xảy ra");
+            }
+        } catch (error) {
+            setIsLoading(false);
+            toast.error(error);
+        }
+    };
+
+    const handleSignUpDone =async ()=>{
+
+        if(name && email && phone && gender && date){
+            setIsLoading(true)
+            let user_avatar = avatar
+            let user_id=userId;
+            if(avatar&&avatar!=default_avatar){
+                user_avatar = await imageUpload({image: avatar})
+            }
+            if(userId==null){
+                const user: UserSignupResponse = JSON.parse(localStorage.getItem('user'));
+                if(user){
+                    console.log(user)
+                    user_id=user.userId;
+                    console.log(user_id)
+                }else {
+                    navigate('/login');
+                }
+            }
+
+            const userProfileCompleteRequest={
+                userId: user_id,
+                name:name,
+                email:email,
+                phone:phone,
+                gender:gender,
+                educationLevel:educationLevel,
+                university:university,
+                address:address,
+                dateOfBirth:date,
+                avatar:user_avatar,
+            }
+            try{
+                const response : UserSignupResponse = await completeProfile(userProfileCompleteRequest)
+                setUser(response)
+                localStorage.setItem('user', JSON.stringify(response))
+                if(file){
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const raw_url = await uploadCvToAWS(formData);
+                    if(raw_url){
+                        const url = raw_url.url
+                        await updateCv(userId,{value: url})
+
+                    }
+                }
+                setIsLoading(false)
+                navigate("/")
+            }catch (error){
+                setIsLoading(false)
+                toast.error(error);
+            }
+
+
+        }else {
+            toast.error("Vui lòng điền các thông tin còn thiếu")
+        }
+    }
+
     return (
         <div>
             <div className={`w-full pb-10`}>
                 <img className={`w-full absolute`} src={`https://jobsgo.vn/media/import_cv/background_import_cv.png`}
                      alt={`bg-cv`}/>
                 <div className={`relative max-w-[1190px] m-auto items-center  flex justify-center `}>
-                    <div className={`w-[75%] rounded pb-6 shadow-2xl mt-10 flex flex-col gap-4 bg-white`}>
-                        <div className={``}>
+                    <div className={`w-[75%] rounded pb-6 shadow-2xl mt-10 flex flex-col bg-white`}>
+                        {/*upload*/}
+                        <div className={`flex w-full justify-center items-center py-2`}>
+                            <div className="pl-4 flex items-center justify-center text-[16px] w-1/2">
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="space-y-4 flex  w-full rounded justify-center items-center"
+                                >
+                                    <div className="relative flex-1  w-full overflow-hidden">
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange}
+                                            className="absolute inset-0 w-full cursor-pointer h-full opacity-0 "
+                                        />
+                                        <button
+                                            type="button"
+                                            className="block  h-[40px] truncate text-[16px] cursor-pointer text-black w-full py-1 px-4 rounded-l-lg bg-gray-100 text-center file:font-semibold hover:bg-gray-200"
+                                        >
+                                            {fileName || "Chọn CV của bạn"}
+                                        </button>
+                                    </div>
+                                    <button
 
+                                        type="submit"
+                                        className="px-4 flex items-center justify-between gap-2 bg-gray-100 h-[40px] rounded-r-lg !mt-0 hover:bg-gray-200"
+                                    >
+                                        Tải lên
+                                        <IoCloudUploadOutline size={24} color={"#00b14f"}/>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div
+                            className={` border-b mb-2 flex w-full justify-center items-center text-14 italic opacity-70`}>hoặc
+                            hoàn thiện
                         </div>
                         <div className={`flex items-center relative justify-center w-full`}>
                             <div className={`relative w-[150px] aspect-square`}>
@@ -137,8 +304,9 @@ const CompleteProfile = () => {
                             <div className={`flex `}>
                                 <div className={`flex flex-col w-1/2 pr-2`}>
                                     <CustomInput value={email}
+                                                 disable={true}
+                                                 onChange={()=>{}}
                                                  width={'w-full'}
-                                                 onChange={(e) => setEmail(e.target.value)}
                                                  label={'Email'}/>
                                 </div>
                                 <div className={`flex flex-col w-1/2 pl-2`}>
@@ -152,9 +320,10 @@ const CompleteProfile = () => {
                                 <div className={`flex flex-col w-1/2 pr-2`}>
                                     <p className={`ml-1 mb-1`}>Ngày sinh</p>
                                     <DatePicker
-                                        placeholder={"Ngày sinh"}
+                                        value={dayJs}
+                                        placeholder={"VD: 19-06-2000"}
                                         format="DD-MM-YYYY"
-                                        className={`p-[9px]`}
+                                        className={`p-[9px] `}
                                         onChange={onDateChange}/>
 
                                 </div>
@@ -199,6 +368,7 @@ const CompleteProfile = () => {
                             </div>
                             <div className={`flex w-full mt-4`}>
                                 <button
+                                    onClick={handleSignUpDone}
                                     className={`w-full hover:bg-green_default text-white font-bold p-2 text-[18px] text-center rounded bg-green_nga`}>Hoàn
                                     thành
                                 </button>
@@ -209,16 +379,28 @@ const CompleteProfile = () => {
                     </div>
                 </div>
             </div>
+            <div className={`${isLoading? 'block':'hidden'}`}>
+                <Spin size="large" fullscreen={true} />
+            </div>
+            <ToastContainer
+                position="top-center"
+                autoClose={2000}
+                hideProgressBar={true}
+                newestOnTop={true}
+                closeOnClick
+                pauseOnHover={true}
+            />
         </div>
     );
 };
 
 
-const CustomInput = ({label, value, onChange, width}) => {
+const CustomInput = ({label, value, onChange, width, disable=false}) => {
     return (
         <>
             <p className={`ml-1`}>{label}</p>
             <input
+                disabled={disable}
                 value={value}
                 onChange={onChange}
                 spellCheck={false}

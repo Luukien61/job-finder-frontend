@@ -30,7 +30,7 @@ const JobDetail = () => {
                  className={`backdrop-blur-sm bg-black bg-opacity-60 flex overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${openModal ? "block" : "hidden"}`}>
                 <div onClick={event => handleModalClicks(event)}
                      className="relative p-4 max-w-[40%] max-h-full">
-                    <div className="relative bg-[#f5f5f5 rounded-lg flex items-center justify-center min-h-60 shadow ">
+                    <div className="relative bg-[#f5f5f5] rounded-lg flex items-center justify-center min-h-60 shadow ">
                         <div className={`overflow-hidden `}>
                             <div className="bg-white border-b rounded-xl shadow p-5 px-0 relative z-10 min-h-4 ">
                                 <div className={`z-10 shadow px-5`}>

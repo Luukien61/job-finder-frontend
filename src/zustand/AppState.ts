@@ -15,13 +15,14 @@ const useBearStore = create<BearState>()(
 )
 
 export type PdfProcessed={
-    Name: string,
-    Phone: string,
-    Email: string,
-    Location: string,
-    Organization: string,
-    Date: string,
-    Avatar?: string,
+    name: string,
+    phone: string,
+    email: string,
+    location: string,
+    organization: string,
+    date: string,
+    image?: string,
+    gender: string,
     pdfUrl?: string,
 }
 

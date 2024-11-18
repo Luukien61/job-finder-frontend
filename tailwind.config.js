@@ -64,6 +64,11 @@ export default {
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)'
             },
+            fontSize: {
+                14: "14px",
+                16: "16px",
+                18: "18px",
+            },
             fontFamily: {
                 inter: 'Inter'
             },

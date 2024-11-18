@@ -1,7 +1,8 @@
 import {instance} from "@/axios/Config.ts";
+import axios from "axios";
 
 
-export const getMessages= async (id: string, page: number) => {
+export const getMessages = async (id: string, page: number) => {
     try {
         return await instance.get(`/message/${id}`)
             .then(response => response.data)
@@ -10,15 +11,15 @@ export const getMessages= async (id: string, page: number) => {
     }
 }
 
-export const loginWithGoogle=async (code:string) => {
+export const loginWithGoogle = async (code: string) => {
     return instance.post("/google/login", {code: code}).then((response: any) => response.data)
 }
 
-export const signupWithGoogle=async (code:string) => {
+export const signupWithGoogle = async (code: string) => {
     return instance.post("/google/signup", {code: code}).then((response: any) => response.data)
 }
 
-export const signUpUser =async (request: any)=>{
+export const signUpUser = async (request: any) => {
     return await instance.post(`/user/signup`, request).then((response: any) => response.data)
 }
 
@@ -68,3 +69,20 @@ export const getMessagesByConversationId = async (id: string) => {
     return await instance.get(`/message/${id}`).then((response) => response.data)
 }
 
+export const completeProfile = async (body) => {
+    return await instance.post(`/user/complete`, body).then((response: any) => response.data)
+}
+
+export const uploadCvToAWS = async (body) => {
+    return await axios.post('http://localhost:8000/cv', body).then((response: any) => response.data)
+}
+
+export const uploadCvToAWSSpring = async (id, body) => {
+    return await axios.post(`http://localhost:8088/user/${id}/cv`, body, {
+        headers: {'Content-Type': 'multipart/form-data'}
+    }).then((response: any) => response.data)
+}
+
+export const updateCv = async (id: string, body) => {
+    return await instance.post(`/user/${id}/cv`, body).then((response: any) => response.data)
+}

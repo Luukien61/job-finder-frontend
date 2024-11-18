@@ -133,6 +133,7 @@ export const fields = [
     "Sáng Tạo/Nghệ Thuật"
 ];
 export const backEndPage: string = import.meta.env.VITE_BACKEND_URL
+export const default_avatar= 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png'
 
 export const AppLogo = '/public/job-finder.jpg'
 type item = {

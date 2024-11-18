@@ -3,15 +3,21 @@ import {useNavigate} from "react-router-dom";
 import {UserResponse} from "@/page/GoogleCode.tsx";
 import {AiFillMessage} from "react-icons/ai";
 import {IoNotifications} from "react-icons/io5";
+import {getUserInfo} from "@/axios/Request.ts";
 
 const Header = () => {
     const navigate = useNavigate();
     const [loginUser, setLoginUser] = useState<UserResponse>()
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-            setLoginUser(user)
+        let user:UserResponse = JSON.parse(localStorage.getItem("user"));
+        const getUser =async ()=> {
+            user = await getUserInfo(user.userId)
+            if(user) {
+                setLoginUser(user)
+                localStorage.setItem("user", JSON.stringify(user))
+            }
         }
+        getUser();
     }, [])
 
     const profileClick=()=>{

@@ -1,28 +1,25 @@
 import React, {ReactNode, useEffect, useRef, useState} from 'react';
-import {IoCloudUploadOutline, IoPersonOutline} from "react-icons/io5";
 import {MdOutlineMail} from "react-icons/md";
-import {FiPhone} from "react-icons/fi";
 import {RiFileCodeLine, RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
-import {PdfProcessed, usePdfProcessed, UserCreationState} from "@/zustand/AppState.ts";
-import {googleExchange, UserResponse} from "@/page/GoogleCode.tsx";
+import {UserCreationState} from "@/zustand/AppState.ts";
+import {googleExchange} from "@/page/GoogleCode.tsx";
 import {toast, ToastContainer} from "react-toastify";
 import {getSignupCode, signUpUser} from "@/axios/Request.ts";
 import {AppLogo} from "@/info/AppInfo.ts";
 import {CgCloseO} from "react-icons/cg";
+
 export type UserSignupResponse = {
-    id: string,
+    userId: string,
     email: string,
     password: string,
     avatar: string,
 }
 
 const Signup = () => {
-    const [userName, setUserName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [retypePass, setRetypePass] = useState('');
-    const [phone, setPhone] = useState('');
     const navigate = useNavigate();
     const [timer, setTimer] = useState<number>(60)
     const [expired, setExpired] = useState<boolean>(false)
@@ -33,8 +30,6 @@ const Signup = () => {
     // eslint-disable-next-line no-undef
     const intervalTimer = useRef<NodeJS.Timeout | null>(null)
     const [userSignUp, setUserSignUp] = useState<any>()
-    const {item, setItem} = usePdfProcessed()
-    const [fileName, setFileName] = useState("");
     const {setUser}=UserCreationState()
 
     useEffect(() => {
@@ -107,40 +102,7 @@ const Signup = () => {
         navigate("/login", {replace: false});
     }
 
-    const [file, setFile] = useState(null);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            setFile(event.target.files[0]);
-            setFileName(event.target.files[0].name);
-        }
-    };
-
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!file) return;
-
-        // Tạo FormData để gửi file PDF
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            const response = await fetch('http://localhost:8000/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (response.ok) {
-                const data: PdfProcessed = await response.json();
-                setItem(data)
-                navigate("/test")
-            } else {
-                alert('Failed to upload file.');
-            }
-        } catch (error) {
-            console.error('Error uploading file:', error);
-        }
-    };
     const closeModal=()=>{
         setSendCode(false)
         setIsDone(false)
@@ -160,7 +122,7 @@ const Signup = () => {
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>
                         <div className={`w-3/4 flex-col my-4`}>
                             <div className={`flex justify-center`}>
-                                <img className={`w-28`} src={AppLogo} alt={`${userName} logo`}/>
+                                <img className={`w-28`} src={AppLogo} alt={`logo`}/>
                             </div>
                             {/*name*/}
                             {/*email and phone*/}
