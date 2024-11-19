@@ -7,6 +7,7 @@ import {BiSolidCube, BiSolidLeaf} from "react-icons/bi";
 import {SearchBar} from "@/component/Content.tsx";
 import {PiFolderUser} from "react-icons/pi";
 import {IoWarning} from "react-icons/io5";
+import {useNavigate} from "react-router-dom";
 
 const JobDetail = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -310,6 +311,7 @@ const JobDetailContent: React.FC<JobCardProps> = (props: JobCardProps) => {
                                         </p>
                                     </div>
                                 </div>
+
                                 <div className={`flex flex-col gap- h-fit mt-10 `}>
                                     <div className={`flex items-center `}>
                                         <h2 className={`border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default `}
@@ -605,5 +607,103 @@ const JobDetailContent: React.FC<JobCardProps> = (props: JobCardProps) => {
             </div>
         </div>
 
+    )
+}
+
+
+
+export type JobWidthCardProps = {
+    jobId: number
+    logo: string,
+    title: string,
+    companyName: string,
+    companyId: string,
+    salary: string,
+    location: string,
+    experience: number,
+    expireDate: Date,
+    field?: string
+}
+
+
+export const JobWidthCard : React.FC<JobWidthCardProps> =(job)=>{
+    const navigate = useNavigate()
+    const handleJobCardClick = () => {
+        navigate(`/job/detail/${job.jobId}`)
+    }
+    const expireDate = new Date(job.expireDate);
+    const formattedDate = expireDate.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    return (
+        <div onClick={handleJobCardClick}
+            className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
+            {/*company logo*/}
+            <div
+                className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
+                <a className={` block overflow-hidden bg-white`}
+                   target={"_blank"}
+                   href={`/company/${job.companyId}`}>
+                    <img
+                        src={job.logo}
+                        className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
+                        alt={job.companyName}
+                        title={job.companyName}/>
+                </a>
+            </div>
+            {/*card body*/}
+            <div className={`flex-1`}>
+                <div className={`flex flex-col h-full`}>
+                    <div className={`mb-auto`}>
+                        <div className={`flex `}>
+                            <div
+                                className={`flex flex-col w-3/4 max-w-[490px] gap-2`}>
+                                <h3>
+                                    <a
+                                        target="_self"
+                                        href={`/job/detail/${job.jobId}`}>
+                                        <p className={`font-[600] hover:text-green_default text-[18px] line-clamp-2  text-[#212f3f] leading-6 cursor-pointer`}>
+                                            {job.title}</p>
+                                    </a>
+                                </h3>
+                                <div className={`w-full`}>
+                                    <a href={`/company/${job.companyId}`}
+                                        target="_blank">
+                                        <p className={`break-words text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
+                                    </a>
+                                </div>
+                            </div>
+                            <div className={`w-1/4 flex justify-end pr-2`}>
+                                <p className={`text-green_default font-bold`}>{job.salary}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        className={`mt-auto flex items-end justify-between py-2`}>
+                        <div className={`flex gap-4`}>
+                            <div
+                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>{job.location}</p>
+                            </div>
+                            <div
+                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>{`Kinh
+                                    nghiệm: ${job.experience} năm`}</p>
+                            </div>
+                            <div
+                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>Hạn: <span className={`text-[14px] truncate font-semibold`}>{formattedDate}</span></p>
+                            </div>
+                        </div>
+                        {/*<div*/}
+                        {/*    className={`bg-white p-1 rounded-full hover:bg-green-300 `}>*/}
+                        {/*    <FaRegHeart color={"green"}/>*/}
+                        {/*</div>*/}
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

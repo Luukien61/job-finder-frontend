@@ -86,3 +86,25 @@ export const uploadCvToAWSSpring = async (id, body) => {
 export const updateCv = async (id: string, body) => {
     return await instance.post(`/user/${id}/cv`, body).then((response: any) => response.data)
 }
+
+export const deleteCvById = async (userId, url) => {
+    return await instance.delete(`/user/${userId}/cv`, {
+        data: {
+            value: url
+        }
+    }).then((response: any) => response.data)
+}
+
+export const getAllSavedJobsByUserId = async (id: string) => {
+    return await instance.get(`/user/${id}/saved`).then((response: any) => response.data)
+}
+export const getAppliedJobsByUserId = async (id: string) => {
+    return await instance.get(`/user/${id}/applied`).then((response: any) => response.data)
+}
+
+export const sendAccountVerification = async (request) => {
+    return await instance.post(`/user/account/verification`, request).then((response: any) => response.data)
+}
+export const updateAccount = async (request: any) => {
+    return await instance.post(`/user/account/update`, request).then((response: any) => response.data)
+}
