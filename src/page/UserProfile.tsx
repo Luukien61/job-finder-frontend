@@ -33,6 +33,7 @@ import {AppInfo, default_avatar} from "@/info/AppInfo.ts";
 import {CompleteInfo} from "@/page/CompleteProfile.tsx";
 import dayjs, {Dayjs} from "dayjs";
 import imageUpload from "@/axios/ImageUpload.ts";
+import {LuQrCode} from "react-icons/lu";
 
 
 export interface UserDto {
@@ -741,6 +742,7 @@ export const UserProfileInfo = () => {
                     </div>
                 </div>
             </div>
+            {/*account*/}
             <div className={`flex flex-col gap-6 mt-10`}>
                 <div className={`flex flex-col gap-4 w-full`}>
                     <div className={`w-full flex gap-4 justify-start items-start`}>
@@ -836,19 +838,16 @@ export const UserProfileInfo = () => {
                                                         <div className={`flex justify-center`}>
                                                             <p>Xác nhận mã đã được gửi đến email của bạn</p>
                                                         </div>
-                                                        <div
-                                                            className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
-                                                            <RiFileCodeLine color={`green`}/>
-                                                            <input
-                                                                value={userCode}
-                                                                onChange={(e) => {
-                                                                    setUserCode(e.target.value)
-                                                                }}
-                                                                placeholder="Code"
-                                                                spellCheck={false}
-                                                                className={`outline-none p-2 text-black flex-1`}
-                                                            />
-                                                        </div>
+                                                        <Input
+                                                            prefix={<LuQrCode className={`mr-2`} size={24}
+                                                                              fill={"#00b14f"}/>}
+                                                            allowClear={true}
+                                                            maxLength={6}
+                                                            value={userCode}
+                                                            onChange={(e) => setUserCode(e.target.value)}
+                                                            showCount={true}
+                                                            spellCheck={false}
+                                                            className={`p-2 outline-none rounded border mt-2 `}/>
                                                         <div className={`flex justify-center`}>
                                                             {
                                                                 expired ? (
@@ -969,7 +968,7 @@ export const CustomModal: React.FC<CustomModalProps> = (item) => {
             <div onClick={event => item.handleModalClicks(event)}
                  className="relative p-4 max-w-[60%]  ">
                 <div
-                    className="relative bg-[#f5f5f5]  rounded-lg flex items-center justify-center min-h-60 shadow ">
+                    className="relative bg-white  rounded-lg flex items-center justify-center min-h-60 shadow ">
                     <div className={`overflow-y-auto ${item.heigh}`}>
                         {
                             item.closeOnIcon && (

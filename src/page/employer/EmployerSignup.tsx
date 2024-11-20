@@ -2,20 +2,20 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import {UserCreationState} from "@/zustand/AppState.ts";
 import {getSignupCode, signUpUser} from "@/axios/Request.ts";
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import {googleExchange} from "@/page/GoogleCode.tsx";
 import {AppLogo, defaultPhoneNumber, fullProvinces, policies} from "@/info/AppInfo.ts";
-import {MdOutlineMail} from "react-icons/md";
-import {RiFileCodeLine, RiLockPasswordFill, RiLockPasswordLine} from "react-icons/ri";
-import {CgCloseO} from "react-icons/cg";
+import {RiFileCodeLine, RiLockPasswordFill} from "react-icons/ri";
 import {UserSignupResponse} from "@/page/SignUp.tsx";
 import {CustomInput} from "@/page/CompleteProfile.tsx";
 import {IoPersonCircleSharp} from "react-icons/io5";
 import {GoOrganization} from "react-icons/go";
-import {HiOutlinePhone, HiPhone} from "react-icons/hi";
-import {Checkbox, Select} from "antd";
+import {HiPhone} from "react-icons/hi";
+import {Checkbox, Input, Select} from "antd";
 import {BiSolidCity} from "react-icons/bi";
 import {AiOutlineGlobal} from "react-icons/ai";
+import {CustomModal} from "@/page/UserProfile.tsx";
+import {LuQrCode} from "react-icons/lu";
 
 type ProvinceProps = { value: string, label: string, code: number }
 
@@ -35,6 +35,7 @@ const EmployerSignup = () => {
     const [verificationCode, setVerificationCode] = useState<string>('')
     const [, setIsDone] = useState<boolean>(false)
     const [sendCode, setSendCode] = useState<boolean>(false)
+    const [isAgreed, setIsAgreed] = useState<boolean>(false)
     // eslint-disable-next-line no-undef
     const intervalTimer = useRef<NodeJS.Timeout | null>(null)
     const [userSignUp, setUserSignUp] = useState<any>()
@@ -56,7 +57,7 @@ const EmployerSignup = () => {
 
     const getDistrictsByProvinceCode = (_value: any, option: ProvinceProps[] | ProvinceProps) => {
         setDistrict(null)
-        if(!Array.isArray(option)){
+        if (!Array.isArray(option)) {
             setProvince(option.value);
             const province = fullProvinces.find(p => p.code === option.code);
             const district = province.districts.map(value => (
@@ -71,31 +72,7 @@ const EmployerSignup = () => {
     }
 
     const handleSignup = async () => {
-        if (email && password && retypePass) {
-            if (password === retypePass) {
-                const userCreationRequest = {
-                    password: password,
-                    email: email,
-                }
-                try {
-                    const code = await getSignupCode({to: email, useCase: "Tạo tài khoản"})
-                    console.log(code)
-                    setVerificationCode(code)
-                    setUserSignUp(userCreationRequest)
-                    setSendCode(true)
-                    intervalTimer.current = setInterval(() => {
-                        setTimer((prev) => prev - 1)
-                    }, 1000)
-                } catch (err) {
-                    toast.error(err.response.data);
-                }
-
-            } else {
-                toast.error("Please enter your password");
-            }
-        } else {
-            toast.error("Please enter require fields");
-        }
+        setSendCode(true)
     }
     useEffect(() => {
         if (timer === 0 && intervalTimer.current) {
@@ -127,10 +104,6 @@ const EmployerSignup = () => {
     }
 
 
-    const handleSignupWithGoogle = () => {
-        localStorage.setItem("action", "signup")
-        googleExchange()
-    }
     const handleForwardLogin = () => {
         navigate("/login", {replace: false});
     }
@@ -167,7 +140,8 @@ const EmployerSignup = () => {
                             <div className={`flex flex-col w-full my-4 px-4 h-[calc(100vh-200px)] overflow-hidden`}>
                                 <div className={`overflow-y-auto flex flex-col pb-14 gap-10 px-4`}>
                                     {/*account*/}
-                                    <div className={`flex flex-col w-full gap-6 justify-start mt-6 pb-10 border-green_default border-b`}>
+                                    <div
+                                        className={`flex flex-col w-full gap-6 justify-start mt-6 pb-10 border-green_default border-b`}>
                                         <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
                                             Tài khoản
                                         </h2>
@@ -234,7 +208,7 @@ const EmployerSignup = () => {
                                                 <div className={`flex flex-col w-1/2 pr-6 justify-start`}>
                                                     <CustomInput
                                                         prefix={<AiOutlineGlobal className={`mr-2`} size={24}
-                                                                                fill={"#00b14f"}/>}
+                                                                                 fill={"#00b14f"}/>}
                                                         allowClear={true}
                                                         value={website}
                                                         label={"Website"}
@@ -302,7 +276,8 @@ const EmployerSignup = () => {
                                                         }
                                                     </ul>
                                                     <div className={`mt-6 flex gap-4 items-center`}>
-                                                        <div className={`w-fit p-2 rounded-full bg-green_light flex items-center justify-center`}>
+                                                        <div
+                                                            className={`w-fit p-2 rounded-full bg-green_light flex items-center justify-center`}>
                                                             <HiPhone size={24}
                                                                      fill={"#00b14f"}/>
                                                         </div>
@@ -313,7 +288,14 @@ const EmployerSignup = () => {
                                             </div>
                                             <div className={`flex gap-4`}>
                                                 <div>
-                                                    <Checkbox required={true} className={``}>Tôi đã đọc và đồng ý với <span className={`text-green_default font-bold`}>Điều khoản dịch vụ</span> và <span className={`text-green_default font-bold`}>Chính sách bảo mật</span> của JobFinder</Checkbox>
+                                                    <Checkbox
+                                                        required={true}
+                                                        value={isAgreed}
+                                                        onChange={() => setIsAgreed(pre => !pre)}
+                                                    >Tôi đã đọc và đồng ý với <span
+                                                        className={`text-green_default font-bold`}>Điều khoản dịch vụ</span> và <span
+                                                        className={`text-green_default font-bold`}>Chính sách bảo mật</span> của
+                                                        JobFinder</Checkbox>
                                                 </div>
                                             </div>
                                         </div>
@@ -322,7 +304,8 @@ const EmployerSignup = () => {
                                     {/*button*/}
                                     <div className={`w-full`}>
                                         <button
-                                            disabled={true}
+                                            onClick={handleSignup}
+                                            disabled={!isAgreed}
                                             className={`w-full disabled:bg-gray-200 hover:bg-green_default text-white font-bold p-2 text-[18px] text-center rounded bg-green_nga`}>Hoàn
                                             thành
                                         </button>
@@ -336,6 +319,17 @@ const EmployerSignup = () => {
                                         </div>
 
                                     </div>
+                                    {
+                                        sendCode && (
+                                            <CodeVerify
+                                                code={userCode}
+                                                time={60}
+                                                onClose={closeModal}
+                                                onVerify={()=>null}
+                                                onExpire={()=>setSendCode(false)}
+                                                onChange={(e) => setUserCode(e.target.value)}/>
+                                        )
+                                    }
                                 </div>
 
                             </div>
@@ -352,5 +346,76 @@ const EmployerSignup = () => {
         </div>
     );
 };
+type CodeVerifyProps = {
+    code: string;
+    onChange: (e) => void;
+    time: number;
+    onVerify: () => void;
+    onClose: () => void;
+    onExpire:() => void;
+}
+
+export const CodeVerify: React.FC<CodeVerifyProps> = (props) => {
+    const [timer, setTimer] = useState<number>(props.time);
+    const intervalTimer = useRef<NodeJS.Timeout | null>(null)
+    useEffect(() => {
+        if (timer === 0 && intervalTimer.current) {
+            clearInterval(intervalTimer.current)
+            setTimer(60)
+            intervalTimer.current = null
+            props.onExpire()
+        }
+    }, [timer])
+    useEffect(() => {
+        intervalTimer.current = setInterval(() => {
+            setTimer((prev) => prev - 1)
+        }, 1000)
+        return () => {
+            clearInterval(intervalTimer.current)
+            setTimer(60)
+            intervalTimer.current = null
+        }
+    }, []);
+    return (
+        <CustomModal
+            child={
+                <div className={`flex flex-col p-6 gap-4`}>
+                    <div className={`flex justify-center`}>
+                        <p>Xác nhận mã đã được gửi đến email của bạn</p>
+                    </div>
+                    <Input
+                        prefix={<LuQrCode className={`mr-2`} size={24}
+                                          fill={"#00b14f"}/>}
+                        allowClear={true}
+                        maxLength={6}
+                        value={props.code}
+                        onChange={props.onChange}
+                        showCount={true}
+                        spellCheck={false}
+                        className={`p-2 outline-none rounded border mt-2 `}/>
+                    <div className={`flex justify-center`}>
+                        <p className={`mt-1 text-red-500 `}>
+                            Valid timer: <span className={`font-bold`}>{timer}</span>
+                        </p>
+                    </div>
+                    <div className={``}>
+                        <button
+                            onClick={props.onVerify}
+                            type={`button`}
+                            className={`w-full rounded hover:bg-green-600 text-white bg-green-500 py-2`}
+                        >
+                            Xác nhận
+                        </button>
+                    </div>
+                </div>}
+            heigh={'h-fit'}
+            handleOutModalClick={() => null}
+            closeOnIcon={true}
+            handleCloseModal={props.onClose}
+            handleModalClicks={() => null}
+
+        />
+    )
+}
 
 export default EmployerSignup;

@@ -8,6 +8,9 @@ import {toast, ToastContainer} from "react-toastify";
 import {getSignupCode, signUpUser} from "@/axios/Request.ts";
 import {AppLogo} from "@/info/AppInfo.ts";
 import {CgCloseO} from "react-icons/cg";
+import {LuQrCode} from "react-icons/lu";
+import {Input} from "antd";
+import {IoIosCloseCircle} from "react-icons/io";
 
 export type UserSignupResponse = {
     userId: string,
@@ -30,11 +33,11 @@ const Signup = () => {
     // eslint-disable-next-line no-undef
     const intervalTimer = useRef<NodeJS.Timeout | null>(null)
     const [userSignUp, setUserSignUp] = useState<any>()
-    const {setUser}=UserCreationState()
+    const {setUser} = UserCreationState()
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem("user"));
-        if(user) navigate("/")
+        if (user) navigate("/")
     }, []);
 
     const handleSignup = async () => {
@@ -69,6 +72,8 @@ const Signup = () => {
             setExpired(true)
             clearInterval(intervalTimer.current)
             intervalTimer.current = null
+            setTimer(60)
+            setSendCode(false)
         }
     }, [timer])
 
@@ -77,7 +82,7 @@ const Signup = () => {
             if (userCode == verificationCode && !expired) {
                 setTimeout(() => setIsDone(true), 1000)
                 if (userSignUp) {
-                    const response :UserSignupResponse= await signUpUser(userSignUp)
+                    const response: UserSignupResponse = await signUpUser(userSignUp)
                     localStorage.setItem('user', JSON.stringify(response))
                     setUser(response)
                     navigate('/profile/complete')
@@ -89,7 +94,7 @@ const Signup = () => {
                 })
             }
         } else {
-            toast.error('Either verification code or expired', { hideProgressBar: true, autoClose: 1000 })
+            toast.error('Either verification code or expired', {hideProgressBar: true, autoClose: 1000})
         }
     }
 
@@ -103,7 +108,7 @@ const Signup = () => {
     }
 
 
-    const closeModal=()=>{
+    const closeModal = () => {
         setSendCode(false)
         setIsDone(false)
         setUserSignUp(undefined)
@@ -204,34 +209,6 @@ const Signup = () => {
                                     <img className={`w-6`} src="/public/google.png" alt={`Google Signup`}/>
                                     Đăng ký với Google
                                 </button>
-                                {/*<div className="pl-4 flex items-center justify-center text-[16px] w-1/2">*/}
-                                {/*    <form*/}
-                                {/*        onSubmit={handleSubmit}*/}
-                                {/*        className="space-y-4 flex  w-full rounded justify-center items-center"*/}
-                                {/*    >*/}
-                                {/*        <div className="relative flex-1  w-full overflow-hidden">*/}
-                                {/*            <input*/}
-                                {/*                type="file"*/}
-                                {/*                accept="application/pdf"*/}
-                                {/*                onChange={handleFileChange}*/}
-                                {/*                className="absolute inset-0 w-full cursor-pointer h-full opacity-0 "*/}
-                                {/*            />*/}
-                                {/*            <button*/}
-                                {/*                type="button"*/}
-                                {/*                className="block  h-[40px] truncate text-[16px] cursor-pointer text-black w-full py-1 px-4 rounded-l-lg bg-gray-100 text-center file:font-semibold hover:bg-gray-200"*/}
-                                {/*            >*/}
-                                {/*                {fileName || "Chọn CV của bạn..."}*/}
-                                {/*            </button>*/}
-                                {/*        </div>*/}
-                                {/*        <button*/}
-                                {/*            type="submit"*/}
-                                {/*            className="px-4 flex items-center justify-between gap-2 bg-gray-100 h-[40px] rounded-r-lg !mt-0 hover:bg-gray-200"*/}
-                                {/*        >*/}
-                                {/*            Tải lên*/}
-                                {/*            <IoCloudUploadOutline size={24} color={"#00b14f"}/>*/}
-                                {/*        </button>*/}
-                                {/*    </form>*/}
-                                {/*</div>*/}
                             </div>
                             <div className={`flex items-center justify-center mt-10 gap-x-1`}>
                                 <p className={`text-[14px] text-gray-700`}>Đã có tài khoản? </p>
@@ -246,30 +223,28 @@ const Signup = () => {
 
                 <div
                     className={`backdrop-blur-sm bg-black bg-opacity-60 flex overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${sendCode ? "block" : "hidden"}`}>
-                    <div className="relative p-4 w-[700px] max-h-full">
+                    <div className="relative p-4  max-h-full">
                         <div
-                            className="relative bg-[#f5f5f5] rounded-lg flex items-center justify-center min-h-60 shadow ">
+                            className="relative bg-[#f5f5f5] p-6 rounded-lg flex items-center justify-center min-h-60 shadow ">
                             <div className={`overflow-hidden `}>
                                 <div className={`flex-col  my-4`}>
                                     <div className={`flex flex-col gap-4`}>
                                         <div className={`flex justify-center`}>
-                                        <p>Xác nhận mã đã được gửi đến email của bạn</p>
+                                            <p>Xác nhận mã đã được gửi đến email của bạn</p>
                                         </div>
-                                        <div className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
-                                            <RiFileCodeLine color={`green`}/>
-                                            <input
-                                                value={userCode}
-                                                onChange={(e) => {
-                                                    setUserCode(e.target.value)
-                                                }}
-                                                placeholder="Code"
-                                                spellCheck={false}
-                                                className={`outline-none p-2 text-black flex-1`}
-                                            />
-                                        </div>
+                                        <Input
+                                            prefix={<LuQrCode className={`mr-2`} size={24}
+                                                              fill={"#00b14f"}/>}
+                                            allowClear={true}
+                                            maxLength={6}
+                                            value={userCode}
+                                            onChange={(e) => setUserCode(e.target.value)}
+                                            showCount={true}
+                                            spellCheck={false}
+                                            className={`p-2 outline-none rounded border mt-2 `}/>
                                         <div className={`flex justify-center`}>
                                             <p className={`mt-1 text-red-500 `}>
-                                                Valid timer: <span className={`font-bold`}>{timer}</span>
+                                                Thời hạn: <span className={`font-bold`}>{timer}</span>
                                             </p>
                                         </div>
                                         <div className={``}>
@@ -285,8 +260,9 @@ const Signup = () => {
                                 </div>
                             </div>
                             <div onClick={closeModal}
-                                className={`absolute top-2 cursor-pointer right-2`}>
-                                <CgCloseO size={28}/>
+                                 className={`absolute top-2 cursor-pointer right-2`}>
+                                <IoIosCloseCircle className={`cursor-pointer`}
+                                                  size={28} fill={"#00b14f"}/>
                             </div>
                         </div>
                     </div>
@@ -307,26 +283,3 @@ const Signup = () => {
 
 export default Signup;
 
-type InputProps = {
-    icon: ReactNode,
-    value: string,
-    onChange: (value: string) => void
-    style?: string,
-    placeholder: string,
-}
-export const Input: React.FC<InputProps> = ({icon, value, onChange, placeholder, style}) => {
-    return (
-        <div className={`flex rounded border items-center py-2 px-2 `}>
-            {icon}
-            <input
-                value={value}
-                onChange={(e) => {
-                    onChange(e.target.value)
-                }}
-                placeholder={placeholder}
-                spellCheck={false}
-                className={`outline-none text-black max-w-[90%] flex-1 pl-4 ${style}`}
-            />
-        </div>
-    )
-}
