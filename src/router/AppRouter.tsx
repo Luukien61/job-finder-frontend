@@ -7,9 +7,11 @@ import Message from "@/page/Message.tsx";
 import JobDetail from "@/page/JobDetail.tsx";
 import Test from "@/page/Test.tsx";
 import App from "@/page/App.tsx";
-import UserProfile, {Account, AppliedJobList, SavedJobList, UserProfileInfo} from "@/page/UserProfile.tsx";
+import UserProfile, { AppliedJobList, SavedJobList, UserProfileInfo} from "@/page/UserProfile.tsx";
 import GoogleCode from "@/page/GoogleCode.tsx";
 import CompleteProfile from "@/page/CompleteProfile.tsx";
+import Employer from "@/page/employer/Employer.tsx";
+import EmployerSignup from "@/page/employer/EmployerSignup.tsx";
 
 const AppRouter = () => {
     return (
@@ -26,10 +28,13 @@ const AppRouter = () => {
                 <Route index={true} element={<UserProfileInfo/>}/>
                 <Route path={"saved"} element={<SavedJobList/>}/>
                 <Route path={"applied"} element={<AppliedJobList/>}/>
-                <Route path={"account"} element={<Account/>}/>
             </Route>
             <Route path={'/test'} element={<Test/>}/>
             <Route path={'/profile/complete'} element={<CompleteProfile/>}/>
+            <Route path={'/employer'} element={<Employer/>}>
+                <Route index={true} element={<Employer/>}/>
+                <Route path={'register'} element={<EmployerSignup/>}/>
+            </Route>
         </Routes>
     );
 };

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {ChangeEvent, useEffect, useRef, useState} from 'react'
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react'
 import {
     ConversationRequest,
     createConversation,
@@ -25,6 +25,8 @@ import {toast, ToastContainer} from 'react-toastify'
 import {imageUpload} from '@/service/Upload'
 import VideoCall from '@/component/VideoCall'
 import {delay, UserResponse} from "@/page/GoogleCode.tsx";
+import {homePage} from "@/url/Url.ts";
+import {AppInfo} from "@/info/AppInfo.ts";
 
 type QuickMessage = {
     id: string
@@ -266,6 +268,15 @@ const Message = () => {
                 <div
                     className={`w-[25%] px-3 min-w-[300px] h-screen flex flex-col relative min-h-screen  z-10 bg-white border-r border-r-gray-400 border-gray  overflow-hidden `}
                 >
+                    <div className={`w-full flex justify-start mt-4 bg-green_nga px-2 py-2 rounded-lg gap-4 items-center`}>
+                        <a className={`flex justify-start gap-4 items-center`}
+                            href={homePage}>
+                            <img className={`w-14 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                            <p className={`font-bold text-[24px] text-white font-inter`}>{AppInfo.appName}</p>
+                        </a>
+
+
+                    </div>
                     {/*current user*/}
                     <div className={`border-b shadow sticky bg-white rounded mt-2 inset-0 z-20 bg-inherit pl-3 pb-3`}>
                         <div className={`flex gap-4 pt-4 pl-0 pb-3`}>

@@ -12,8 +12,8 @@ import {CgCloseO} from "react-icons/cg";
 export type UserSignupResponse = {
     userId: string,
     email: string,
-    password: string,
     avatar: string,
+    name?: string,
 }
 
 const Signup = () => {
@@ -54,7 +54,7 @@ const Signup = () => {
                         setTimer((prev) => prev - 1)
                     }, 1000)
                 } catch (err) {
-                    toast.error("An error occurred while signing up");
+                    toast.error(err.response.data);
                 }
 
             } else {
@@ -278,7 +278,7 @@ const Signup = () => {
                                                 type={`button`}
                                                 className={`w-full rounded hover:bg-green-600 text-white bg-green-500 py-2`}
                                             >
-                                                Verify
+                                                Xác nhận
                                             </button>
                                         </div>
                                     </div>

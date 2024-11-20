@@ -23,6 +23,10 @@ export const signUpUser = async (request: any) => {
     return await instance.post(`/user/signup`, request).then((response: any) => response.data)
 }
 
+export const loginUser=async (request: any) => {
+    return await instance.post(`/user/login`, request).then((response: any) => response.data)
+}
+
 export const getSignupCode = async (template: any) => {
     return await instance.post(`/signup/code`, template).then((response: any) => response.data)
 }
@@ -107,4 +111,7 @@ export const sendAccountVerification = async (request) => {
 }
 export const updateAccount = async (request: any) => {
     return await instance.post(`/user/account/update`, request).then((response: any) => response.data)
+}
+export const updateProfile = async (request: any) => {
+    return await instance.put(`/user/profile`, request).then((response: any) => response.data)
 }

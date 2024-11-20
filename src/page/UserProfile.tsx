@@ -1,30 +1,38 @@
-import React, {ChangeEvent, useCallback, useEffect, useState} from 'react';
-import {RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
+import React, {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
+import {RiFileCodeLine, RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
 import {AiFillCloud, AiFillMessage, AiFillSafetyCertificate} from "react-icons/ai";
-import {BsFileEarmarkPersonFill, BsFillQuestionCircleFill, BsFillTelephoneFill} from "react-icons/bs";
+import {BsFillQuestionCircleFill, BsFillTelephoneFill} from "react-icons/bs";
 import {IoMail, IoNotifications} from "react-icons/io5";
 import {FaLocationDot} from "react-icons/fa6";
-import {IoIosAddCircle} from "react-icons/io";
+import {IoIosAddCircle, IoIosCloseCircle} from "react-icons/io";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import Autoplay from "embla-carousel-autoplay";
 import {homePage} from "@/url/Url.ts";
-import {Outlet, Route, Router, Routes, useNavigate} from "react-router-dom";
+import {Outlet, useNavigate} from "react-router-dom";
 import useAuthRedirect from "@/hook/useAuthRedirect.ts";
 import {
     deleteCvById,
     getAllSavedJobsByUserId,
     getAppliedJobsByUserId,
-    getUserDto, sendAccountVerification,
+    getUserDto,
+    sendAccountVerification,
+    updateAccount,
+    updateProfile,
     uploadCvToAWSSpring
 } from "@/axios/Request.ts";
 import {UserResponse} from "@/page/GoogleCode.tsx";
 import {toast, ToastContainer} from "react-toastify";
 import FlexStickyLayout, {OnePageCv} from "@/component/AllPagesPDFViewer.tsx";
 import {MdDelete} from "react-icons/md";
-import {Button, Input, Spin} from "antd";
+import {DatePickerProps, Input, Spin} from "antd";
 import {JobWidthCard, JobWidthCardProps} from "@/page/JobDetail.tsx";
 import {BiSolidEdit} from "react-icons/bi";
+import {CgCloseO} from "react-icons/cg";
+import {AppInfo, default_avatar} from "@/info/AppInfo.ts";
+import {CompleteInfo} from "@/page/CompleteProfile.tsx";
+import dayjs, {Dayjs} from "dayjs";
+import imageUpload from "@/axios/ImageUpload.ts";
 
 
 export interface UserDto {
@@ -35,10 +43,11 @@ export interface UserDto {
     address: string;
     password: string;
     phone: string;
+    educationLevel: string;
     university: string;
-    dateOfBirth: string; // Hoặc `Date` nếu cần kiểu Date
+    dateOfBirth: Date; // Hoặc `Date` nếu cần kiểu Date
     gender: string;
-    role: string;
+    role: "EMPLOYEE" | "EMPLOYER" | "ADMIN";
     cv: string[]; // Danh sách URL hoặc đường dẫn CV
     savedJobs: JobWidthCardProps[]; // Set các ID công việc đã lưu
     appliedJobs: JobWidthCardProps[]; // Set các ID công việc đã ứng tuyển
@@ -75,10 +84,7 @@ const sideBarItem = [
         title: "Đã ứng tuyển",
         url: 'applied'
     },
-    {
-        title: "Tài khoản",
-        url: 'account'
-    }
+
 
 ]
 
@@ -152,16 +158,13 @@ const UserProfile = () => {
                              className={`w-full flex h-8 justify-center cursor-pointer `}>
                             <AiFillSafetyCertificate size={32} fill={`${itemChoose == 2 ? 'white' : 'black'}`}/>
                         </div>
-                        <div onClick={() => handleItemSidebarClick(3, '')}
-                             className={`w-full flex h-8 justify-center cursor-pointer `}>
-                            <BsFileEarmarkPersonFill size={32} fill={`${itemChoose == 3 ? 'white' : 'black'}`}/>
-                        </div>
+
                     </div>
                 </div>
                 <div className={`flex-1 flex flex-col pt-4`}>
                     <div onClick={() => navigate("/")}
                          className={`w-full cursor-pointer flex mb-2 justify-start pl-4`}>
-                        <p className={`font-bold text-[24px] font-inter`}>JobFinder</p>
+                        <p className={`font-bold text-[24px] font-inter`}>{AppInfo.appName}</p>
                     </div>
                     <div className={`flex flex-col gap-4 mt-8`}>
                         {
@@ -187,6 +190,7 @@ const UserProfile = () => {
                         <IoNotifications size={24} fill={"#00B14F"}/>
                     </div>
                     <div
+                        onClick={() => navigate(`/message/${currentUser.userId}`)}
                         className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
                         <AiFillMessage size={24} fill={"#00B14F"}/>
                     </div>
@@ -293,6 +297,21 @@ export const UserProfileInfo = () => {
     const [oldPassword, setOldPassword] = useState<string>('')
     const [editAccountSend, setEditAccountSend] = useState<boolean>(false)
     const [verifyCode, setVerifyCode] = useState<string>('')
+    const [userCode, setUserCode] = useState<string>('')
+    const [timer, setTimer] = useState<number>(60)
+    const [expired, setExpired] = useState<boolean>(false)
+    const intervalTimer = useRef<NodeJS.Timeout | null>(null)
+    const [avatar, setAvatar] = useState<string | null>(null);
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+
+    const [date, setDate] = useState<Date>();
+    const [gender, setGender] = useState('');
+    const [educationLevel, setEducationLevel] = useState('');
+    const [university, setUniversity] = useState('');
+    const [address, setAddress] = useState('');
+    const [dayJs, setDayJs] = useState<Dayjs | null>(null);
+    const [isEditProfile, setIsEditProfile] = useState<boolean>(false)
     const getUserInfo = async () => {
         const logInUser: UserResponse = JSON.parse(localStorage.getItem("user"));
         if (logInUser) {
@@ -319,9 +338,22 @@ export const UserProfileInfo = () => {
         getUserInfo()
     }, []);
     useEffect(() => {
-        if(currentUser){
-            setNewEmail(currentUser.email);
-            if ( currentUser.cv && currentUser.cv.length > 0) {
+        resetUser()
+    }, [currentUser]);
+
+    const resetUser = () => {
+        if (currentUser) {
+            setName(currentUser.name);
+            setPhone(currentUser.phone);
+            setAddress(currentUser.address);
+            setAvatar(currentUser.avatar);
+            setEducationLevel(currentUser.educationLevel);
+            setUniversity(currentUser.university);
+            setGender(currentUser.gender);
+            setDate(currentUser.dateOfBirth)
+            const dateJs = dayjs(currentUser.dateOfBirth);
+            setDayJs(dateJs)
+            if (currentUser.cv && currentUser.cv.length > 0) {
                 const pdfItem: PdfItem[] = currentUser.cv.map((item) => {
                     const urlItem = item.split('/')
                     const fileName = urlItem[urlItem.length - 1].replace('.pdf', '').replace('%20', ' ')
@@ -333,8 +365,7 @@ export const UserProfileInfo = () => {
                 setCv(pdfItem)
             }
         }
-
-    }, [currentUser]);
+    }
 
     const handleCvClick = (url: string) => {
         setSelectCv(url)
@@ -414,11 +445,12 @@ export const UserProfileInfo = () => {
         }
     }
 
-    const handleSendVerification =async () => {
-        setIsLoading(true);
-        if(oldPassword && newPassword && verifyPassword && newEmail){
-            if(newPassword==verifyPassword){
-                try{
+    const handleSendVerification = async () => {
+
+        if (oldPassword && newPassword && verifyPassword && newEmail) {
+            if (newPassword == verifyPassword) {
+                setIsLoading(true);
+                try {
                     const code = await sendAccountVerification({
                         userId: currentUser.userId,
                         email: newEmail,
@@ -426,193 +458,467 @@ export const UserProfileInfo = () => {
                         newPassword: newPassword
 
                     })
-                    setEditAccountSend(true)
-                    if(code) setVerifyCode(code)
 
-                }catch(e){
+                    intervalTimer.current = setInterval(() => {
+                        setTimer((prev) => prev - 1)
+                    }, 1000)
                     setIsLoading(false);
-                    toast.error(e);
+                    if (code) {
+                        setVerifyCode(code)
+                        setEditAccountSend(true)
+                    } else {
+                        toast.error("Có lỗi xảy ra")
+                    }
+
+                } catch (e) {
+                    setIsLoading(false);
+                    toast.error(e.response.data);
                 }
-            }else {
+            } else {
                 setIsLoading(false);
                 toast.error("Xác nhận mật khẩu không đúng")
             }
-        }else {
+        } else {
             setIsLoading(false);
             toast.error("Vui lòng điền đầy đủ thông tin")
         }
     }
-    const handleClearEditAccountRequest =()=>{
+
+    const handleVerifyCode = async () => {
+        if (userCode.length === 6 && !expired) {
+            if (userCode == verifyCode && !expired) {
+                try {
+                    setIsLoading(true)
+                    const userResponse: UserResponse = await updateAccount({
+                        userId: currentUser.userId,
+                        email: newEmail,
+                        oldPassword: oldPassword,
+                        newPassword: newPassword
+
+                    })
+                    setCurrentUser(prevState => ({...prevState, email: userResponse.email}))
+                    setEditAccountSend(false);
+                    toast.info("Đổi thông tin thành công")
+                    setIsEditAccount(false);
+                    clearInterval(intervalTimer.current)
+                    setTimer(60)
+                    intervalTimer.current = null
+                    handleClearEditAccountRequest()
+                    setIsLoading(false);
+                } catch (e) {
+                    setIsLoading(false);
+                    toast.error(e.response.data);
+                }
+            } else {
+                setIsLoading(false);
+                toast.error('The verification code is incorrect', {
+                    hideProgressBar: true,
+                    autoClose: 1000
+                })
+            }
+        } else {
+            toast.error('Either verification code or expired', {hideProgressBar: true, autoClose: 1000})
+        }
+    }
+
+    useEffect(() => {
+        if (!editAccountSend) {
+            clearInterval(intervalTimer.current)
+            setTimer(60)
+            intervalTimer.current = null
+            setUserCode('')
+        }
+    }, [editAccountSend]);
+
+    const closeModal = () => {
+        setEditAccountSend(false);
+        setUserCode('')
+        setTimer(60)
+        setExpired(false)
+        clearInterval(intervalTimer.current)
+        intervalTimer.current = null
+    }
+
+    useEffect(() => {
+        if (timer === 0 && intervalTimer.current) {
+            setExpired(true)
+            clearInterval(intervalTimer.current)
+            setTimer(60)
+            intervalTimer.current = null
+        }
+    }, [timer])
+
+    const handleClearEditAccountRequest = () => {
         setIsEditAccount(false);
         setNewEmail(currentUser.email);
         setOldPassword('')
         setNewPassword('')
         setVerifyPassword('')
     }
+
+    const setEditProfile = () => {
+        setIsEditProfile(true)
+    }
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/login');
+    }
+
+    const onDateChange: DatePickerProps['onChange'] = (date, dateString) => {
+        if (typeof dateString === 'string') {
+            const [day, month, year] = dateString.split("-").map(Number);
+            const dateOfBirth = new Date(year, month - 1, day)
+            const dateJs = dayjs(dateOfBirth)
+            setDate(dateOfBirth);
+            setDayJs(dateJs)
+        }else {
+            setDayJs(date)
+        }
+    };
+
+    const onEducationLevelChange = (value: string) => {
+        setEducationLevel(value);
+    };
+    const onGenderChange = (value: string) => {
+        setGender(value);
+    }
+
+    const handleAvatarUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files
+        if (files) {
+            const file = files[0]
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setAvatar(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleCloseEditProfile = () => {
+        resetUser()
+        setIsEditProfile(false)
+    }
+
+    const handleUpdateProfileDone =async ()=>{
+
+        if(name  && phone && gender && date){
+            setIsLoading(true)
+            let user_avatar = avatar
+            if(avatar&&avatar!=currentUser.avatar&&avatar!=default_avatar){
+                user_avatar = await imageUpload({image: avatar})
+            }
+
+            const userProfileCompleteRequest={
+                userId: currentUser.userId,
+                name:name,
+                email:currentUser.email,
+                phone:phone,
+                gender:gender,
+                educationLevel:educationLevel,
+                university:university,
+                address:address,
+                dateOfBirth:date,
+                avatar:user_avatar,
+            }
+            try{
+                const response : UserDto = await updateProfile(userProfileCompleteRequest)
+                setCurrentUser(response)
+                const localUser : UserResponse ={
+                    userId: currentUser.userId,
+                    name: response.name,
+                    email: response.email,
+                    avatar: response.avatar,
+                    role: currentUser.role
+                }
+                localStorage.setItem('user', JSON.stringify(localUser))
+                setIsLoading(false)
+                setIsEditProfile(false)
+                resetUser()
+            }catch (error){
+                setIsLoading(false)
+                toast.error(error);
+            }
+        }else {
+            toast.error("Vui lòng điền các thông tin còn thiếu")
+        }
+    }
+
     return (
-        <div className={`flex flex-col gap-12`}>
+        <div className={`flex flex-col `}>
             {/*info*/}
-            <div className={`flex flex-col gap-12 `}>
-                <div className={`flex gap-4 w-full border-b pb-10`}>
-                    <div className={`rounded-full flex items-center`}>
-                        {/*avatar*/}
-                        <img className={`aspect-square border-2 rounded-full w-[120px] object-contain`}
-                             src={currentUser && currentUser.avatar} alt={"logo"}/>
-                    </div>
-                    <div className={`flex-1 ml-4 flex flex-col`}>
-                        <div>
-                            <p className={`font-bold text-[28px]`}>{currentUser && currentUser.name}</p>
-                        </div>
-                        <div className={`grid grid-cols-2 mt-2 gap-8 w-full`}>
-                            <div className={`flex flex-col gap-4`}>
-                                <div className={`flex gap-3 items-end justify-start`}>
-                                    <IoMail className={`mb-1`} size={20}/>
-                                    <p className={`opacity-70`}>{currentUser && currentUser.email}</p>
-                                </div>
-                                <div className={`flex gap-3 items-end justify-start`}>
-                                    <FaLocationDot className={`mb-1`} size={20}/>
-                                    <p className={`opacity-70`}>{currentUser && currentUser.address || 'Chưa có địa chỉ'}</p>
-                                </div>
-                            </div>
-                            <div className={`flex flex-col gap-4`}>
-                                <div className={`flex gap-3 items-end justify-start`}>
-                                    <BsFillTelephoneFill className={`mb-1`} size={20}/>
-                                    <p className={`opacity-70`}>{currentUser && currentUser.phone || 'Chưa có số điện thoại'}</p>
-                                </div>
-                                <div className={`flex gap-3 items-end justify-start`}>
-                                    <RiShoppingBag4Fill className={`mb-1`} size={20}/>
-                                    <p className={`opacity-70`}>{currentUser && currentUser.university || 'Chưa có trường học'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div className={`flex flex-col gap-6 border-b pb-10`}>
+                <div className={`flex justify-start items-start gap-4`}>
+                    <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                        Hồ sơ
+                    </h2>
+                    <BiSolidEdit
+                        onClick={setEditProfile}
+                        className={`cursor-pointer hover:scale-110 duration-300 transition-transform`}
+                        size={28} fill={"#00B14F"}/>
                 </div>
-                <div className={`flex flex-col gap-24`}>
-                    <div className={`flex flex-col gap-4 w-full`}>
-                        <div className={`flex gap-4 items-start`}>
-                            <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                CV của tôi
-                            </h2>
-                            <div
-                                data-toggle="tooltip"
-                                title={"Tải lên CV"}
-                                className={`w-fit cursor-pointer hover:scale-110 duration-300 transition-transform`}>
-                                <label
-                                    className="flex flex-col items-center justify-start w-fit h-full  rounded-lg cursor-pointer  ">
-                                    <IoIosAddCircle size={28} fill={"#00B14F"}/>
-                                    <input
-                                        onChange={handleUploadCv}
-                                        id="dropzone-file"
-                                        type="file"
-                                        accept={'application/pdf'}
-                                        multiple={false}
-                                        className="hidden outline-none"
-                                    />
-                                </label>
-
+                <div className={`flex gap-4 items-start`}>
+                    <div className={`flex gap-4 w-full `}>
+                        <div className={`rounded-full flex items-center`}>
+                            {/*avatar*/}
+                            <img className={`aspect-square border-2 rounded-full w-[120px] object-contain`}
+                                 src={currentUser && currentUser.avatar} alt={"logo"}/>
+                        </div>
+                        <div className={`flex-1 ml-4 flex flex-col`}>
+                            <div>
+                                <p className={`font-bold text-[28px]`}>{currentUser && currentUser.name}</p>
                             </div>
-                        </div>
-                        <div className={`mx-10 flex flex-wrap gap-10`}>
-                            {/*cv item*/}
-
-                            {
-                                currentUser && cv && cv.map((value, index) => (
-                                    <div onClick={() => handleCvClick(value.item)}
-                                         className={`rounded bg-white w-fit relative overflow-hidden cursor-pointer group`}>
-                                        <OnePageCv key={index} url={value.item}/>
-                                        <div
-                                            className={`absolute flex items-end pl-2 w-full z-10 h-full bottom-0 bg-gradient-to-b from-transparent to-[#283545]`}>
-                                            <p className={`text-white line-clamp-3 font-bold`}>{value.fileName}</p>
-                                        </div>
+                            <div className={`grid grid-cols-2 mt-2 gap-8 w-full`}>
+                                <div className={`flex flex-col gap-4`}>
+                                    <div className={`flex gap-3 items-end justify-start`}>
+                                        <IoMail className={`mb-1`} size={20}/>
+                                        <p className={`opacity-70`}>{currentUser && currentUser.email}</p>
                                     </div>
-
-                                ))
-                            }
-
-
-                        </div>
-                    </div>
-                    <div className={`flex flex-col gap-4 w-full`}>
-                        <div className={`w-full flex gap-4 justify-start items-start`}>
-                            <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                Tài khoản
-                            </h2>
-                            <BiSolidEdit
-                                onClick={()=>setIsEditAccount(true)}
-                                className={`cursor-pointer hover:scale-110 duration-300 transition-transform`}
-                                         size={28} fill={"#00B14F"}/>
-                        </div>
-                        <div className={` rounded-lg bg-white border p-6 shadow-lg`}>
-                            {
-                                isEditAccount ? (
-                                    <div className={`flex flex-col gap-6 w-full`}>
-                                        <div className={`flex items-center`}>
-                                            <p className={`w-28`}>Email:</p>
-                                            <Input className={`w-1/2 p-2`}
-                                                   onChange={(e) => setNewEmail(e.target.value)}
-                                                   value={newEmail}
-                                                   placeholder="Email"/>
-                                        </div>
-                                        <div className={`flex items-center`}>
-                                            <p className={`w-28`}>Mật khẩu cũ:</p>
-                                            <Input type={'password'}
-                                                   onChange={(e) => setOldPassword(e.target.value)}
-                                                   className={`w-1/2 p-2`}
-                                                   value={oldPassword}/>
-                                        </div>
-                                        <div className={`flex items-center`}>
-                                            <p className={`w-28`}>Mật khẩu mới:</p>
-                                            <Input type={'password'}
-                                                   onChange={(e) => setNewPassword(e.target.value)}
-                                                   className={`w-1/2 p-2`}
-                                                   value={newPassword}/>
-                                        </div>
-                                        <div className={`flex items-center`}>
-                                            <p className={`w-28`}>Xác nhận:</p>
-                                            <Input type={'password'}
-                                                   onChange={(e) => setVerifyPassword(e.target.value)}
-                                                   className={`w-1/2 p-2`}
-                                                   value={verifyPassword}/>
-                                        </div>
-                                        <div className={`w-full p-2 flex justify-end gap-4 items-center`}>
-                                            <button
-                                                onClick={handleClearEditAccountRequest}
-                                                className={`rounded p-2 min-w-24 text-center font-semibold text-white bg-red-500 hover:bg-red-600`}>
-                                                Hủy
-                                            </button>
-
-                                            <button
-                                                onClick={handleSendVerification}
-                                                className={`rounded p-2 min-w-24 text-center font-semibold text-white bg-blue-500 hover:bg-blue-600`}>
-                                                Hoàn thành
-                                            </button>
-
-                                        </div>
+                                    <div className={`flex gap-3 items-end justify-start`}>
+                                        <FaLocationDot className={`mb-1`} size={20}/>
+                                        <p className={`opacity-70`}>{currentUser && currentUser.address || 'Chưa có địa chỉ'}</p>
                                     </div>
-                                ) : (
-                                    <div className={`flex flex-col gap-6 w-full`}>
-                                        <div className={`flex`}>
-                                            <p className={`w-24`}>Email:</p>
-                                            <p>{currentUser && currentUser.email}</p>
-                                        </div>
-                                        <div className={`flex`}>
-                                        <p className={`w-24`}>Mật khẩu:</p>
-                                            <p>***********</p>
-                                        </div>
-                                        <div className={`w-full p-2 flex justify-end items-center`}>
-                                            <button
-                                                className={`rounded p-2 text-center font-semibold text-white bg-red-500 hover:bg-red-600`}>
-                                                Đăng xuất
-                                            </button>
-
-                                        </div>
+                                </div>
+                                <div className={`flex flex-col gap-4`}>
+                                    <div className={`flex gap-3 items-end justify-start`}>
+                                        <BsFillTelephoneFill className={`mb-1`} size={20}/>
+                                        <p className={`opacity-70`}>{currentUser && currentUser.phone || 'Chưa có số điện thoại'}</p>
                                     </div>
-                                )
-                            }
+                                    <div className={`flex gap-3 items-end justify-start`}>
+                                        <RiShoppingBag4Fill className={`mb-1`} size={20}/>
+                                        <p className={`opacity-70`}>{currentUser && currentUser.university || 'Chưa có trường học'}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div className={`flex flex-col gap-6 mt-10 border-b pb-10`}>
+                <div className={`flex flex-col gap-4 w-full`}>
+                    <div className={`flex gap-4 items-start`}>
+                        <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                            CV của tôi
+                        </h2>
+                        <div
+                            data-toggle="tooltip"
+                            title={"Tải lên CV"}
+                            className={`w-fit cursor-pointer hover:scale-110 duration-300 transition-transform`}>
+                            <label
+                                className="flex flex-col items-center justify-start w-fit h-full  rounded-lg cursor-pointer  ">
+                                <IoIosAddCircle size={28} fill={"#00B14F"}/>
+                                <input
+                                    onChange={handleUploadCv}
+                                    id="dropzone-file"
+                                    type="file"
+                                    accept={'application/pdf'}
+                                    multiple={false}
+                                    className="hidden outline-none"
+                                />
+                            </label>
+
+                        </div>
+                    </div>
+                    <div className={`mx-10 flex flex-wrap gap-10`}>
+                        {/*cv item*/}
+
+                        {
+                            currentUser && cv && cv.map((value, index) => (
+                                <div onClick={() => handleCvClick(value.item)}
+                                     className={`rounded bg-white w-fit relative overflow-hidden cursor-pointer group`}>
+                                    <OnePageCv key={index} url={value.item}/>
+                                    <div
+                                        className={`absolute flex items-end pl-2 w-full z-10 h-full bottom-0 bg-gradient-to-b from-transparent to-[#283545]`}>
+                                        <p className={`text-white line-clamp-3 font-bold`}>{value.fileName}</p>
+                                    </div>
+                                </div>
+
+                            ))
+                        }
+
+
+                    </div>
+                </div>
+            </div>
+            <div className={`flex flex-col gap-6 mt-10`}>
+                <div className={`flex flex-col gap-4 w-full`}>
+                    <div className={`w-full flex gap-4 justify-start items-start`}>
+                        <h2 className="border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                            Tài khoản
+                        </h2>
+                        <BiSolidEdit
+                            onClick={() => setIsEditAccount(true)}
+                            className={`cursor-pointer hover:scale-110 duration-300 transition-transform`}
+                            size={28} fill={"#00B14F"}/>
+                    </div>
+                    <div className={` rounded-lg bg-white border p-6 shadow`}>
+                        {
+                            isEditAccount ? (
+                                <div className={`flex flex-col gap-6 w-full`}>
+                                    <div className={`flex items-center`}>
+                                        <p className={`w-28`}>Email:</p>
+                                        <Input allowClear={true}
+                                               className={`w-1/2 p-2`}
+                                               onChange={(e) => setNewEmail(e.target.value)}
+                                               value={newEmail}
+                                               placeholder="Email"/>
+                                    </div>
+                                    <div className={`flex items-center`}>
+                                        <p className={`w-28`}>Mật khẩu cũ:</p>
+                                        <Input spellCheck={false}
+                                               autoComplete="new-password"
+                                               type={'password'}
+                                               onChange={(e) => setOldPassword(e.target.value)}
+                                               className={`w-1/2 p-2`}
+                                               value={oldPassword}/>
+                                    </div>
+                                    <div className={`flex items-center`}>
+                                        <p className={`w-28`}>Mật khẩu mới:</p>
+                                        <Input type={'password'}
+                                               onChange={(e) => setNewPassword(e.target.value)}
+                                               className={`w-1/2 p-2`}
+                                               value={newPassword}/>
+                                    </div>
+                                    <div className={`flex items-center`}>
+                                        <p className={`w-28`}>Xác nhận:</p>
+                                        <Input type={'password'}
+                                               onChange={(e) => setVerifyPassword(e.target.value)}
+                                               className={`w-1/2 p-2`}
+                                               value={verifyPassword}/>
+                                    </div>
+                                    <div className={`w-full p-2 flex justify-end gap-4 items-center`}>
+                                        <button
+                                            onClick={handleClearEditAccountRequest}
+                                            className={`rounded p-2 min-w-24 text-center font-semibold text-white bg-red-500 hover:bg-red-600`}>
+                                            Hủy
+                                        </button>
+
+                                        <button
+                                            onClick={handleSendVerification}
+                                            className={`rounded p-2 min-w-24 text-center font-semibold text-white bg-blue-500 hover:bg-blue-600`}>
+                                            Hoàn thành
+                                        </button>
+
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={`flex flex-col gap-6 w-full`}>
+                                    <div className={`flex`}>
+                                        <p className={`w-24`}>Email:</p>
+                                        <p>{currentUser && currentUser.email}</p>
+                                    </div>
+                                    <div className={`flex`}>
+                                        <p className={`w-24`}>Mật khẩu:</p>
+                                        <p>***********</p>
+                                    </div>
+                                    <div className={`w-full p-2 flex justify-end items-center`}>
+                                        <button
+                                            onClick={handleLogout}
+                                            className={`rounded p-2 text-center font-semibold text-white bg-red-500 hover:bg-red-600`}>
+                                            Đăng xuất
+                                        </button>
+
+                                    </div>
+                                </div>
+                            )
+                        }
+                        {
+                            editAccountSend && (
+                                <div
+                                    className={`backdrop-blur-sm  bg-black bg-opacity-60 flex  overflow-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full`}>
+                                    <div className="relative p-4 max-w-[60%] max-h-full">
+                                        <div
+                                            className="relative bg-[#f5f5f5] min-w-[560px]  rounded-lg flex items-center justify-center min-h-60 shadow ">
+                                            <div className={`overflow-hidden `}>
+                                                <div className={`flex-col  my-4`}>
+                                                    <div className={`flex flex-col gap-4`}>
+                                                        <div className={`flex justify-center`}>
+                                                            <p>Xác nhận mã đã được gửi đến email của bạn</p>
+                                                        </div>
+                                                        <div
+                                                            className={`flex rounded border px-2 items-center py-2 gap-x-4`}>
+                                                            <RiFileCodeLine color={`green`}/>
+                                                            <input
+                                                                value={userCode}
+                                                                onChange={(e) => {
+                                                                    setUserCode(e.target.value)
+                                                                }}
+                                                                placeholder="Code"
+                                                                spellCheck={false}
+                                                                className={`outline-none p-2 text-black flex-1`}
+                                                            />
+                                                        </div>
+                                                        <div className={`flex justify-center`}>
+                                                            {
+                                                                expired ? (
+                                                                    <p className={`mt-1 text-red-500 `}>
+                                                                        Hết hạn!
+                                                                    </p>
+                                                                ) : (
+                                                                    <p className={`mt-1 text-red-500 `}>
+                                                                        Thời hạn: <span
+                                                                        className={`font-bold`}>{timer}</span>
+                                                                    </p>
+                                                                )
+                                                            }
+                                                        </div>
+                                                        <div className={``}>
+                                                            <button
+                                                                onClick={handleVerifyCode}
+                                                                type={`button`}
+                                                                className={`w-full rounded hover:bg-green-600 text-white bg-green-500 py-2`}
+                                                            >
+                                                                Xác nhận
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div onClick={closeModal}
+                                                 className={`absolute top-2 cursor-pointer right-2`}>
+                                                <CgCloseO size={28}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+            </div>
+            {
+                isEditProfile && (
+                    <CustomModal
+                        closeOnIcon={true}
+                        child={<CompleteInfo
+                            avatar={avatar}
+                            email={currentUser && currentUser.email}
+                            name={name}
+                            address={address}
+                            phone={phone}
+                            gender={gender}
+                            dayJs={dayJs}
+                            educationLevel={educationLevel}
+                            university={university}
+                            handleAvatarUpload={handleAvatarUpload}
+                            onDateChange={onDateChange}
+                            setName={(name) => setName(name)}
+                            setPhone={setPhone}
+                            setAddress={setAddress}
+                            setUniversity={setUniversity}
+                            onEducationLevelChange={onEducationLevelChange}
+                            onGenderChange={onGenderChange}
+                            handleSignUpDone={handleUpdateProfileDone}
+                        />}
+                        heigh={"h-[calc(100vh-50px)]"}
+                        handleModalClicks={() => {}}
+                        handleCloseModal={handleCloseEditProfile}
+                        handleOutModalClick={()=>{}}
+                    />
+                )
+            }
+
             <div onClick={handleCloseModel}
                  className={`backdrop-blur-sm bg-black bg-opacity-60 flex  overflow-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full ${openModal ? "block" : "hidden"}`}>
                 <div onClick={event => handleModalClicks(event)}
@@ -634,6 +940,50 @@ export const UserProfileInfo = () => {
             </div>
             <div className={`${isLoading ? 'block' : 'hidden'}`}>
                 <Spin size="large" fullscreen={true}/>
+            </div>
+            <ToastContainer
+                position="top-center"
+                autoClose={1000}
+                hideProgressBar={true}
+                newestOnTop={true}
+                closeOnClick
+            />
+        </div>
+    )
+}
+type CustomModalProps = {
+
+    handleCloseModal: () => void,
+    handleOutModalClick: (event: React.MouseEvent) => void,
+    handleModalClicks: (event: React.MouseEvent) => void,
+    child: React.ReactNode
+    closeOnIcon: boolean
+    heigh?: string
+
+}
+
+export const CustomModal: React.FC<CustomModalProps> = (item) => {
+    return (
+        <div onClick={item.handleOutModalClick}
+             className={`backdrop-blur-sm bg-black bg-opacity-60 flex  overflow-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full `}>
+            <div onClick={event => item.handleModalClicks(event)}
+                 className="relative p-4 max-w-[60%]  ">
+                <div
+                    className="relative bg-[#f5f5f5]  rounded-lg flex items-center justify-center min-h-60 shadow ">
+                    <div className={`overflow-y-auto ${item.heigh}`}>
+                        {
+                            item.closeOnIcon && (
+                                <div className={`w-full flex justify-end py-1 border-b`}>
+                                    <IoIosCloseCircle
+                                        onClick={item.handleCloseModal}
+                                        className={`cursor-pointer`}
+                                        size={28} fill={"#00b14f"}/>
+                                </div>
+                            )
+                        }
+                        {item.child}
+                    </div>
+                </div>
             </div>
         </div>
     )
@@ -753,12 +1103,5 @@ export const AppliedJobList = () => {
     )
 }
 
-export const Account = () => {
-    return (
-        <div>
-
-        </div>
-    )
-}
 
 export default UserProfile;

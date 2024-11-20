@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {MdOutlineMail} from "react-icons/md";
 import {RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
-import {googleExchange} from "@/page/GoogleCode.tsx";
-import {ToastContainer} from "react-toastify";
+import {googleExchange, UserResponse} from "@/page/GoogleCode.tsx";
+import {toast, ToastContainer} from "react-toastify";
 import {AppLogo} from "@/info/AppInfo.ts";
+import {loginUser} from "@/axios/Request.ts";
 
 const LogIn = () => {
     const [email, setEmail] = useState('');
@@ -15,8 +16,18 @@ const LogIn = () => {
         const user = JSON.parse(localStorage.getItem("user"));
         if(user) navigate("/")
     }, []);
-    const handleSignup = () => {
-
+    const handleLogin =async () => {
+        if(email && password) {
+            try{
+                const userResponse: UserResponse = await loginUser({email:email, password:password})
+                if(userResponse){
+                    localStorage.setItem("user", JSON.stringify(userResponse))
+                    navigate("/")
+                }
+            }catch (error) {
+                toast.error(error.response.data);
+            }
+        }
     }
     const handleForwardSignup = () => {
         navigate("/signup",{replace: false});
@@ -72,10 +83,10 @@ const LogIn = () => {
                                     />
                                 </div>
                             </div>
-                            {/*Signup button*/}
+                            {/*Login button*/}
                             <div className={`mt-8 drop-shadow-2xl`}>
                                 <button
-                                    onClick={handleSignup}
+                                    onClick={handleLogin}
                                     type={`button`}
                                     className={`w-full rounded hover:bg-gray-800 text-white bg-primary py-2`}>
                                     Đăng nhập

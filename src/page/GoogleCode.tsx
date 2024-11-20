@@ -5,6 +5,8 @@ import {toast, ToastContainer} from "react-toastify";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import 'react-toastify/dist/ReactToastify.css';
+import {UserCreationState} from "@/zustand/AppState.ts";
+import {UserSignupResponse} from "@/page/SignUp.tsx";
 
 export type UserInfoResponse={
     name: string,
@@ -30,6 +32,7 @@ const GoogleCode = () => {
     const [search]=useSearchParams()
     const navigate = useNavigate()
     const code = search.get("code");
+    const {setUser} = UserCreationState()
 
     const handleCodeExchange = async (code: string) => {
         const type = localStorage.getItem('action')
@@ -38,13 +41,25 @@ const GoogleCode = () => {
                 let rawUserInfo: UserResponse | null = null
                 if (type == 'signup') {
                     rawUserInfo = await signupWithGoogle(code)
+                    if (rawUserInfo) {
+                        localStorage.setItem('user', JSON.stringify(rawUserInfo))
+                        const userResponse : UserSignupResponse = {
+                            userId: rawUserInfo.userId,
+                            email: rawUserInfo.email,
+                            avatar: rawUserInfo.avatar,
+                            name: rawUserInfo.name,
+                        }
+                        setUser(userResponse)
+                        await delay(500)
+                        navigate('/profile/complete')
+                    }
                 }
                 if (type == 'login') {
                     rawUserInfo = await loginWithGoogle(code)
-                }
-                if (rawUserInfo) {
-                    localStorage.setItem('user', JSON.stringify(rawUserInfo))
-                    navigate('/')
+                    if (rawUserInfo) {
+                        localStorage.setItem('user', JSON.stringify(rawUserInfo))
+                        navigate('/')
+                    }
                 }
             }
         } catch (e: any) {
