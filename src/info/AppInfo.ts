@@ -6487,6 +6487,11 @@ export const jobFields = [
     { value: 'Khác', label: 'Khác' }
 ];
 
+export const jobTypes=[
+    {value: 'Full time', label: 'Full time'},
+    {value: 'Part time', label: 'Part time'},
+]
+
 
 
 

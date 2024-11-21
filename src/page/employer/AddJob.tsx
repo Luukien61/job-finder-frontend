@@ -1,14 +1,22 @@
 import React, {useState} from 'react';
-import {Collapse, CollapseProps, Input, InputNumber, Select, TimePicker} from "antd";
-import {MdAccessTimeFilled, MdAttachMoney, MdDescription, MdOutlineDriveFileRenameOutline} from "react-icons/md";
+import {Collapse, CollapseProps, DatePicker, GetProps, Input, InputNumber, Select, TimePicker} from "antd";
+import {
+    MdAccessTimeFilled,
+    MdAttachMoney,
+    MdDescription,
+    MdLocationPin,
+    MdOutlineDriveFileRenameOutline
+} from "react-icons/md";
 import {PiBrainBold, PiBuildingOfficeLight} from "react-icons/pi";
 import {CustomInput} from "@/page/CompleteProfile.tsx";
 import {DiRequirejs} from "react-icons/di";
 import {GiOfficeChair, GiReceiveMoney} from "react-icons/gi";
 import dayjs from "dayjs";
 import {BsGenderAmbiguous, BsPeople} from "react-icons/bs";
-import {dayOfWeek, genderOptions, jobFields, jobPositions} from "@/info/AppInfo.ts";
-
+import {dayOfWeek, genderOptions, jobFields, jobPositions, jobTypes} from "@/info/AppInfo.ts";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+type RangePickerProps = GetProps<typeof DatePicker.RangePicker>;
+dayjs.extend(customParseFormat);
 const format = 'HH:mm';
 
 const AddJob = () => {
@@ -56,6 +64,11 @@ const AddJob = () => {
     const startTime = dayjs('08:00', 'HH:mm');
     const endTime = dayjs('17:00', 'HH:mm');
 
+    const disabledDate: RangePickerProps['disabledDate'] = (current) => {
+        // Can not select days before today and today
+        return current && current < dayjs().startOf('day');
+    };
+
 
     return (
         <div className={`flex w-full mb-10  relative mt-10 overflow-y-visible `}>
@@ -92,9 +105,8 @@ const AddJob = () => {
             </div>
             {/*right side*/}
             <div className={`pl-5 w-1/3 flex flex-col gap-6 h-fit sticky top-24`}>
-                <div
-                    className={`rounded-lg bg-white border-solid border-[2px]   overflow-hidden border-green_default `}>
-                    <div className={`p-6 flex flex-col gap-4 `}>
+                <div className={`rounded-lg p-6 gap-8 flex flex-col bg-white border-solid border-[2px]  overflow-hidden border-green_default `}>
+                    <div className={`flex flex-col gap-4 `}>
                         <div className={`flex gap-1 items-center justify-start`}>
                             <MdAccessTimeFilled size={20}
                                                 fill={"#00b14f"}/>
@@ -107,37 +119,52 @@ const AddJob = () => {
                                 defaultValue={[startTime, endTime]}
                                 format={format}/>
                             <div className={`flex gap-3 items-center`}>
-                               <Select
-                                   defaultValue="Thứ hai"
-                                   style={{ width: 120 }}
-                                   options={dayOfWeek}
-                               />
-                               <p className={`flex-1 text-center`}>đến</p>
-                               <Select
-                                   defaultValue="Thứ sáu"
-                                   style={{ width: 120 }}
-                                   options={dayOfWeek}
-                               />
-                           </div>
+                                <Select
+                                    defaultValue="Thứ hai"
+                                    style={{width: 120}}
+                                    options={dayOfWeek}
+                                />
+                                <p className={`flex-1 text-center`}>đến</p>
+                                <Select
+                                    defaultValue="Thứ sáu"
+                                    style={{width: 120}}
+                                    options={dayOfWeek}
+                                />
+                            </div>
                         </div>
+                    </div>
+                    <div className={`flex flex-col gap-3`}>
+                        <div className={`flex gap-1 items-center justify-start`}>
+                            <MdAttachMoney size={20}
+                                           fill={"#00b14f"}/>
+                            <p className={`font-semibold text-18`}>Mức lương</p>
+                        </div>
+                        <div className={`flex gap-1 items-center justify-between`}>
+                            <p className={`ml-1`}>Từ</p>
+                            <InputNumber min={1} max={100} defaultValue={3}/>
+                            <p>đến</p>
+                            <InputNumber min={1} max={100} defaultValue={5}/>
+                            <p>triệu</p>
+                        </div>
+                    </div>
+                    <div className={` flex flex-col gap-4 `}>
+                        <div className={`flex gap-1 items-center justify-start`}>
+                            <MdLocationPin size={20}
+                                           fill={"#00b14f"}/>
+                            <p className={`font-semibold text-18`}>Địa điểm</p>
+                        </div>
+                        <div>
+                            <Input
+                                size={'large'}
+                                spellCheck={false}
+                                className={`text-16`}/>
+                        </div>
+
                     </div>
                 </div>
                 <div className={`rounded-lg bg-white overflow-hidden border-2 border-green_default `}>
                     <div className={`p-6 flex flex-col gap-8 `}>
-                        <div className={`flex flex-col gap-3`}>
-                            <div className={`flex gap-1 items-center justify-start`}>
-                                <MdAttachMoney size={20}
-                                               fill={"#00b14f"}/>
-                                <p className={`font-semibold text-18`}>Mức lương</p>
-                            </div>
-                            <div className={`flex gap-2 items-center justify-between`}>
-                                <p>Từ</p>
-                                <InputNumber  min={1} max={100} defaultValue={3}  />
-                                <p>đến</p>
-                                <InputNumber  min={1} max={100} defaultValue={5}  />
-                                <p>triệu</p>
-                            </div>
-                        </div>
+                        {/*vi tri*/}
                         <div>
                             <div className={`flex gap-2 items-center justify-start`}>
                                 <div className={`flex gap-2 w-1/2 items-center justify-start `}>
@@ -146,12 +173,14 @@ const AddJob = () => {
                                     <p className={`font-semibold text-18`}>Vị trí</p>
                                 </div>
                                 <Select
+                                    size={'large'}
                                     defaultValue="Nhân viên"
                                     className={`flex-1`}
                                     options={jobPositions}
                                 />
                             </div>
                         </div>
+                        {/*so luong*/}
                         <div>
                             <div className={`flex gap-2 items-center justify-start`}>
                                 <div className={`flex gap-2 w-1/2 items-center  justify-start`}>
@@ -160,10 +189,12 @@ const AddJob = () => {
                                     <p className={`font-semibold text-18 line-clamp-1 `}>Số lượng</p>
                                 </div>
                                 <InputNumber
+                                    size={'large'}
                                     className={`flex-1 text-center`}
                                     min={1} max={100} defaultValue={1}  />
                             </div>
                         </div>
+                        {/*kinh nghiem */}
                         <div>
                             <div className={`flex gap-2 items-center justify-start`}>
                                 <div className={`flex gap-2 w-1/2 items-center  justify-start`}>
@@ -172,11 +203,13 @@ const AddJob = () => {
                                     <p className={`font-semibold text-18 line-clamp-1 `}>Kinh nghiệm</p>
                                 </div>
                                 <InputNumber
+                                    size={'large'}
                                     addonAfter={'năm'}
                                     className={`flex-1 text-center text-16`}
                                     min={0} max={100} defaultValue={1}  />
                             </div>
                         </div>
+                        {/*gioi tinh*/}
                         <div>
                             <div className={`flex gap-2 items-center justify-start`}>
                                 <div className={`flex gap-2 w-1/2 items-center  justify-start`}>
@@ -185,12 +218,29 @@ const AddJob = () => {
                                     <p className={`font-semibold text-18 line-clamp-1 `}>Giới tính</p>
                                 </div>
                                 <Select
+                                    size={'large'}
                                     defaultValue="Không yêu cầu"
                                     className={`flex-1`}
                                     options={genderOptions}
                                 />
                             </div>
                         </div>
+                        <div>
+                            <div className={`flex gap-2 items-center justify-start`}>
+                                <div className={`flex gap-2 w-1/2 items-center  justify-start`}>
+                                    <BsGenderAmbiguous size={20}
+                                                   fill={"#00b14f"}/>
+                                    <p className={`font-semibold text-18 line-clamp-1 `}>Hình thức</p>
+                                </div>
+                                <Select
+                                    size={'large'}
+                                    defaultValue="Full time"
+                                    className={`flex-1`}
+                                    options={jobTypes}
+                                />
+                            </div>
+                        </div>
+                        {/*linh vuc*/}
                         <div>
                             <div className={`flex gap-4 flex-col  justify-start`}>
                                 <div className={`flex gap-2  items-center  justify-start`}>
@@ -199,14 +249,30 @@ const AddJob = () => {
                                     <p className={`font-semibold text-18 line-clamp-1 `}>Lĩnh vực</p>
                                 </div>
                                 <Select
+                                    size={'large'}
                                     placeholder={'Chọn lĩnh vực'}
                                     className={`flex-1 text-16`}
                                     options={jobFields}
                                 />
                             </div>
                         </div>
+                        {/*han tuyen*/}
+                        <div>
+                            <div className={`flex gap-4 flex-col  justify-start`}>
+                                <div className={`flex gap-2  items-center  justify-start`}>
+                                    <PiBuildingOfficeLight size={20}
+                                                   fill={"#00b14f"}/>
+                                    <p className={`font-semibold text-18 line-clamp-1 `}>Hạn tuyển</p>
+                                </div>
+                                <DatePicker
+                                    placeholder={'Chọn thời hạn tuyển'}
+                                    disabledDate={disabledDate}
+                                    format="DD/MM/YYYY"
+                                    size={'large'}
+                                />
+                            </div>
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
