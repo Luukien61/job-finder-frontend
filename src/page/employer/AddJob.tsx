@@ -12,9 +12,10 @@ import {CustomInput} from "@/page/CompleteProfile.tsx";
 import {DiRequirejs} from "react-icons/di";
 import {GiOfficeChair, GiReceiveMoney} from "react-icons/gi";
 import dayjs from "dayjs";
-import {BsGenderAmbiguous, BsPeople} from "react-icons/bs";
+import {BsClock, BsGenderAmbiguous, BsPeople} from "react-icons/bs";
 import {dayOfWeek, genderOptions, jobFields, jobPositions, jobTypes} from "@/info/AppInfo.ts";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import {HiOutlineClock} from "react-icons/hi";
 type RangePickerProps = GetProps<typeof DatePicker.RangePicker>;
 dayjs.extend(customParseFormat);
 const format = 'HH:mm';
@@ -228,7 +229,7 @@ const AddJob = () => {
                         <div>
                             <div className={`flex gap-2 items-center justify-start`}>
                                 <div className={`flex gap-2 w-1/2 items-center  justify-start`}>
-                                    <BsGenderAmbiguous size={20}
+                                    <BsClock size={20}
                                                    fill={"#00b14f"}/>
                                     <p className={`font-semibold text-18 line-clamp-1 `}>Hình thức</p>
                                 </div>
