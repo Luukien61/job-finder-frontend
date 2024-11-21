@@ -274,4 +274,19 @@ input{
     border-color: #25b849 !important;
 }
 
+.ant-btn-variant-solid {
+    color: #fff;
+    background: #25b849;
+}
+.ant-btn-variant-solid:hover {
+    background: #25b849 !important;
+}
+.ant-input-outlined:focus{
+    border-color: #25b849 !important;
+}
+
+.bg-gradient-to-green{
+    @apply bg-gradient-to-r from-[#212f3f] to-[#00b14f]
+}
+
 

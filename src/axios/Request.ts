@@ -115,3 +115,15 @@ export const updateAccount = async (request: any) => {
 export const updateProfile = async (request: any) => {
     return await instance.put(`/user/profile`, request).then((response: any) => response.data)
 }
+
+export const getVerificationCode = async (template: any) => {
+    return await instance.post(`/code`, template).then((response: any) => response.data)
+}
+
+export const employerSignUp = async (request: any) => {
+    return await instance.post(`/api/companies`, request).then((response: any) => response.data)
+}
+
+export const employerLogin = async (request: any) => {
+    return await instance.post(`/api/companies/login`, request).then((response: any) => response.data)
+}

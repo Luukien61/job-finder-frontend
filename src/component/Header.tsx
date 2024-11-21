@@ -11,7 +11,7 @@ const Header = () => {
     useEffect(() => {
         let user:UserResponse = JSON.parse(localStorage.getItem("user"));
         const getUser =async ()=> {
-            user = await getUserInfo(user.userId)
+            user = await getUserInfo(user.id)
             if(user) {
                 setLoginUser(user)
                 localStorage.setItem("user", JSON.stringify(user))
@@ -22,15 +22,14 @@ const Header = () => {
 
     const profileClick=()=>{
         if(loginUser){
-            navigate(`/me/${loginUser.userId}`)
+            navigate(`/me/${loginUser.id}`)
         }
     }
     const handleButtonClick = (target: string) => {
         navigate(`${target}`, {replace: false});
     }
     return (
-        <div
-            className={`px-4 flex min-h-[74px] bg-white border-none border-b-[1px] border-b-[#e9eaec] sticky top-0 z-50 shadow`}>
+        <div className={`px-4 flex min-h-[74px] bg-white border-none border-b-[1px] border-b-[#e9eaec] sticky top-0 z-50 shadow`}>
 
             <div className={`flex justify-between w-full`}>
                 {/*App logo*/}
@@ -63,7 +62,7 @@ const Header = () => {
                             <IoNotifications size={24} fill={"#00B14F"}/>
                         </div>
                         <div
-                            onClick={()=>navigate(`/message/${loginUser.userId}`)}
+                            onClick={()=>navigate(`/message/${loginUser.id}`)}
                             className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
                             <AiFillMessage size={24} fill={"#00B14F"}/>
                         </div>
@@ -87,6 +86,7 @@ const Header = () => {
                             Đăng ký
                         </button>
                         <button
+                            onClick={() => navigate('/employer/entry/signup')}
                             type={"button"}
                             className={`rounded bg-black hover:bg-gray-900 text-white text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
                             Nhà tuyển dụng

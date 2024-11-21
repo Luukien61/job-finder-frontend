@@ -22,7 +22,7 @@ export const googleExchange = () => {
 export const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export interface UserResponse {
-    "userId": string,
+    "id": string,
     "name": string,
     "avatar": string,
     "email": string,
@@ -44,7 +44,7 @@ const GoogleCode = () => {
                     if (rawUserInfo) {
                         localStorage.setItem('user', JSON.stringify(rawUserInfo))
                         const userResponse : UserSignupResponse = {
-                            userId: rawUserInfo.userId,
+                            id: rawUserInfo.id,
                             email: rawUserInfo.email,
                             avatar: rawUserInfo.avatar,
                             name: rawUserInfo.name,

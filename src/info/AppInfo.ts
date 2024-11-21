@@ -6440,6 +6440,53 @@ export const policies = [
 
 export const defaultPhoneNumber='0353795729'
 
+export const companyDefaultAvatr='/public/company_default.png'
+
+export const requiredFields= 'Vui lòng điền đầy đủ các thông tin'
+
+export const dayOfWeek = [
+    { value: 'Thứ hai', label: 'Thứ hai' },
+    { value: 'Thứ ba', label: 'Thứ ba' },
+    { value: 'Thứ tư', label: 'Thứ tư' },
+    { value: 'Thứ năm', label: 'Thứ năm' },
+    { value: 'Thứ sáu', label: 'Thứ sáu' },
+    { value: 'Thứ bảy', label: 'Thứ bảy' },
+    { value: 'Chủ nhật', label: 'Chủ nhật' }
+];
+
+export const jobPositions = [
+    { value: 'Nhân viên', label: 'Nhân viên' },
+    { value: 'Giám đốc', label: 'Giám đốc' },
+    { value: 'Quản lý', label: 'Quản lý' },
+    { value: 'Trưởng phòng', label: 'Trưởng phòng' },
+    { value: 'Phó phòng', label: 'Phó phòng' },
+    { value: 'Thực tập sinh', label: 'Thực tập sinh' },
+    { value: 'Khác', label: 'Khác' }
+];
+
+export const genderOptions = [
+    {value: 'Nam', label: 'Nam'},
+    {value: "Nữ", label: 'Nữ'},
+    {value: 'Không yêu cầu', label: 'Không yêu cầu'}
+]
+
+export const jobFields = [
+    { value: 'Công nghệ thông tin', label: 'Công nghệ thông tin' },
+    { value: 'Kế toán - Kiểm toán', label: 'Kế toán - Kiểm toán' },
+    { value: 'Nhân sự', label: 'Nhân sự' },
+    { value: 'Marketing - Truyền thông', label: 'Marketing - Truyền thông' },
+    { value: 'Bán hàng', label: 'Bán hàng' },
+    { value: 'Giáo dục - Đào tạo', label: 'Giáo dục - Đào tạo' },
+    { value: 'Kỹ thuật', label: 'Kỹ thuật' },
+    { value: 'Sản xuất', label: 'Sản xuất' },
+    { value: 'Y tế - Chăm sóc sức khỏe', label: 'Y tế - Chăm sóc sức khỏe' },
+    { value: 'Xây dựng', label: 'Xây dựng' },
+    { value: 'Ngân hàng - Tài chính', label: 'Ngân hàng - Tài chính' },
+    { value: 'Bất động sản', label: 'Bất động sản' },
+    { value: 'Du lịch - Nhà hàng - Khách sạn', label: 'Du lịch - Nhà hàng - Khách sạn' },
+    { value: 'Khác', label: 'Khác' }
+];
+
 
 
 

@@ -10,6 +10,7 @@ import dayjs, {Dayjs} from 'dayjs';
 import {default_avatar} from "@/info/AppInfo.ts";
 import imageUpload from "@/axios/ImageUpload.ts";
 import {completeProfile, updateCv, uploadCvToAWSSpring} from "@/axios/Request.ts";
+import {format} from "date-fns";
 
 
 const CompleteProfile = () => {
@@ -35,11 +36,11 @@ const CompleteProfile = () => {
             if (user.name) setName(user.name)
 
             setEmail(user.email)
-            setUserId(user.userId)
+            setUserId(user.id)
         } else {
             const localUser: UserSignupResponse = JSON.parse(localStorage.getItem('user'));
             setEmail(localUser.email)
-            setUserId(localUser.userId)
+            setUserId(localUser.id)
         }
     }, [])
 
@@ -144,7 +145,7 @@ const CompleteProfile = () => {
                 const user: UserSignupResponse = JSON.parse(localStorage.getItem('user'));
                 if (user) {
                     console.log(user)
-                    user_id = user.userId;
+                    user_id = user.id;
                     console.log(user_id)
                 } else {
                     navigate('/login');
@@ -152,7 +153,7 @@ const CompleteProfile = () => {
             }
 
             const userProfileCompleteRequest = {
-                userId: user_id,
+                id: user_id,
                 name: name,
                 email: email,
                 phone: phone,
@@ -160,7 +161,7 @@ const CompleteProfile = () => {
                 educationLevel: educationLevel,
                 university: university,
                 address: address,
-                dateOfBirth: date,
+                dateOfBirth: format(date, 'yyyy-MM-dd'),
                 avatar: user_avatar,
             }
             try {
@@ -446,6 +447,7 @@ export const CompleteInfo: React.FC<CompleteProfileProps> = (item) => {
 
 export const CustomInput = (
     {
+        labelIcon=null,
         label,
         value,
         onChange,
@@ -453,14 +455,20 @@ export const CustomInput = (
         disable = false,
         allowClear = false,
         type = 'text',
+        addBefore='',
         prefix=null,
-        isBoldLable = false,
+        isBoldLabel = false,
+        labelStyle =''
     }
 ) => {
     return (
         <>
-            <p className={`ml-1 ${isBoldLable && 'font-semibold'}`}>{label}</p>
+            <div className={`flex gap-1 justify-start items-center`}>
+                {labelIcon}
+                <p className={`ml-1 ${labelStyle} ${isBoldLabel && 'font-semibold'}`}>{label}</p>
+            </div>
             <Input
+                addonBefore={addBefore}
                 prefix={prefix}
                 type={type}
                 allowClear={allowClear}
@@ -468,7 +476,7 @@ export const CustomInput = (
                 value={value}
                 onChange={onChange}
                 spellCheck={false}
-                className={`p-2 outline-none rounded border mt-2 ${width}`}/>
+                className={`p-2 outline-none  rounded border mt-2 ${width}`}/>
         </>
     )
 }

@@ -1,8 +1,9 @@
 import React, {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
-import {RiFileCodeLine, RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
+import {RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
 import {AiFillCloud, AiFillMessage, AiFillSafetyCertificate} from "react-icons/ai";
 import {BsFillQuestionCircleFill, BsFillTelephoneFill} from "react-icons/bs";
 import {IoMail, IoNotifications} from "react-icons/io5";
+import { format } from 'date-fns';
 import {FaLocationDot} from "react-icons/fa6";
 import {IoIosAddCircle, IoIosCloseCircle} from "react-icons/io";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
@@ -37,7 +38,7 @@ import {LuQrCode} from "react-icons/lu";
 
 
 export interface UserDto {
-    userId: string;
+    id: string;
     name: string;
     avatar: string;
     email: string;
@@ -108,7 +109,7 @@ const UserProfile = () => {
         const logInUser: UserResponse = JSON.parse(localStorage.getItem("user"));
         if (logInUser) {
             try {
-                const userInfo: UserDto = await getUserDto(logInUser.userId);
+                const userInfo: UserDto = await getUserDto(logInUser.id);
                 if (userInfo) {
                     setCurrentUser(userInfo);
                 } else {
@@ -191,7 +192,7 @@ const UserProfile = () => {
                         <IoNotifications size={24} fill={"#00B14F"}/>
                     </div>
                     <div
-                        onClick={() => navigate(`/message/${currentUser.userId}`)}
+                        onClick={() => navigate(`/message/${currentUser.id}`)}
                         className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
                         <AiFillMessage size={24} fill={"#00B14F"}/>
                     </div>
@@ -317,7 +318,7 @@ export const UserProfileInfo = () => {
         const logInUser: UserResponse = JSON.parse(localStorage.getItem("user"));
         if (logInUser) {
             try {
-                const userInfo: UserDto = await getUserDto(logInUser.userId);
+                const userInfo: UserDto = await getUserDto(logInUser.id);
                 if (userInfo) {
                     setCurrentUser(userInfo);
                 } else {
@@ -416,8 +417,8 @@ export const UserProfileInfo = () => {
                 const formData = new FormData();
                 const renamedFile = new File([file], cleanName, {type: file.type});
                 formData.append('file', renamedFile);
-                await uploadCvToAWSSpring(currentUser.userId, formData);
-                const userInfo = await getUserDto(currentUser.userId);
+                await uploadCvToAWSSpring(currentUser.id, formData);
+                const userInfo = await getUserDto(currentUser.id);
                 if (userInfo) {
                     setCurrentUser(userInfo);
                 }
@@ -433,8 +434,8 @@ export const UserProfileInfo = () => {
     const handelRemoveCv = async (url: string) => {
         try {
             setIsLoading(true);
-            await deleteCvById(currentUser.userId, url)
-            const userInfo = await getUserDto(currentUser.userId);
+            await deleteCvById(currentUser.id, url)
+            const userInfo = await getUserDto(currentUser.id);
             if (userInfo) {
                 setCurrentUser(userInfo);
             }
@@ -453,7 +454,7 @@ export const UserProfileInfo = () => {
                 setIsLoading(true);
                 try {
                     const code = await sendAccountVerification({
-                        userId: currentUser.userId,
+                        id: currentUser.id,
                         email: newEmail,
                         oldPassword: oldPassword,
                         newPassword: newPassword
@@ -491,7 +492,7 @@ export const UserProfileInfo = () => {
                 try {
                     setIsLoading(true)
                     const userResponse: UserResponse = await updateAccount({
-                        userId: currentUser.userId,
+                        id: currentUser.id,
                         email: newEmail,
                         oldPassword: oldPassword,
                         newPassword: newPassword
@@ -573,6 +574,7 @@ export const UserProfileInfo = () => {
             const dateJs = dayjs(dateOfBirth)
             setDate(dateOfBirth);
             setDayJs(dateJs)
+            console.log("Date: ", dateOfBirth)
         }else {
             setDayJs(date)
         }
@@ -610,9 +612,8 @@ export const UserProfileInfo = () => {
             if(avatar&&avatar!=currentUser.avatar&&avatar!=default_avatar){
                 user_avatar = await imageUpload({image: avatar})
             }
-
             const userProfileCompleteRequest={
-                userId: currentUser.userId,
+                id: currentUser.id,
                 name:name,
                 email:currentUser.email,
                 phone:phone,
@@ -620,14 +621,15 @@ export const UserProfileInfo = () => {
                 educationLevel:educationLevel,
                 university:university,
                 address:address,
-                dateOfBirth:date,
+                dateOfBirth:format(date, 'yyyy-MM-dd'),
                 avatar:user_avatar,
             }
             try{
+                console.log("request: ", userProfileCompleteRequest)
                 const response : UserDto = await updateProfile(userProfileCompleteRequest)
                 setCurrentUser(response)
                 const localUser : UserResponse ={
-                    userId: currentUser.userId,
+                    id: currentUser.id,
                     name: response.name,
                     email: response.email,
                     avatar: response.avatar,
@@ -663,7 +665,7 @@ export const UserProfileInfo = () => {
                     <div className={`flex gap-4 w-full `}>
                         <div className={`rounded-full flex items-center`}>
                             {/*avatar*/}
-                            <img className={`aspect-square border-2 rounded-full w-[120px] object-contain`}
+                            <img className={`aspect-square border-2 rounded-full w-[120px] object-cover`}
                                  src={currentUser && currentUser.avatar} alt={"logo"}/>
                         </div>
                         <div className={`flex-1 ml-4 flex flex-col`}>
@@ -994,7 +996,7 @@ export const SavedJobList = () => {
 
     const fetchSavedJobList = async () => {
         try {
-            const savedJobs: JobWidthCardProps[] = await getAllSavedJobsByUserId(user.userId)
+            const savedJobs: JobWidthCardProps[] = await getAllSavedJobsByUserId(user.id)
             setSavedJobList(savedJobs)
         } catch (e) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại")
@@ -1051,7 +1053,7 @@ export const AppliedJobList = () => {
 
     const fetchSavedJobList = async () => {
         try {
-            const savedJobs: JobWidthCardProps[] = await getAppliedJobsByUserId(user.userId)
+            const savedJobs: JobWidthCardProps[] = await getAppliedJobsByUserId(user.id)
             setAppliedJobs(savedJobs)
         } catch (e) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại")

@@ -148,10 +148,10 @@ const Message = () => {
             try {
                 const user: UserResponse = await getUserInfo(userId)
                 setLoginUser(user)
-                setCurrentUserId(user.userId)
-                getAllConversation(user.userId)
+                setCurrentUserId(user.id)
+                getAllConversation(user.id)
                 connectWebSocket(() => {
-                    subscribeToTopic(`/user/${user.userId}/private`, onPrivateMessage)
+                    subscribeToTopic(`/user/${user.id}/private`, onPrivateMessage)
                 })
             } catch (e: any) {
                 toast.error(e.response.data)
@@ -159,7 +159,7 @@ const Message = () => {
         }
         if (rawUser) {
             const user: UserResponse = JSON.parse(rawUser)
-            getLogInUser(user.userId)
+            getLogInUser(user.id)
         } else {
             navigate('/login', {replace: true})
         }
@@ -210,7 +210,7 @@ const Message = () => {
                 content: message,
                 timestamp: new Date(),
                 recipientId: currentRecipient.id,
-                senderId: loginUser.userId,
+                senderId: loginUser.id,
                 conversationId: conversationId,
                 type: type
             }
@@ -360,7 +360,7 @@ const Message = () => {
                                             privateChats.map((value, index) => (
                                                 <div
                                                     key={index}
-                                                    className={`m-x-[16px] w-full flex ${value.senderId != loginUser?.userId ? 'justify-start' : 'justify-end'}`}
+                                                    className={`m-x-[16px] w-full flex ${value.senderId != loginUser?.id ? 'justify-start' : 'justify-end'}`}
                                                 >
                                                     <div
                                                         className={`w-fit min-w-[80px]  max-w-[50%]  drop-shadow relative block p-[12px] rounded-[8px] ${value.senderId != currentUserId ? 'bg-white' : 'bg-chat_me'}`}

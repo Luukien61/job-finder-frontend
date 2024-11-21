@@ -13,7 +13,7 @@ import {Input} from "antd";
 import {IoIosCloseCircle} from "react-icons/io";
 
 export type UserSignupResponse = {
-    userId: string,
+    id: string,
     email: string,
     avatar: string,
     name?: string,

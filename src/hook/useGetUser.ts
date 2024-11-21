@@ -4,7 +4,7 @@ import {getUserInfo} from "@/axios/Request.ts";
 const UseGetUser = () => {
     let user:UserResponse = JSON.parse(localStorage.getItem("user"));
     const getUser =async ()=> {
-        user = await getUserInfo(user.userId)
+        user = await getUserInfo(user.id)
         if(user) {
             localStorage.setItem("user", JSON.stringify(user))
             return user;
