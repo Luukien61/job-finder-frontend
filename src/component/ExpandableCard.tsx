@@ -1,17 +1,17 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {ChevronDown, ChevronUp} from 'lucide-react';
 
-const ExpandableCard = ({children}) => {
+const ExpandableCard = ({children,  high = 200, expandStyle='h-12 py-2', expandColor='bottom-12 from-white h-16'}) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
-    const [contentHeight, setContentHeight] = useState(200);
+    const [contentHeight, setContentHeight] = useState(high);
     const contentRef = useRef(null);
 
     useEffect(() => {
         if (contentRef.current) {
             const actualHeight = contentRef.current.scrollHeight;
             setContentHeight(actualHeight);
-            setIsOverflowing(actualHeight > 200);
+            setIsOverflowing(actualHeight > high);
         }
     }, [children]);
 
@@ -25,7 +25,7 @@ const ExpandableCard = ({children}) => {
                 ref={contentRef}
                 style={{
                     maxHeight: isOverflowing
-                        ? (isExpanded ? `${contentHeight}px` : '200px')
+                        ? (isExpanded ? `${contentHeight}px` : `${high}px`)
                         : 'auto'
                 }}
                 className={`overflow-hidden transition-all duration-500 ease-in-out`}
@@ -36,7 +36,7 @@ const ExpandableCard = ({children}) => {
             {/*/!* Gradient overlay for collapsed state *!/*/}
             {isOverflowing && !isExpanded && (
                 <div
-                    className=" absolute bottom-12  left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"
+                    className={`absolute  ${expandColor} left-0 right-0  bg-gradient-to-t  to-transparent pointer-events-none`}
                 />
             )}
 
@@ -45,7 +45,7 @@ const ExpandableCard = ({children}) => {
                 <div className={`w-full flex `}>
                     <button
                         onClick={toggleExpand}
-                        className="outline-none h-12 w-fit py-2 flex items-center justify-center text-green_default transition-colors duration-200"
+                        className={`outline-none ${expandStyle} w-fit flex items-center justify-center text-green_default transition-colors duration-200 `}
                     >
                         {isExpanded ? (
                             <>

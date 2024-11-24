@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 // @ts-expect-error
 import 'leaflet/dist/leaflet.css';
 
-const LocationMap = ({ district, city, province }) => {
+const LocationMap = ({ location}) => {
     const [position, setPosition] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ const LocationMap = ({ district, city, province }) => {
         const fetchCoordinates = async () => {
             try {
                 // Tạo địa chỉ đầy đủ
-                const addressQuery = `${district}, ${city}, ${province}, Vietnam`;
+                const addressQuery = `${location}, Vietnam`;
 
                 // Sử dụng Nominatim - dịch vụ Geocoding miễn phí của OpenStreetMap
                 const response = await fetch(
@@ -36,10 +36,10 @@ const LocationMap = ({ district, city, province }) => {
             }
         };
 
-        if (district || city || province) {
+        if (location) {
             fetchCoordinates();
         }
-    }, [district, city, province]);
+    }, [location]);
 
     // Component loading
     if (isLoading) {
@@ -80,7 +80,7 @@ const LocationMap = ({ district, city, province }) => {
             />
             <Marker position={position}>
                 <Popup>
-                    {district}, {city}, {province}
+                    {location}
                 </Popup>
             </Marker>
         </MapContainer>

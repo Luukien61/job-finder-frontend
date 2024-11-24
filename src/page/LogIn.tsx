@@ -43,7 +43,9 @@ const LogIn = () => {
                     <div className={`flex flex-col gap-y-2 justify-center items-center pb-3`}>
                         <div className={`w-3/4 flex-col my-4`}>
                             <div className={`flex justify-center`}>
-                                <img className={`w-28`} src={AppLogo} alt={`logo`}/>
+                                <a href={'/'}>
+                                    <img className={`w-28`} src={AppLogo} alt={`logo`}/>
+                                </a>
                             </div>
 
                             {/*email and phone*/}

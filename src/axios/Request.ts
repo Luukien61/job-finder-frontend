@@ -1,5 +1,6 @@
 import {instance} from "@/axios/Config.ts";
 import axios from "axios";
+import {companyBackendPath} from "@/info/AppInfo.ts";
 
 
 export const getMessages = async (id: string, page: number) => {
@@ -126,4 +127,16 @@ export const employerSignUp = async (request: any) => {
 
 export const employerLogin = async (request: any) => {
     return await instance.post(`/api/companies/login`, request).then((response: any) => response.data)
+}
+
+export const addJob = async (companyId, request: any) => {
+    return await instance.post(`/job/${companyId}`, request).then((response: any) => response.data)
+}
+
+export const getCompanyInfo = async (id: string) => {
+    return await instance.get(`${companyBackendPath}/${id}`).then((response: any) => response.data)
+}
+
+export const getJobDetailById = async (id: string | number) => {
+    return await instance.get(`/job/${id}`).then((response: any) => response.data)
 }

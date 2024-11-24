@@ -95,7 +95,6 @@ const UserProfile = () => {
     const navigate = useNavigate();
     const [itemChoose, setItemChoose] = useState<number>(0);
     const warningItem: WarningNote[] = []
-    const [isLoading, setIsLoading] = useState<boolean>(true);
     for (let i = 1; i < 7; i++) {
         const item: WarningNote = {
             img: `/public/warning/${i}.webp`,
@@ -117,7 +116,7 @@ const UserProfile = () => {
                     localStorage.clear()
                     navigate("/login");
                 }
-                setIsLoading(false);
+
             } catch (e) {
                 toast.error(e.response.data);
                 localStorage.clear()
@@ -197,7 +196,7 @@ const UserProfile = () => {
                         <AiFillMessage size={24} fill={"#00B14F"}/>
                     </div>
                     <div className={`w-9 cursor-pointer aspect-square rounded-full overflow-y-hidden`}>
-                        <img className={`object-cover border-2`} src={currentUser && currentUser.avatar} alt=""/>
+                        <img className={`object-cover aspect-square`} src={currentUser && currentUser.avatar} alt=""/>
                     </div>
                 </div>
                 {/*content*/}
@@ -574,7 +573,6 @@ export const UserProfileInfo = () => {
             const dateJs = dayjs(dateOfBirth)
             setDate(dateOfBirth);
             setDayJs(dateJs)
-            console.log("Date: ", dateOfBirth)
         }else {
             setDayJs(date)
         }
@@ -688,7 +686,7 @@ export const UserProfileInfo = () => {
                                         <BsFillTelephoneFill className={`mb-1`} size={20}/>
                                         <p className={`opacity-70`}>{currentUser && currentUser.phone || 'Chưa có số điện thoại'}</p>
                                     </div>
-                                    <div className={`flex gap-3 items-end justify-start`}>
+                                    <div className={`flex gap-3 items-center justify-start`}>
                                         <RiShoppingBag4Fill className={`mb-1`} size={20}/>
                                         <p className={`opacity-70`}>{currentUser && currentUser.university || 'Chưa có trường học'}</p>
                                     </div>
@@ -912,7 +910,7 @@ export const UserProfileInfo = () => {
                             onGenderChange={onGenderChange}
                             handleSignUpDone={handleUpdateProfileDone}
                         />}
-                        heigh={"h-[calc(100vh-50px)]"}
+                        high={"h-[calc(100vh-50px)]"}
                         handleModalClicks={() => {}}
                         handleCloseModal={handleCloseEditProfile}
                         handleOutModalClick={()=>{}}
@@ -959,7 +957,9 @@ type CustomModalProps = {
     handleModalClicks: (event: React.MouseEvent) => void,
     child: React.ReactNode
     closeOnIcon: boolean
-    heigh?: string
+    high?: string
+    bottom?: any
+    notMaxWidth?: boolean
 
 }
 
@@ -968,10 +968,10 @@ export const CustomModal: React.FC<CustomModalProps> = (item) => {
         <div onClick={item.handleOutModalClick}
              className={`backdrop-blur-sm bg-black bg-opacity-60 flex  overflow-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full `}>
             <div onClick={event => item.handleModalClicks(event)}
-                 className="relative p-4 max-w-[60%]  ">
+                 className={`relative p-4 ${!item.notMaxWidth && 'max-w-[60%]'}`}>
                 <div
-                    className="relative bg-white  rounded-lg flex items-center justify-center min-h-60 shadow ">
-                    <div className={`overflow-y-auto ${item.heigh}`}>
+                    className="relative bg-white flex-col  rounded-lg flex items-center justify-center min-h-60 shadow ">
+                    <div className={`overflow-y-auto ${item.high}`}>
                         {
                             item.closeOnIcon && (
                                 <div className={`w-full flex justify-end py-1 border-b`}>
@@ -984,6 +984,7 @@ export const CustomModal: React.FC<CustomModalProps> = (item) => {
                         }
                         {item.child}
                     </div>
+                    {item.bottom}
                 </div>
             </div>
         </div>

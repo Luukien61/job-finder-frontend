@@ -2,7 +2,14 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import {employerSignUp, getVerificationCode} from "@/axios/Request.ts";
 import {toast} from "react-toastify";
-import {AppLogo, companyDefaultAvatr, defaultPhoneNumber, fullProvinces, policies} from "@/info/AppInfo.ts";
+import {
+    AppLogo,
+    companyDefaultAvatr,
+    defaultCompanyLogo, defaultCompanyWallpaper,
+    defaultPhoneNumber,
+    fullProvinces,
+    policies
+} from "@/info/AppInfo.ts";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {CustomInput} from "@/page/CompleteProfile.tsx";
 import {IoPersonCircleSharp} from "react-icons/io5";
@@ -102,7 +109,8 @@ const EmployerSignup = () => {
                     const request = {
                         email: email,
                         phone: phone,
-                        logo: companyDefaultAvatr,
+                        logo: defaultCompanyLogo,
+                        wallpaper: defaultCompanyWallpaper,
                         name: companyName,
                         password: password,
                         address: fullAddress,
@@ -110,8 +118,8 @@ const EmployerSignup = () => {
                     }
                     const response = await employerSignUp(request);
                     if(response){
-                        localStorage.setItem("user", JSON.stringify(response))
-                        navigate("/")
+                        localStorage.setItem("company", JSON.stringify(response))
+                        navigate("/employer")
                     }
                 }catch (e) {
                     toast.error(e.response.data);
@@ -416,7 +424,7 @@ export const CodeVerify: React.FC<CodeVerifyProps> = (props) => {
                         </button>
                     </div>
                 </div>}
-            heigh={'h-fit'}
+            high={'h-fit'}
             handleOutModalClick={() => null}
             closeOnIcon={true}
             handleCloseModal={props.onClose}

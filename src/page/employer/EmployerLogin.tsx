@@ -16,8 +16,8 @@ const EmployerLogin = () => {
             try{
                 const response = await employerLogin({email:email,password:password});
                 if(response){
-                    localStorage.setItem('user',JSON.stringify(response));
-                    navigate('/');
+                    localStorage.setItem('company',JSON.stringify(response));
+                    navigate('/employer');
                 }
             }catch(err){
                 toast.error(err.response.data)

@@ -6492,6 +6492,10 @@ export const jobTypes=[
     {value: 'Part time', label: 'Part time'},
 ]
 
+export const companyBackendPath = '/api/companies'
+export const defaultCompanyLogo ='https://res.cloudinary.com/dmi3xizxq/image/upload/v1732355405/company_default_a6vjzg.png'
+export const defaultCompanyWallpaper='https://static.topcv.vn/v4/image/normal-company/cover/company_cover_1.jpg'
+
 
 
 

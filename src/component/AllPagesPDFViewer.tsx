@@ -21,7 +21,7 @@ const FlexStickyLayout = ({url}) => {
     }
 
     return (
-        <div className={`max-h-[650px] w-fit`}>
+        <div className={`max-h-[630px]  px-2 h-[calc(100vh-150px)] `}>
             <Document   file={`${url}`} onLoadSuccess={onDocumentLoadSuccess}>
                 {Array.from(new Array(numPages), (_, index) => (
                     <Page scale={1.4} key={`page_${index + 1}`} pageNumber={index + 1}/>

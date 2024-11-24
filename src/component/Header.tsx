@@ -17,7 +17,9 @@ const Header = () => {
                 localStorage.setItem("user", JSON.stringify(user))
             }
         }
-        getUser();
+        if(user){
+            getUser();
+        }
     }, [])
 
     const profileClick=()=>{
@@ -69,7 +71,7 @@ const Header = () => {
                         <div onClick={profileClick}
                              className={`w-9 cursor-pointer  bg-white  aspect-square rounded-full overflow-y-hidden`}>
                             <img src={loginUser && loginUser.avatar} alt={`avatar`}
-                                 className="object-cover "/>
+                                 className="object-cover aspect-square"/>
                         </div>
                     </div> :
                     <div className={`items-center flex gap-x-4`}>

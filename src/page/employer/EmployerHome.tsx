@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
 import {AiOutlineGlobal} from "react-icons/ai";
 import {PiCopySimple, PiPhoneLight} from "react-icons/pi";
@@ -7,8 +7,10 @@ import {MdLocationPin} from "react-icons/md";
 import LocationMap from "@/component/employer/LocationMap.tsx";
 import {IoMdMap} from "react-icons/io";
 import Footer from "@/component/Footer.tsx";
-import {Input, Pagination} from "antd";
+import {Avatar, Input, List, Pagination} from "antd";
 import {Outlet} from "react-router-dom";
+import {getCompanyInfo} from "@/axios/Request.ts";
+import {TfiMoreAlt} from "react-icons/tfi";
 
 const EmployerHome = () => {
 
@@ -25,7 +27,49 @@ const EmployerHome = () => {
     );
 };
 
+export type CompanyInfo = {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+    website: string;
+    logo: string;
+    wallpaper: string;
+    description: string;
+    email: string;
+    role: string;
+
+}
+
 export const HomeContent = () => {
+    const [currentCompanyId, setCurrentCompanyId] = useState<string>('');
+    const [currentCompany, setCurrentCompany] = useState<any>();
+    const [isViewJobSide, setIsViewJobSide] = useState<boolean>(false);
+
+    const data = [
+        {
+            title: 'Ant Design Title 1',
+        },
+        {
+            title: 'Ant Design Title 2',
+        },
+        {
+            title: 'Ant Design Title 3',
+        },
+        {
+            title: 'Ant Design Title 4',
+        },
+    ];
+
+    const handleGetCompanyInfo = async (id: string) => {
+        const response: CompanyInfo = await getCompanyInfo(id);
+        setCurrentCompany(response);
+    }
+    useEffect(() => {
+        const companyId = JSON.parse(localStorage.getItem("company")).id;
+        setCurrentCompanyId(companyId);
+        handleGetCompanyInfo(companyId);
+    }, [])
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(window.location.href);
@@ -40,17 +84,18 @@ export const HomeContent = () => {
             <div className={`w-full rounded-lg overflow-hidden min-h-[358px] bg-gradient-to-green`}>
                 <div className={`h-[224px] overflow-hidden`}>
                     <img
-                        alt={'name'}
+                        alt={currentCompany?.name}
                         className={`h-full object-cover object-center w-full`}
-                        src={'https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/company_covers/8kbg7lDwPxZaJt8NHQtH.jpg'}/>
+                        src={currentCompany?.wallpaper}/>
 
                 </div>
                 <div className={`relative`}>
                     <div
                         className={`items-center justify-center left-10 overflow-hidden absolute -top-14 aspect-square bg-white border rounded-full flex h-[180px]`}>
                         <img
-                            src={'https://static.topcv.vn/company_logos/n0KHk7XaKpN8TxBOwdnP6rc2Gh8WXyg2_1634027913____6f6b658004e401d4a82dabc09b019e00.PNG'}
-                            className={`h-[80%] object-contain aspect-square`}/>
+                            alt={currentCompany?.name}
+                            src={currentCompany?.logo}
+                            className={`h-[80%] object-cover aspect-square`}/>
 
                     </div>
 
@@ -58,18 +103,19 @@ export const HomeContent = () => {
                 <div className={`items-center flex gap-8 my-6 pl-[252px] pr-10 relative`}>
                     <div className={`flex flex-1 flex-col`}>
                         <div>
-                            <p className={`text-white line-clamp-2 font-bold leading-7 mb-4 text-[24px]`}>Công ty Cổ
-                                phần Bán lẻ Kỹ thuật số FPT </p>
+                            <p className={`text-white line-clamp-2 font-bold leading-7 mb-4 text-[24px]`}>
+                                {currentCompany?.name}
+                            </p>
                         </div>
                         <div className={`flex gap-10`}>
                             <div className={`flex gap-2 items-center `}>
                                 <AiOutlineGlobal size={20} fill={"#fff"}/>
-                                <p className={`text-white`}>http://www.fpt.com</p>
+                                <p className={`text-white`}>{currentCompany?.website}</p>
                             </div>
 
                             <div className={`flex gap-2 items-center `}>
                                 <PiPhoneLight size={20} fill={"#fff"}/>
-                                <p className={`text-white`}>0353795729</p>
+                                <p className={`text-white`}>{currentCompany?.phone}</p>
                             </div>
 
                         </div>
@@ -79,62 +125,7 @@ export const HomeContent = () => {
             </div>
             <div className={`flex w-full mb-10  relative mt-10 overflow-y-visible `}>
                 {/*left side*/}
-                <div className={`w-2/3 pr-5 flex flex-col gap-6`}>
-                    {/*description*/}
-                    <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
-                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Giới thiệu công ty
-                        </h2>
-                        <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
-                            <ExpandableCard children={
-                                <>
-                                            <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                    <pre className={`w-full `}>
-                                        Công ty Cổ phần Bán lẻ Kỹ thuật số FPT (gọi tắt là FPT Retail) được thành lập từ năm 2012 tại Việt Nam
-                                    </pre>
-                                </>
-                            }/>
-
-                        </div>
-                    </div>
+                <div className={`w-[calc(66%-70px)] pr-5 flex flex-col gap-6`}>
                     <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
                         <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
                             Tuyển dụng
@@ -142,82 +133,7 @@ export const HomeContent = () => {
                         <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
                             {
                                 Array.from(Array(10).keys()).map((item, index) => (
-                                    <div
-                                        className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
-                                        {/*company logo*/}
-                                        <div
-                                            className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
-                                            <a className={` block overflow-hidden bg-white`}
-                                               target={"_blank"}
-                                               href={''}>
-                                                <img
-                                                    src="https://cdn-new.topcv.vn/unsafe/150x/https://static.topcv.vn/company_logos/cong-ty-co-phan-thiet-bi-va-cong-nghe-leanway-1f012ccf747554bd0c2468ff4a032a6c-661dd470c6d24.jpg"
-                                                    className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
-                                                    alt="CÔNG TY CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ LEANWAY"
-                                                    title="The company's logo"/>
-                                            </a>
-                                        </div>
-                                        {/*card body*/}
-                                        <div className={`flex-1`}>
-                                            <div className={`flex flex-col h-full`}>
-                                                <div className={`mb-auto`}>
-                                                    <div className={`flex `}>
-                                                        <div
-                                                            className={`flex flex-col w-3/4 max-w-[490px] gap-2`}>
-                                                            <h3>
-                                                                <a
-                                                                    target="_blank"
-                                                                    href="https://www.topcv.vn/viec-lam/nhan-vien-ke-toan-thu-nhap-7-9-trieu-thanh-tri-ha-noi/1508427.html?ta_source=SuggestSimilarJob_LinkDetail&amp;jr_i=dense-hertz%3A%3A1730538183569-25caaf%3A%3Af1144ce3ac3c47fdae7d2597270d3c1a%3A%3A1%3A%3A0.9500">
-                                                                    <p className={`font-[600] hover:text-green_default text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
-                                                                        Nhân Viên Kế Toán, Thu Nhập 7 - 9
-                                                                        Triệu
-                                                                        (Thanh
-                                                                        Trì - Hà Nội) </p>
-                                                                </a>
-                                                            </h3>
-                                                            <div className={`w-full`}>
-                                                                <a target="_blank">
-                                                                    <p className={`break-words text-[14px] hover:underline truncate`}>CÔNG
-                                                                        TY
-                                                                        CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ
-                                                                        LEANWAY </p>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                        <div className={`w-1/4 flex justify-end pr-2`}>
-                                                            <p className={`text-green_default font-bold`}>7-9
-                                                                triệu</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    className={`mt-auto flex items-end justify-between py-2`}>
-                                                    <div className={`flex gap-4`}>
-                                                        <div
-                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                            <p className={`text-black text-[14px] truncate `}>Hà
-                                                                Nội</p>
-                                                        </div>
-                                                        <div
-                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                            <p className={`text-black text-[14px] truncate `}>Kinh
-                                                                nghiệm: 3 năm</p>
-                                                        </div>
-                                                        <div
-                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                            <p className={`text-black text-[14px] truncate `}>Hạn:
-                                                                29/12/2024</p>
-                                                        </div>
-                                                    </div>
-                                                    {/*<div*/}
-                                                    {/*    className={`bg-white p-1 rounded-full hover:bg-green-300 `}>*/}
-                                                    {/*    <FaRegHeart color={"green"}/>*/}
-                                                    {/*</div>*/}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    <JobEmployerView/>
                                 ))
                             }
                         </div>
@@ -230,33 +146,118 @@ export const HomeContent = () => {
 
                         </div>
                     </div>
-                </div>
-                {/*right side*/}
-                <div className={`pl-5 w-1/3 flex flex-col gap-6 h-fit sticky top-24`}>
+                    {/*description*/}
                     <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
                         <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Thông tin liên hệ
+                            Giới thiệu công ty
                         </h2>
-                        <div className={` w-full flex flex-col gap-4 bg-white min-h-[100px] px-5 py-4`}>
-                            <div className={`flex flex-col gap-2`}>
-                                <div className={`flex gap-3`}>
-                                    <MdLocationPin size={24} fill={"#00b14f"}/>
-                                    <p>Địa chỉ công ty</p>
-                                </div>
-                                <p className={`opacity-70 ml-2`}>261 – 263 Khánh Hội, P5, Q4, TP. Hồ Chí
-                                    Minh</p>
-                            </div>
-                            <div className={`flex gap-3`}>
-                                <IoMdMap size={24} fill={"#00b14f"}/>
-                                <p>Xem bản đồ</p>
-                            </div>
-                            <LocationMap
-                                district="Huyện Yên phong"
-                                city="Tỉnh Bắc Ninh"
-                                province="Tỉnh Bắc Ninh"
-                            />
+                        <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
+                            {
+                                currentCompany && currentCompany.description ? (
+                                    <ExpandableCard children={
+                                        <pre>{currentCompany.description}</pre>
+                                    }/>
+                                ) : (
+                                    <div className={`flex flex-col gap-4 pb-4 justify-center items-center`}>
+                                        <img src={'/public/no-avatar.png'} alt={""}/>
+                                        <p className={`font-bold `}>Chưa có mô tả</p>
+                                    </div>
+                                )
+                            }
 
                         </div>
+                    </div>
+
+                </div>
+                {/*right side*/}
+                <div className={`pl-5 flex-1 flex flex-col gap-6 h-fit sticky top-24`}>
+                    <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
+                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
+                            {!isViewJobSide ? 'Chi tiết công việc' : 'Thông tin liên hệ'}
+                        </h2>
+                        {
+                            !isViewJobSide ? (
+                                <div className={`flex flex-col py-4 px-4`}>
+                                    <h3>
+                                        <p className={`font-[600] hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
+                                            Nhân Viên Kế Toán, Thu Nhập 7 - 9
+                                            Triệu
+                                            (Thanh
+                                            Trì - Hà Nội) </p>
+                                    </h3>
+                                    <ExpandableCard
+                                        children={<div className={`pt-4`}>
+                                            <p className={`font-semibold`}>Yêu cầu ứng viên</p>
+                                            <pre className={`whitespace-pre-wrap break-words`}>
+BAO GỒM:
+
+❋ Cà gai leo hỗ trợ điều trị hiệu quả viêm gan A - B - C, tăng cường giải độc gan.
+
+❋ Giảo cổ lam giàu acid amin, vitamin giúp chống oxy hóa, hạ mỡ máu, giảm căng thẳng.
+
+❋ Tỏi đen sản xuất theo công nghệ lên men hiện đại, có khả năng ngăn lão hóa, ngừa ung thư.
+
+❋ Sâm đại quang: Củ sâm đại quang, cây sâm đại quang, cây giống sâm đại quang
+
+❋ Các loại dược liệu khác: Ngưu bàng, thiên nhiên kiện, khôi nhung, khủng khẻng,..
+
+
+                                            </pre>
+                                            <a className={`text-green_default italic hover:underline cursor-pointer`}>
+                                                Xem chi tiết công việc
+                                            </a>
+                                        </div>}
+                                        high={60}
+                                    />
+                                    <div className={``}>
+                                        <h2 className="border-l-[6px] mb-4 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                                            Ứng viên
+                                        </h2>
+                                        <div className={`max-h-[300px] overflow-y-auto`}>
+                                            <List
+                                                itemLayout="horizontal"
+                                                dataSource={data}
+                                                renderItem={(item, index) => (
+                                                    <List.Item>
+                                                        <List.Item.Meta
+                                                            className={`bg-green-50`}
+                                                            avatar={<Avatar size={"large"}
+                                                                            src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}/>}
+                                                            title={<a href="https://ant.design">{item.title}</a>}
+                                                            description={
+                                                            <ExpandableCard
+                                                                expandColor={'from-green-50 h-10 bottom-8'}
+                                                                expandStyle={'h-fit opacity-700 text-14'}
+                                                                high={120}
+                                                                children={<p>Ant Design, a design language for background applications, is refined by Ant UED Team. Ant Design, a design language for background applications, is refined by Ant UED Team</p>}/>
+                                                            }
+                                                        />
+                                                    </List.Item>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={` w-full flex flex-col gap-4 bg-white min-h-[100px] px-5 py-4`}>
+                                    <div className={`flex flex-col gap-2`}>
+                                        <div className={`flex gap-3`}>
+                                            <MdLocationPin size={24} fill={"#00b14f"}/>
+                                            <p>Địa chỉ công ty</p>
+                                        </div>
+                                        <p className={`opacity-70 ml-2`}>{currentCompany?.address}</p>
+                                    </div>
+                                    <div className={`flex gap-3`}>
+                                        <IoMdMap size={24} fill={"#00b14f"}/>
+                                        <p>Xem bản đồ</p>
+                                    </div>
+                                    <LocationMap
+                                        location={currentCompany?.address}
+                                    />
+
+                                </div>
+                            )
+                        }
                     </div>
                     <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
                         <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
@@ -292,8 +293,115 @@ export const HomeContent = () => {
                     </div>
                 </div>
             </div>
+            {/*<CustomModal*/}
+            {/*    handleModalClicks={() => {*/}
+            {/*    }}*/}
+            {/*    handleCloseModal={() => {*/}
+            {/*    }}*/}
+            {/*    handleOutModalClick={() => {*/}
+            {/*    }}*/}
+            {/*    closeOnIcon={true}*/}
+            {/*    notMaxWidth={true}*/}
+            {/*    bottom={<div className={`bg-bg_default rounded-b-lg py-4 w-full justify-end px-10 flex gap-6`}>*/}
+            {/*        <button*/}
+            {/*            className={`w-fit px-2  mx-3 rounded  min-w-[70px] py-2 text-black opacity-70 hover:bg-gray-100 font-bold`}>*/}
+            {/*            Từ chối*/}
+            {/*        </button>*/}
+            {/*        <button*/}
+            {/*            className={`w-fit px-2 hover:bg-green-600 mx-3 rounded bg-green_default py-2 text-white font-bold`}>*/}
+            {/*            Chấp nhận*/}
+            {/*        </button>*/}
+
+            {/*    </div>}*/}
+            {/*    child={<div*/}
+            {/*        className="bg-white flex flex-col overflow-x-hidden gap-3  overflow-y-auto border-b rounded-xl shadow p-5 pt-0 px-0 relative z-10 min-h-4 ">*/}
+            {/*        <FlexStickyLayout*/}
+            {/*            url={'https://jobfinder-kienluu.s3.ap-southeast-1.amazonaws.com/Luu-Dinh-Kien--TopCV.vn-291024.172109.pdf'}/>*/}
+
+            {/*    </div>}*/}
+
+            {/*/>*/}
         </div>
     )
 }
 
 export default EmployerHome;
+
+const JobEmployerView = () => {
+    return (
+        <div
+            className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
+            {/*company logo*/}
+            <div
+                className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
+                <a className={` block overflow-hidden bg-white`}
+                   target={"_blank"}
+                   href={''}>
+                    <img
+                        src="https://cdn-new.topcv.vn/unsafe/150x/https://static.topcv.vn/company_logos/cong-ty-co-phan-thiet-bi-va-cong-nghe-leanway-1f012ccf747554bd0c2468ff4a032a6c-661dd470c6d24.jpg"
+                        className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
+                        alt="CÔNG TY CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ LEANWAY"
+                        title="The company's logo"/>
+                </a>
+            </div>
+            {/*card body*/}
+            <div className={`flex-1`}>
+                <div className={`flex flex-col h-full`}>
+                    <div className={`mb-auto`}>
+                        <div className={`flex `}>
+                            <div
+                                className={`flex flex-col w-full max-w-[490px] gap-2 overflow-hidden`}>
+                                <h3>
+
+                                    <p className={`font-[600] hover:text-green_default  text-[18px] truncate text-[#212f3f] leading-6 cursor-pointer`}>
+                                        Nhân Viên Kế Toán, Thu Nhập 7 - 9
+                                        Triệu
+                                        (Thanh
+                                        Trì - Hà Nội) </p>
+
+                                </h3>
+                                <div className={`w-full`}>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/*candidates*/}
+                    <div className={`flex gap-1 justify-start items-center`}>
+                        <p>Ứng viên: </p>
+                        <ul className={`flex m-0 flex-wrap`}>
+                            <li title={'Luu dinh kien'}
+                                className={`h-6 aspect-square`}>
+                                <img
+                                    src={'https://avatars.githubusercontent.com/u/5378891?s=40&v=4'}
+                                    className={`h-6 aspect-square object-cover rounded-full`} alt=""/>
+                            </li>
+                            <li className={`h-6 aspect-square`}>
+                                <img
+                                    src={'https://avatars.githubusercontent.com/u/5378891?s=40&v=4'}
+                                    className={`h-6 aspect-square object-cover rounded-full`} alt=""/>
+                            </li>
+                            <li className={`h-6 flex items-center justify-center border aspect-square bg-white rounded-full`}>
+                                <TfiMoreAlt size={16}/>
+                            </li>
+                        </ul>
+                    </div>
+                    <div
+                        className={`mt-auto flex items-end justify-between py-2`}>
+                        <div className={`flex gap-4`}>
+                            <div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>Hạn:
+                                    29/12/2024</p>
+                            </div>
+                            <div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>Trạng thái: </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    )
+}

@@ -231,6 +231,10 @@ input{
         @apply text-[#212f3f] text-[18px] font-bold tracking-tighter leading-6 m-0
     }
 
+    pre{
+        @apply whitespace-pre-wrap break-words
+    }
+
 }
 
 @layer utilities {

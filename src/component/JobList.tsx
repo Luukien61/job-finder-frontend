@@ -17,7 +17,7 @@ const JobList = () => {
     return (
         <div className={`flex relative shadow-xl  flex-col bg-white rounded-2xl  my-3`}>
             <div className={`flex pl-8 rounded-t-2xl  items-center bg-gradient-to-r from-white to-[#e6ffee]`}>
-                <p className={`font-bold pt-4 text-[28px] text-green-500`}>Việc làm phù hợp</p>
+                <p className={`font-bold pt-4 text-[28px] text-green-500`}>Việc làm có thể bạn quan tâm</p>
                 <img alt={""} className={`w-12 aspect-square ml-4`} src={'/public/next-logo.png'}/>
                 <div className={`flex-1 flex items-center justify-end`}>
                     <img alt={""} className={`w-16 mr-4 aspect-square`} src={'/public/shiring.png'}/>
