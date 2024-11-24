@@ -17,7 +17,7 @@ import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {UserResponse} from "@/page/GoogleCode.tsx";
 import {UserDto} from "@/page/UserProfile.tsx";
-import {checkIsJobSaved, handleSaveJob, refinePdfName} from "@/service/ApplicationService.ts";
+import {checkIsJobSaved, handleSaveJob, refinePdfName, unSaveJobHandler} from "@/service/ApplicationService.ts";
 
 type JobDetail = {
     jobId: number; // Long -> number
@@ -225,6 +225,17 @@ const JobDetail = () => {
         }
     }
 
+    const handleUnSave = async () => {
+        try {
+            const saved = await unSaveJobHandler(id, currentUser.id, () => {
+            })
+            setIsSaved(saved)
+        } catch (e) {
+            setIsSaved(true)
+            toast.error(e.response.data)
+        }
+    }
+
 
     return (
         <div>
@@ -357,7 +368,7 @@ const JobDetail = () => {
                                     {/*save*/}
                                     {
                                         isSaved ? (
-                                            <div onClick={handleSave}
+                                            <div onClick={handleUnSave}
                                                  className={`bg-white border transition-all duration-30 hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
                                                 <FaHeart/>
                                                 <p>Bỏ lưu tin</p>
@@ -429,6 +440,7 @@ const JobDetail = () => {
                                             {
                                                 isSaved ? (
                                                     <div
+                                                        onClick={handleUnSave}
                                                         className={`bg-white border hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
                                                         <p>Bỏ lưu tin</p>
                                                     </div>

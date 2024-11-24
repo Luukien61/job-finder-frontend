@@ -9,7 +9,7 @@ import {IoMdMap} from "react-icons/io";
 import Footer from "@/component/Footer.tsx";
 import {Avatar, Input, List, Pagination} from "antd";
 import {Outlet} from "react-router-dom";
-import {getCompanyInfo} from "@/axios/Request.ts";
+import {getCompanyInfo, getJobsByCompanyId} from "@/axios/Request.ts";
 import {TfiMoreAlt} from "react-icons/tfi";
 
 const EmployerHome = () => {
@@ -65,10 +65,16 @@ export const HomeContent = () => {
         const response: CompanyInfo = await getCompanyInfo(id);
         setCurrentCompany(response);
     }
+
+    const handleGetJobsByCompanyId = async (id: string, page: number, size=10) => {
+        const response = await getJobsByCompanyId(id, page, size);
+        console.log(response);
+    }
     useEffect(() => {
         const companyId = JSON.parse(localStorage.getItem("company")).id;
         setCurrentCompanyId(companyId);
         handleGetCompanyInfo(companyId);
+        handleGetJobsByCompanyId(companyId,0)
     }, [])
     const handleCopy = async () => {
         try {

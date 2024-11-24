@@ -153,6 +153,14 @@ export const saveJob = async (jobId: string|number, userId: any) => {
     return await instance.post(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
 }
 
+export const unSaveJob = async (jobId: string|number, userId: any) => {
+    return await instance.post(`/user/${userId}/unsave?jobId=${jobId}`).then((response: any) => response.data)
+}
+
 export const isSavedJob = async (jobId: string|number, userId: any) => {
     return await instance.get(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
+}
+
+export const getJobsByCompanyId = async (companyId: string, page: number, size=10 ) => {
+    return await instance.get(`/job/company/${companyId}?page=${page}&size=${size}`).then((response: any) => response.data)
 }

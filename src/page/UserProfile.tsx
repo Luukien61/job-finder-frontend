@@ -95,6 +95,7 @@ const UserProfile = () => {
     const navigate = useNavigate();
     const [itemChoose, setItemChoose] = useState<number>(0);
     const warningItem: WarningNote[] = []
+    const scrollRef = useRef<HTMLDivElement>(null);
     for (let i = 1; i < 7; i++) {
         const item: WarningNote = {
             img: `/public/warning/${i}.webp`,
@@ -132,7 +133,12 @@ const UserProfile = () => {
     const handleItemSidebarClick = (index: number, path: string) => {
         navigate(path)
         setItemChoose(index)
-
+        if(scrollRef.current){
+            const offset = 100; // Khoảng cách cách top (100px)
+            const elementTop = scrollRef.current.getBoundingClientRect().top;
+            const scrollPosition = window.pageYOffset + elementTop - offset;
+            window.scrollTo({ top: scrollPosition, behavior: "smooth" });
+        }
     }
 
     return (
@@ -202,6 +208,7 @@ const UserProfile = () => {
                 {/*content*/}
                 <div className={`my-6 flex-1 flex mx-6 gap-x-6 relative overflow-y-visible min-h-screen `}>
                     <div className={`flex flex-col w-[67%] `}>
+                        <div ref={scrollRef}/>
                         <div className={`rounded-xl min-h-full bg-white p-6`}>
                             <Outlet/>
                         </div>

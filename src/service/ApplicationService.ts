@@ -1,5 +1,5 @@
 import {toast} from "react-toastify";
-import {isSavedJob, saveJob} from "@/axios/Request.ts";
+import {isSavedJob, saveJob, unSaveJob} from "@/axios/Request.ts";
 import {SelectProps} from "@/page/JobDetail.tsx";
 
 export const handleSaveJob = async (jobId: number|string, userId: string, action : any) : Promise<boolean> => {
@@ -11,6 +11,16 @@ export const handleSaveJob = async (jobId: number|string, userId: string, action
         toast.error("Co loi xay ra, vui long thu lai sau")
     }
 
+}
+
+export const unSaveJobHandler = async (jobId: number|string, userId: any, action: any) => {
+    try {
+        const isSave = await unSaveJob(jobId, userId)
+        action()
+        return isSave
+    }catch(err){
+        toast.error("Co loi xay ra, vui long thu lai sau")
+    }
 }
 
 export const refinePdfName = (items: string[]): SelectProps[] => {
