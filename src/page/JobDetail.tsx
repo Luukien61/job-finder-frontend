@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {GoClock} from "react-icons/go";
 import {FiSend} from "react-icons/fi";
-import {FaRegHeart} from "react-icons/fa6";
+import {FaRegHeart, FaHeart} from "react-icons/fa6";
 import {MdEmail, MdReportGmailerrorred} from "react-icons/md";
 import {BiSolidLeaf} from "react-icons/bi";
 import {SearchBar} from "@/component/Content.tsx";
@@ -9,13 +9,15 @@ import {PiFolderUser} from "react-icons/pi";
 import {IoPersonCircleSharp, IoWarning} from "react-icons/io5";
 import {useNavigate, useParams} from "react-router-dom";
 import {toast, ToastContainer} from "react-toastify";
-import {getCompanyInfo, getJobDetailById, getUserDto, getUserInfo, loginUser} from "@/axios/Request.ts";
+import {applyJob, getCompanyInfo, getJobDetailById, getUserDto, isAppliedJob, loginUser} from "@/axios/Request.ts";
 import {format} from 'date-fns';
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
-import {Checkbox, Form, Input, Modal, Spin} from "antd";
+import {Checkbox, Form, Input, Modal, Select, Spin} from "antd";
 import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {UserResponse} from "@/page/GoogleCode.tsx";
+import {UserDto} from "@/page/UserProfile.tsx";
+import {checkIsJobSaved, handleSaveJob, refinePdfName} from "@/service/ApplicationService.ts";
 
 type JobDetail = {
     jobId: number; // Long -> number
@@ -39,21 +41,26 @@ type JobDetail = {
     type: string;
     field: string;
 };
+export type SelectProps = {
+    value: string,
+    label: string;
+}
 
 
 const JobDetail = () => {
     const navigate = useNavigate();
     const {id} = useParams();
     const [openModal, setOpenModal] = useState<boolean>(false)
-    const [openCv, setOpenCv] = useState<boolean>(false)
     const [openLogin, setOpenLogin] = useState<boolean>(false)
-    const [emailLogin, setEmailLogin] = useState<string>('');
-    const [passwordLogin, setPasswordLogin] = useState<string>('');
     const [isConfirmCheck, setIsConfirmCheck] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [form] = Form.useForm()
     const [job, setJob] = useState<JobDetail>()
     const [company, setCompany] = useState<CompanyInfo>()
+    const [currentUser, setCurrentUser] = useState<UserDto>();
+    const [userCvs, setUserCvs] = useState<SelectProps[]>([]);
+    const [isSaved, setIsSaved] = useState<boolean>(false);
+    const {TextArea} = Input;
 
     const handleModalClicks = useCallback((event: React.MouseEvent) => {
         event.stopPropagation()
@@ -65,7 +72,6 @@ const JobDetail = () => {
         try {
             const jobDetail: JobDetail = await getJobDetailById(id)
             if (jobDetail) {
-                console.log(jobDetail)
                 setJob(jobDetail)
             } else {
                 toast.error("Job not found")
@@ -85,12 +91,15 @@ const JobDetail = () => {
     }
 
     const handleCloseLoginModal = () => {
-        setEmailLogin('')
-        setPasswordLogin('')
         setIsConfirmCheck(false)
         setOpenLogin(false)
-
     }
+
+    const checkJobSaveStatus = async (jobId, userId) => {
+        const saveStatus: boolean = await checkIsJobSaved(jobId, userId)
+        setIsSaved(saveStatus)
+    }
+
 
     useEffect(() => {
         if (job) handleGetCompanyInfo(job.companyId)
@@ -98,6 +107,9 @@ const JobDetail = () => {
 
     useEffect(() => {
         handleGetJobById(id)
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) setCurrentUser(user)
+        checkJobSaveStatus(id, user.id)
     }, []);
 
     const convertDate = (date: Date) => {
@@ -107,10 +119,21 @@ const JobDetail = () => {
         return ""
     }
 
-    const handleApplyJob = () => {
+    const handleApplyJobClick = async () => {
+
         const user = JSON.parse(localStorage.getItem("user"));
         if (user) {
-            setOpenModal(true)
+            try {
+                const isApplied = await isAppliedJob(id, user.id)
+                console.log(isApplied)
+                if (isApplied) {
+                    toast.error("Bạn đã ứng tuyển công việc này trước đó")
+                } else {
+                    setOpenModal(true)
+                }
+            } catch (e) {
+                toast.error(e)
+            }
         } else {
             setOpenLogin(true)
 
@@ -118,10 +141,46 @@ const JobDetail = () => {
 
     }
 
+    const handleApplyJob = async (values: any) => {
+        if (currentUser && currentUser.id) {
+            if (values.selectCV) {
+                try {
+                    const jobApplicationRequest = {
+                        userId: currentUser.id,
+                        userName: currentUser.name,
+                        userAvatar: currentUser.avatar,
+                        jobId: id,
+                        referenceLetter: values.letter,
+                        cvUrl: values.selectCV,
+                        createdDate: format(new Date(), 'yyyy-MM-dd'),
+                    }
+                    await applyJob(jobApplicationRequest);
+                    toast.success("Bạn đã ứng tuyển thành công");
+                    setOpenModal(false)
+
+                } catch (err) {
+                    toast.error(err.response.data)
+                }
+            } else {
+                toast.error("Ban chua chon CV")
+            }
+        } else {
+            toast.error("Dang nhap truoc")
+        }
+
+    }
+
     useEffect(() => {
         const handleGetUser = async (userId: string) => {
             try {
-                const userInfo = await getUserDto(userId);
+                const userInfo: UserDto = await getUserDto(userId);
+                if (userInfo) {
+                    setCurrentUser(userInfo)
+                    if (userInfo.cv && userInfo.cv.length > 0) {
+                        const userCvs = refinePdfName(userInfo.cv) as SelectProps[]
+                        setUserCvs(userCvs)
+                    }
+                }
             } catch (e) {
                 toast.error("Co loi xay ra")
             }
@@ -152,6 +211,18 @@ const JobDetail = () => {
             toast.error(e.response)
         }
         setIsLoading(false)
+    }
+
+    const handleSave = async () => {
+        try {
+            const saved = await handleSaveJob(id, currentUser.id, () => {
+            })
+            setIsSaved(saved)
+
+        } catch (e) {
+            setIsSaved(false)
+            toast.error(e.response.data)
+        }
     }
 
 
@@ -278,16 +349,27 @@ const JobDetail = () => {
                                 {/*apply*/}
                                 <div className={`flex flex-wrap items-center text-[14px] gap-3 mt-1`}>
                                     <button
-                                        onClick={handleApplyJob}
+                                        onClick={handleApplyJobClick}
                                         className={`bg-green_default cursor-pointer hover:bg-[#009643] rounded-[6px] text-white flex-1 flex font-bold gap-[6px] h-[40px] justify-center items-center tracking-[.175px] leading-[22px] px-2 py-3`}>
                                         <FiSend/>
                                         <p>Ứng tuyển ngay</p>
                                     </button>
                                     {/*save*/}
-                                    <a className={`bg-white border hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
-                                        <FaRegHeart/>
-                                        <p>Lưu tin</p>
-                                    </a>
+                                    {
+                                        isSaved ? (
+                                            <div onClick={handleSave}
+                                                 className={`bg-white border transition-all duration-30 hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
+                                                <FaHeart/>
+                                                <p>Bỏ lưu tin</p>
+                                            </div>
+                                        ) : (
+                                            <div onClick={handleSave}
+                                                 className={`bg-white border transition-all duration-30 hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
+                                                <FaRegHeart/>
+                                                <p>Lưu tin</p>
+                                            </div>
+                                        )
+                                    }
                                 </div>
 
                             </div>
@@ -339,14 +421,25 @@ const JobDetail = () => {
                                         {/*save and apply*/}
                                         <div className={`flex flex-wrap items-center text-[14px] gap-3 mt-1`}>
                                             <button
-                                                onClick={handleApplyJob}
+                                                onClick={handleApplyJobClick}
                                                 className={`bg-green_default cursor-pointer hover:bg-[#009643] rounded-[6px] text-white flex font-bold gap-[6px] h-[40px] justify-center items-center tracking-[.175px] leading-[22px] px-2 py-3`}>
                                                 Ứng tuyển ngay
                                             </button>
                                             {/*save*/}
-                                            <a className={`bg-white border hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
-                                                <p>Lưu tin</p>
-                                            </a>
+                                            {
+                                                isSaved ? (
+                                                    <div
+                                                        className={`bg-white border hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
+                                                        <p>Bỏ lưu tin</p>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        onClick={handleSave}
+                                                        className={`bg-white border hover:border-green_default hover:bg-gray-50 gap-2 border-solid border-[#99e0b9] text-green_default w-[130px] flex items-center justify-center rounded-[6px] cursor-pointer font-bold h-[40px] tracking-[.175px] leading-[22px] px-2 py-3`}>
+                                                        <p>Lưu tin</p>
+                                                    </div>
+                                                )
+                                            }
                                         </div>
                                         <div
                                             className={`rounded-[8px] flex gap-x-4 p-2  bg-bg_default text-color-default`}>
@@ -672,73 +765,84 @@ const JobDetail = () => {
                                         Ứng tuyển <span className="text-green_default text-[18px]">{job?.title}</span>
                                     </h4>
                                 </div>
-                                <div className={`m-0 max-h-[70vh] overflow-y-auto px-8 relative`}>
-                                    <div className={`flex gap-4 py-4 items-end`}>
-                                        <PiFolderUser size={28} color={"green"}/>
-                                        <p className={`text-[16px] font-bold `}>Chọn CV để ứng tuyển</p>
+                                <Form
+                                    onFinish={handleApplyJob}
+                                    scrollToFirstError={true}
+                                    form={form}
+                                >
+                                    <div className={`m-0 max-h-[70vh] overflow-y-auto px-8 relative`}>
+                                        <div className={`flex gap-4 py-4 items-end`}>
+                                            <PiFolderUser size={28} color={"green"}/>
+                                            <p className={`text-[16px] font-bold `}>Chọn CV để ứng tuyển</p>
 
-                                    </div>
-                                    <div
-                                        onClick={() => setOpenCv(pre => !pre)}
-                                        className={`rounded relative px-3 py-2 flex  cursor-pointer border hover:bg-bg_default`}>
-                                        <p className={`font-normal text-[16px]`}>CV: Luu Dinh Kien</p>
-                                        <div className={`flex-1 flex items-center justify-end`}>
-                                            <svg className="shrink-0 size-3.5 text-gray-500 dark:text-neutral-500"
-                                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                 stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="m7 15 5 5 5-5"></path>
-                                                <path d="m7 9 5-5 5 5"></path>
-                                            </svg>
                                         </div>
-                                        {/*list cv*/}
+                                        <div className={`w-full flex items-center`}>
+                                            <Form.Item
+                                                name='selectCV'
+                                                rules={[{required: true, message: 'Vui lòng chọn CV'}]}
+                                                className={`w-full`}>
+                                                <Select
+                                                    options={userCvs}
+                                                    style={{height: '40px'}}
+                                                    className={`w-full`}/>
+                                            </Form.Item>
+                                        </div>
+                                        <div className={`flex mt-6 gap-4 items-end`}>
+                                            <BiSolidLeaf color={"green"} size={28}/>
+                                            <p className={`font-bold `}>Thư giới thiệu</p>
+                                        </div>
+                                        <div className={`mt-2 flex flex-col gap-2`}>
+                                            <p className={`opacity-70 text-[15px]`}>Một thư giới thiệu ngắn gọn, chỉn
+                                                chu sẽ
+                                                giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển
+                                                dụng.</p>
+
+                                            <Form.Item
+                                                style={{marginBottom: '10px'}}
+                                                name='letter'>
+                                                <TextArea
+                                                    className={`text-16`}
+                                                    spellCheck={false}
+                                                    showCount
+                                                    maxLength={200}
+                                                    placeholder="Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này."
+                                                    style={{height: 150}}
+                                                />
+                                            </Form.Item>
+                                        </div>
                                         <div
-                                            className={`absolute w-full top-10 inset-0 z-50  max-h-48 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${openCv ? 'block' : 'hidden'}`}>
-                                            {
-                                                Array.from(Array(5).keys()).map((_, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className={`rounded hover:bg-green_light cursor-pointer py-1 px-1`}>
-                                                        CV: Luu Dinh Kien
-                                                    </div>
-                                                ))
-                                            }
+                                            className={`rounded border flex flex-col gap-2 outline-none p-3 mt-6 w-full`}>
+                                            <div className={`flex gap-4 items-end`}>
+                                                <IoWarning size={28} color={"red"}/>
+                                                <p className={`text-red-500 font-bold text-[16px]`}>Lưu ý</p>
+                                            </div>
+                                            <p className={`text-[14px] opacity-70`}>JobFinder khuyên tất cả các bạn hãy
+                                                luôn
+                                                cẩn trọng trong quá trình tìm việc và chủ động nghiên cứu về thông tin
+                                                công
+                                                ty, vị trí việc làm trước khi ứng tuyển.
+                                                Ứng viên cần có trách nhiệm với hành vi ứng tuyển của mình. Nếu bạn gặp
+                                                phải
+                                                tin tuyển dụng hoặc nhận được liên lạc đáng ngờ của nhà tuyển dụng, hãy
+                                                báo
+                                                cáo ngay cho JobFinder qua email <span
+                                                    className={`text-green-500 text-[14px] opacity-100 font-bold`}>hotro@jobfinder.vn</span> để
+                                                được hỗ trợ kịp thời.</p>
                                         </div>
-                                    </div>
-                                    <div className={`flex mt-6 gap-4 items-end`}>
-                                        <BiSolidLeaf color={"green"} size={28}/>
-                                        <p className={`font-bold `}>Thư giới thiệu</p>
-                                    </div>
-                                    <div className={`mt-2 flex flex-col gap-2`}>
-                                        <p className={`opacity-70 text-[14px]`}>Một thư giới thiệu ngắn gọn, chỉn chu sẽ
-                                            giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.</p>
-                                        <textarea
-                                            spellCheck={false}
-                                            placeholder={'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.'}
-                                            className={`w-full h-32 outline-none font-normal border rounded border-green_default p-3`}></textarea>
-                                    </div>
-                                    <div className={`rounded border flex flex-col gap-2 outline-none p-3 mt-4 w-full`}>
-                                        <div className={`flex gap-4 items-end`}>
-                                            <IoWarning size={28} color={"red"}/>
-                                            <p className={`text-red-500 font-bold text-[16px]`}>Lưu ý</p>
-                                        </div>
-                                        <p className={`text-[14px] opacity-70`}>JobFinder khuyên tất cả các bạn hãy luôn
-                                            cẩn trọng trong quá trình tìm việc và chủ động nghiên cứu về thông tin công
-                                            ty, vị trí việc làm trước khi ứng tuyển.
-                                            Ứng viên cần có trách nhiệm với hành vi ứng tuyển của mình. Nếu bạn gặp phải
-                                            tin tuyển dụng hoặc nhận được liên lạc đáng ngờ của nhà tuyển dụng, hãy báo
-                                            cáo ngay cho JobFinder qua email <span
-                                                className={`text-green-500 text-[14px] opacity-100 font-bold`}>hotro@jobfinder.vn</span> để
-                                            được hỗ trợ kịp thời.</p>
-                                    </div>
 
-                                </div>
-                                <div className={`w-full pt-4 flex items-center justify-center`}>
-                                    <button
-                                        className={`w-full hover:bg-green-600 mx-3 rounded bg-green_default py-2 text-white font-bold`}>Nộp
-                                        hồ sơ ứng tuyển
-                                    </button>
-                                </div>
+                                    </div>
+                                    <div className={`w-full pt-4 flex items-center justify-center`}>
+                                        <div className={`w-[calc(100%-20px)]`}>
+                                            <Form.Item className={`w-full`}>
+                                                <button
+                                                    type="submit"
+                                                    className={`w-full hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>Nộp
+                                                    hồ sơ ứng tuyển
+                                                </button>
+                                            </Form.Item>
+                                        </div>
+                                    </div>
+                                </Form>
                             </div>
                         </div>
                     </div>
@@ -861,7 +965,8 @@ export type JobWidthCardProps = {
     title: string,
     companyName: string,
     companyId: string,
-    salary: string,
+    minSalary: number,
+    maxSalary: number,
     location: string,
     experience: number,
     expireDate: Date,
@@ -919,7 +1024,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                                 </div>
                             </div>
                             <div className={`w-1/4 flex justify-end pr-2`}>
-                                <p className={`text-green_default font-bold`}>{job.salary}</p>
+                                <p className={`text-green_default font-bold`}>{job.minSalary} - {job.maxSalary} triệu</p>
                             </div>
                         </div>
                     </div>

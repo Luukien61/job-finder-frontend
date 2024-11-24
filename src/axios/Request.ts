@@ -140,3 +140,19 @@ export const getCompanyInfo = async (id: string) => {
 export const getJobDetailById = async (id: string | number) => {
     return await instance.get(`/job/${id}`).then((response: any) => response.data)
 }
+const applicationPath='/application'
+export const applyJob = async ( request: any) => {
+    return await instance.post(`${applicationPath}/apply`, request).then((response: any) => response.data)
+}
+
+export const isAppliedJob = async (jobId: string, userId: string) => {
+    return await instance.get(`${applicationPath}/applied?jobId=${jobId}&userId=${userId}`).then((response: any) => response.data)
+}
+
+export const saveJob = async (jobId: string|number, userId: any) => {
+    return await instance.post(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
+}
+
+export const isSavedJob = async (jobId: string|number, userId: any) => {
+    return await instance.get(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
+}

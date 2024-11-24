@@ -1030,7 +1030,8 @@ export const SavedJobList = () => {
                                     expireDate={value.expireDate}
                                     location={value.location}
                                     title={value.title}
-                                    salary={value.salary}
+                                    minSalary={value.minSalary}
+                                    maxSalary={value.maxSalary}
                                 />
                             ))}
                         </div>
@@ -1087,7 +1088,8 @@ export const AppliedJobList = () => {
                                     expireDate={value.expireDate}
                                     location={value.location}
                                     title={value.title}
-                                    salary={value.salary}
+                                    minSalary={value.minSalary}
+                                    maxSalary={value.maxSalary}
                                 />
                             ))}
                         </div>
