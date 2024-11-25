@@ -1,3 +1,5 @@
+export const DefaultPageSize = 5;
+
 export interface JobApplication {
     "id": number,
     "userId": string,
@@ -10,11 +12,28 @@ export interface JobApplication {
     "createdDate": Date
 }
 
-export interface EmpoyerJobCard {
+export interface EmployerJobCard {
     "jobId": number,
     "title": string,
     "expireDate": Date,
     "state": "PENDING" | "DONE",
     "logo": string,
     "applications": JobApplication[]
+}
+
+export interface PageableResponse<T> {
+    content: T[],
+    pageable: {
+        pageNumber: number,
+        pageSize: number,
+    },
+    last: boolean,
+    totalPages: number,
+    totalElements: number,
+    first: boolean,
+    size: number,
+    number: number,
+    numberOfElements: number,
+    empty: boolean,
+
 }

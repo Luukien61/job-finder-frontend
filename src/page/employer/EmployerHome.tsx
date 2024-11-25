@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
 import {AiOutlineGlobal} from "react-icons/ai";
 import {PiCopySimple, PiPhoneLight} from "react-icons/pi";
@@ -11,6 +11,9 @@ import {Avatar, Input, List, Pagination} from "antd";
 import {Outlet} from "react-router-dom";
 import {getCompanyInfo, getJobsByCompanyId} from "@/axios/Request.ts";
 import {TfiMoreAlt} from "react-icons/tfi";
+import {DefaultPageSize, EmployerJobCard, JobApplication, PageableResponse} from "@/info/ApplicationType.ts";
+import {format} from "date-fns";
+import {convertDate} from "@/service/ApplicationService.ts";
 
 const EmployerHome = () => {
 
@@ -45,7 +48,9 @@ export const HomeContent = () => {
     const [currentCompanyId, setCurrentCompanyId] = useState<string>('');
     const [currentCompany, setCurrentCompany] = useState<any>();
     const [isViewJobSide, setIsViewJobSide] = useState<boolean>(false);
-
+    const [currentPage, setCurrentPage] = useState<number>(0);
+    const [totalJobs, setTotalJobs] = useState<number>(0);
+    const [jobsCards, setJobsCards] = useState<EmployerJobCard[]>([]);
     const data = [
         {
             title: 'Ant Design Title 1',
@@ -66,15 +71,21 @@ export const HomeContent = () => {
         setCurrentCompany(response);
     }
 
-    const handleGetJobsByCompanyId = async (id: string, page: number, size=10) => {
-        const response = await getJobsByCompanyId(id, page, size);
-        console.log(response);
+    const handleGetJobsByCompanyId = async (id: string, page: number, size=DefaultPageSize) => {
+        const response : PageableResponse<EmployerJobCard>= await getJobsByCompanyId(id, page, size);
+        if(response){
+            console.log(response);
+            setCurrentPage(response.pageable.pageNumber)
+            setTotalJobs(response.totalElements)
+            setJobsCards(response.content)
+        }
+
     }
     useEffect(() => {
         const companyId = JSON.parse(localStorage.getItem("company")).id;
         setCurrentCompanyId(companyId);
         handleGetCompanyInfo(companyId);
-        handleGetJobsByCompanyId(companyId,0)
+        handleGetJobsByCompanyId(companyId,0,DefaultPageSize)
     }, [])
     const handleCopy = async () => {
         try {
@@ -138,17 +149,17 @@ export const HomeContent = () => {
                         </h2>
                         <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
                             {
-                                Array.from(Array(10).keys()).map((item, index) => (
-                                    <JobEmployerView/>
+                                jobsCards.map((item, index) => (
+                                    <JobEmployerView job={item} key={index} />
                                 ))
                             }
                         </div>
                         <div className={`flex justify-center py-3`}>
                             <Pagination
-                                pageSize={20}
+                                current={1}
+                                pageSize={DefaultPageSize}
                                 showSizeChanger={false}
-                                defaultCurrent={6}
-                                total={500}/>
+                                total={totalJobs}/>
 
                         </div>
                     </div>
@@ -333,7 +344,30 @@ BAO GỒM:
 
 export default EmployerHome;
 
-const JobEmployerView = () => {
+type JobEmployerViewProps = {
+    job: EmployerJobCard
+}
+
+const JobEmployerView :React.FC<JobEmployerViewProps>= (item) => {
+    const [job, setJob]= useState<EmployerJobCard>(item.job)
+    const [applications, setApplications]=useState<JobApplication[]>([])
+
+    const refineApplications = (items: JobApplication[])=>{
+        if(items.length > 0 ){
+            items=items.slice(0,3)
+            const odd = items[items.length - 1]
+            items.push({...odd,
+                userName: 'View more',
+                userAvatar: 'https://w7.pngwing.com/pngs/602/173/png-transparent-ellipsis-computer-icons-more-miscellaneous-monochrome-black-thumbnail.png'})
+        }
+        setApplications(items)
+
+    }
+
+    useEffect(() => {
+        setJob(item.job)
+        refineApplications(item.job.applications)
+    }, [item]);
     return (
         <div
             className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
@@ -344,10 +378,10 @@ const JobEmployerView = () => {
                    target={"_blank"}
                    href={''}>
                     <img
-                        src="https://cdn-new.topcv.vn/unsafe/150x/https://static.topcv.vn/company_logos/cong-ty-co-phan-thiet-bi-va-cong-nghe-leanway-1f012ccf747554bd0c2468ff4a032a6c-661dd470c6d24.jpg"
+                        src={item.job.logo}
                         className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
-                        alt="CÔNG TY CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ LEANWAY"
-                        title="The company's logo"/>
+                        alt={job.title}
+                        title={job.title}/>
                 </a>
             </div>
             {/*card body*/}
@@ -360,10 +394,7 @@ const JobEmployerView = () => {
                                 <h3>
 
                                     <p className={`font-[600] hover:text-green_default  text-[18px] truncate text-[#212f3f] leading-6 cursor-pointer`}>
-                                        Nhân Viên Kế Toán, Thu Nhập 7 - 9
-                                        Triệu
-                                        (Thanh
-                                        Trì - Hà Nội) </p>
+                                        {job.title} </p>
 
                                 </h3>
                                 <div className={`w-full`}>
@@ -376,20 +407,17 @@ const JobEmployerView = () => {
                     <div className={`flex gap-1 justify-start items-center`}>
                         <p>Ứng viên: </p>
                         <ul className={`flex m-0 flex-wrap`}>
-                            <li title={'Luu dinh kien'}
-                                className={`h-6 aspect-square`}>
-                                <img
-                                    src={'https://avatars.githubusercontent.com/u/5378891?s=40&v=4'}
-                                    className={`h-6 aspect-square object-cover rounded-full`} alt=""/>
-                            </li>
-                            <li className={`h-6 aspect-square`}>
-                                <img
-                                    src={'https://avatars.githubusercontent.com/u/5378891?s=40&v=4'}
-                                    className={`h-6 aspect-square object-cover rounded-full`} alt=""/>
-                            </li>
-                            <li className={`h-6 flex items-center justify-center border aspect-square bg-white rounded-full`}>
-                                <TfiMoreAlt size={16}/>
-                            </li>
+                            {
+                                applications.map((item, index) => (
+                                    <li title={item.userName}
+                                        className={`h-6 aspect-square`}>
+                                        <img
+                                            src={item.userAvatar}
+                                            className={`h-6 aspect-square object-cover border border-white  rounded-full`} alt=""/>
+                                    </li>
+                                ))
+                            }
+
                         </ul>
                     </div>
                     <div
@@ -397,10 +425,10 @@ const JobEmployerView = () => {
                         <div className={`flex gap-4`}>
                             <div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
                                 <p className={`text-black text-[14px] truncate `}>Hạn:
-                                    29/12/2024</p>
+                                    <span className={`font-semibold`}> {convertDate(job.expireDate)}</span></p>
                             </div>
                             <div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                <p className={`text-black text-[14px] truncate `}>Trạng thái: </p>
+                                <p className={`text-black text-[14px] truncate `}>Trạng thái: {job.state}</p>
                             </div>
 
                         </div>

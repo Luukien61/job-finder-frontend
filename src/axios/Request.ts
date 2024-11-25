@@ -1,6 +1,7 @@
 import {instance} from "@/axios/Config.ts";
 import axios from "axios";
 import {companyBackendPath} from "@/info/AppInfo.ts";
+import {DefaultPageSize} from "@/info/ApplicationType.ts";
 
 
 export const getMessages = async (id: string, page: number) => {
@@ -161,6 +162,6 @@ export const isSavedJob = async (jobId: string|number, userId: any) => {
     return await instance.get(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
 }
 
-export const getJobsByCompanyId = async (companyId: string, page: number, size=10 ) => {
+export const getJobsByCompanyId = async (companyId: string, page: number, size=DefaultPageSize ) => {
     return await instance.get(`/job/company/${companyId}?page=${page}&size=${size}`).then((response: any) => response.data)
 }

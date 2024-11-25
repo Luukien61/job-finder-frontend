@@ -17,7 +17,13 @@ import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {UserResponse} from "@/page/GoogleCode.tsx";
 import {UserDto} from "@/page/UserProfile.tsx";
-import {checkIsJobSaved, handleSaveJob, refinePdfName, unSaveJobHandler} from "@/service/ApplicationService.ts";
+import {
+    checkIsJobSaved,
+    convertDate,
+    handleSaveJob,
+    refinePdfName,
+    unSaveJobHandler
+} from "@/service/ApplicationService.ts";
 
 type JobDetail = {
     jobId: number; // Long -> number
@@ -112,12 +118,7 @@ const JobDetail = () => {
         checkJobSaveStatus(id, user.id)
     }, []);
 
-    const convertDate = (date: Date) => {
-        if (date) {
-            return format(date, 'dd/MM/yyyy').toString()
-        }
-        return ""
-    }
+
 
     const handleApplyJobClick = async () => {
 

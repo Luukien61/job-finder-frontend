@@ -1,6 +1,7 @@
 import {toast} from "react-toastify";
 import {isSavedJob, saveJob, unSaveJob} from "@/axios/Request.ts";
 import {SelectProps} from "@/page/JobDetail.tsx";
+import {format} from "date-fns";
 
 export const handleSaveJob = async (jobId: number|string, userId: string, action : any) : Promise<boolean> => {
     try{
@@ -32,6 +33,13 @@ export const refinePdfName = (items: string[]): SelectProps[] => {
             label: fileName
         }
     })
+}
+
+export const convertDate = (date: Date) => {
+    if (date) {
+        return format(date, 'dd/MM/yyyy').toString()
+    }
+    return ""
 }
 
 export const checkIsJobSaved = async (jobId: string | number, userId: any): Promise<boolean> => {

@@ -4,8 +4,8 @@ import {employerSignUp, getVerificationCode} from "@/axios/Request.ts";
 import {toast} from "react-toastify";
 import {
     AppLogo,
-    companyDefaultAvatr,
-    defaultCompanyLogo, defaultCompanyWallpaper,
+    defaultCompanyLogo,
+    defaultCompanyWallpaper,
     defaultPhoneNumber,
     fullProvinces,
     policies
@@ -17,7 +17,6 @@ import {GoOrganization} from "react-icons/go";
 import {HiPhone} from "react-icons/hi";
 import {Checkbox, Input, Select} from "antd";
 import {BiSolidCity} from "react-icons/bi";
-import {AiOutlineGlobal} from "react-icons/ai";
 import {CustomModal} from "@/page/UserProfile.tsx";
 import {LuQrCode} from "react-icons/lu";
 
