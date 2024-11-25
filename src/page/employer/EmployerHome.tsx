@@ -492,7 +492,7 @@ export const HomeContent = () => {
                                                 <div className={`flex-1 mt-auto flex flex-col justify-end`}>
                                                     <div className={` flex justify-center gap-6`}>
                                                         <div>
-                                                            <a href={`/message/${currentCompanyId}`}>
+                                                            <a href={`/message/${currentCompanyId}`} target="_blank">
                                                                 <SiImessage size={28}
                                                                             fill={"#00b14f"}/>
                                                             </a>

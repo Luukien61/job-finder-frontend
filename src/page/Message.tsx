@@ -4,9 +4,9 @@ import {
     ConversationRequest,
     createConversation,
     getAllConversations,
+    getCurrentParticipant,
     getMessagesByConversationId,
     getParticipant,
-    getUserInfo,
 } from '@/axios/Request'
 import {VscSend} from 'react-icons/vsc'
 import {CiImageOn} from 'react-icons/ci'
@@ -38,6 +38,8 @@ type QuickMessage = {
     conversationId: string
     type: string
 }
+
+
 
 
 const Message = () => {
@@ -143,15 +145,10 @@ const Message = () => {
     }
 
     useEffect(() => {
-        const checkEmployee=()=>{
 
-        }
-
-
-        const rawUser = localStorage.getItem('user')
         const getLogInUser = async (userId: string) => {
             try {
-                const user: UserResponse = await getUserInfo(userId)
+                const user: UserResponse = await getCurrentParticipant(userId)
                 setLoginUser(user)
                 setCurrentUserId(user.id)
                 getAllConversation(user.id)
@@ -162,12 +159,17 @@ const Message = () => {
                 toast.error(e.response.data)
             }
         }
-        if (rawUser) {
-            const user: UserResponse = JSON.parse(rawUser)
-            getLogInUser(user.id)
-        } else {
-            navigate('/login', {replace: true})
+
+        let rawUser = JSON.parse(localStorage.getItem('user'))
+        if(!rawUser) {
+            rawUser = JSON.parse(localStorage.getItem('company'))
         }
+        if(rawUser){
+            getLogInUser(rawUser.id)
+        }else {
+            navigate('/login',{replace: true})
+        }
+
     }, [])
 
     const handleClickQuickMessage = async (conversationId: string, participantId: string) => {
@@ -276,10 +278,9 @@ const Message = () => {
                     <div className={`w-full flex justify-start mt-4 bg-green_nga px-2 py-2 rounded-lg gap-4 items-center`}>
                         <a className={`flex justify-start gap-4 items-center`}
                             href={homePage}>
-                            <img className={`w-14 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                            <img className={`w-8 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
                             <p className={`font-bold text-[24px] text-white font-inter`}>{AppInfo.appName}</p>
                         </a>
-
 
                     </div>
                     {/*current user*/}

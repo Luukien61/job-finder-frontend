@@ -180,4 +180,8 @@ export const acceptApplication = async (appId: any) => {
 export const rejectApplication = async (appId: any) => {
     return await instance.post(`/application/${appId}/reject`).then((response: any) => response.data)
 }
+const messagePath ='/message/participant'
+export const getCurrentParticipant = async (id: string) => {
+    return await instance.get(`${messagePath}/${id}`).then((response: any) => response.data)
+}
 
