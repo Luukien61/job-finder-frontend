@@ -24,29 +24,9 @@ import {
     refinePdfName,
     unSaveJobHandler
 } from "@/service/ApplicationService.ts";
+import {JobDetailProps} from "@/info/ApplicationType.ts";
 
-type JobDetail = {
-    jobId: number; // Long -> number
-    companyId: string;
-    companyName: string;
-    title: string;
-    location: string;
-    description: string;
-    requirements: string;
-    benefits: string;
-    workTime: string;
-    role: string;
-    minSalary: number;
-    maxSalary: number;
-    experience: number;
-    quantity: number;
-    createdAt: Date; // LocalDate -> string (ISO 8601 format: YYYY-MM-DD)
-    updateAt: Date; // LocalDate -> string
-    expireDate: Date; // LocalDate -> string
-    gender: string;
-    type: string;
-    field: string;
-};
+
 export type SelectProps = {
     value: string,
     label: string;
@@ -61,7 +41,7 @@ const JobDetail = () => {
     const [isConfirmCheck, setIsConfirmCheck] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [form] = Form.useForm()
-    const [job, setJob] = useState<JobDetail>()
+    const [job, setJob] = useState<JobDetailProps>()
     const [company, setCompany] = useState<CompanyInfo>()
     const [currentUser, setCurrentUser] = useState<UserDto>();
     const [userCvs, setUserCvs] = useState<SelectProps[]>([]);
@@ -76,7 +56,7 @@ const JobDetail = () => {
     }, [])
     const handleGetJobById = async (id: string | number) => {
         try {
-            const jobDetail: JobDetail = await getJobDetailById(id)
+            const jobDetail: JobDetailProps = await getJobDetailById(id)
             if (jobDetail) {
                 setJob(jobDetail)
             } else {
@@ -102,8 +82,10 @@ const JobDetail = () => {
     }
 
     const checkJobSaveStatus = async (jobId, userId) => {
-        const saveStatus: boolean = await checkIsJobSaved(jobId, userId)
-        setIsSaved(saveStatus)
+        if(userId){
+            const saveStatus: boolean = await checkIsJobSaved(jobId, userId)
+            setIsSaved(saveStatus)
+        }
     }
 
 
@@ -114,8 +96,11 @@ const JobDetail = () => {
     useEffect(() => {
         handleGetJobById(id)
         const user = JSON.parse(localStorage.getItem("user"));
-        if (user) setCurrentUser(user)
-        checkJobSaveStatus(id, user.id)
+        if (user) {
+            setCurrentUser(user)
+            checkJobSaveStatus(id, user.id)
+        }
+
     }, []);
 
 

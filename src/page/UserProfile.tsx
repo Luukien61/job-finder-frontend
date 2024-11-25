@@ -630,7 +630,6 @@ export const UserProfileInfo = () => {
                 avatar:user_avatar,
             }
             try{
-                console.log("request: ", userProfileCompleteRequest)
                 const response : UserDto = await updateProfile(userProfileCompleteRequest)
                 setCurrentUser(response)
                 const localUser : UserResponse ={

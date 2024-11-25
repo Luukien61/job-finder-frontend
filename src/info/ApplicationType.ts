@@ -37,3 +37,26 @@ export interface PageableResponse<T> {
     empty: boolean,
 
 }
+
+export type JobDetailProps = {
+    jobId: number; // Long -> number
+    companyId: string;
+    companyName: string;
+    title: string;
+    location: string;
+    description: string;
+    requirements: string;
+    benefits: string;
+    workTime: string;
+    role: string;
+    minSalary: number;
+    maxSalary: number;
+    experience: number;
+    quantity: number;
+    createdAt: Date; // LocalDate -> string (ISO 8601 format: YYYY-MM-DD)
+    updateAt: Date; // LocalDate -> string
+    expireDate: Date; // LocalDate -> string
+    gender: string;
+    type: string;
+    field: string;
+};

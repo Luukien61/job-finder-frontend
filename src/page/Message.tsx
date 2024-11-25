@@ -143,6 +143,11 @@ const Message = () => {
     }
 
     useEffect(() => {
+        const checkEmployee=()=>{
+
+        }
+
+
         const rawUser = localStorage.getItem('user')
         const getLogInUser = async (userId: string) => {
             try {

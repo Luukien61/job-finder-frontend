@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {ChevronDown, ChevronUp} from 'lucide-react';
 
 const ExpandableCard = ({children,  high = 200, expandStyle='h-12 py-2', expandColor='bottom-12 from-white h-16'}) => {
@@ -6,6 +6,7 @@ const ExpandableCard = ({children,  high = 200, expandStyle='h-12 py-2', expandC
     const [isOverflowing, setIsOverflowing] = useState(false);
     const [contentHeight, setContentHeight] = useState(high);
     const contentRef = useRef(null);
+
 
     useEffect(() => {
         if (contentRef.current) {
@@ -15,8 +16,9 @@ const ExpandableCard = ({children,  high = 200, expandStyle='h-12 py-2', expandC
         }
     }, [children]);
 
-    const toggleExpand = () => {
+    const toggleExpand = (event: React.MouseEvent) => {
         setIsExpanded(!isExpanded);
+        event.stopPropagation()
     };
 
     return (

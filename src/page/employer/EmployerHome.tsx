@@ -1,7 +1,7 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
 import {AiOutlineGlobal} from "react-icons/ai";
-import {PiCopySimple, PiPhoneLight} from "react-icons/pi";
+import {PiBuildingOfficeFill, PiCopySimple, PiPhoneLight} from "react-icons/pi";
 import ExpandableCard from "@/component/ExpandableCard.tsx";
 import {MdLocationPin} from "react-icons/md";
 import LocationMap from "@/component/employer/LocationMap.tsx";
@@ -9,11 +9,31 @@ import {IoMdMap} from "react-icons/io";
 import Footer from "@/component/Footer.tsx";
 import {Avatar, Input, List, Pagination} from "antd";
 import {Outlet} from "react-router-dom";
-import {getCompanyInfo, getJobsByCompanyId} from "@/axios/Request.ts";
-import {TfiMoreAlt} from "react-icons/tfi";
-import {DefaultPageSize, EmployerJobCard, JobApplication, PageableResponse} from "@/info/ApplicationType.ts";
-import {format} from "date-fns";
+import {
+    acceptApplication,
+    getApplicationsByJobId,
+    getCompanyInfo,
+    getJobDetailById,
+    getJobsByCompanyId,
+    getUserBasicInfo, rejectApplication
+} from "@/axios/Request.ts";
+import {
+    DefaultPageSize,
+    EmployerJobCard,
+    JobApplication,
+    JobDetailProps,
+    PageableResponse
+} from "@/info/ApplicationType.ts";
 import {convertDate} from "@/service/ApplicationService.ts";
+import {toast} from "react-toastify";
+import FlexStickyLayout from "@/component/AllPagesPDFViewer.tsx";
+import {CustomModal, UserDto} from "@/page/UserProfile.tsx";
+import {IoMail} from "react-icons/io5";
+import {FaPhoneAlt} from "react-icons/fa";
+import {FaLocationDot} from "react-icons/fa6";
+import {SiImessage} from "react-icons/si";
+import {ImMail} from "react-icons/im";
+
 
 const EmployerHome = () => {
 
@@ -51,30 +71,26 @@ export const HomeContent = () => {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [totalJobs, setTotalJobs] = useState<number>(0);
     const [jobsCards, setJobsCards] = useState<EmployerJobCard[]>([]);
-    const data = [
-        {
-            title: 'Ant Design Title 1',
-        },
-        {
-            title: 'Ant Design Title 2',
-        },
-        {
-            title: 'Ant Design Title 3',
-        },
-        {
-            title: 'Ant Design Title 4',
-        },
-    ];
+    const [currentJob, setCurrentJob] = useState<JobDetailProps>();
+    const [applicants, setApplicants] = useState<JobApplication[]>([]);
+    const [isOpenApplication, setIsOpenApplication] = useState<boolean>(false);
+    const [applicant, setApplicant] = useState<UserDto>();
+    const [applicationState, setApplicationSate] = useState<string>();
+    const [currentAppId, setCurrentAppId] = useState<number>();
+    const priorityMap = {
+        'PENDING': 0,
+        'ACCEPTED': 1,
+        'REJECTED': 2
+    };
 
     const handleGetCompanyInfo = async (id: string) => {
         const response: CompanyInfo = await getCompanyInfo(id);
         setCurrentCompany(response);
     }
 
-    const handleGetJobsByCompanyId = async (id: string, page: number, size=DefaultPageSize) => {
-        const response : PageableResponse<EmployerJobCard>= await getJobsByCompanyId(id, page, size);
-        if(response){
-            console.log(response);
+    const handleGetJobsByCompanyId = async (id: string, page: number, size = DefaultPageSize) => {
+        const response: PageableResponse<EmployerJobCard> = await getJobsByCompanyId(id, page, size);
+        if (response) {
             setCurrentPage(response.pageable.pageNumber)
             setTotalJobs(response.totalElements)
             setJobsCards(response.content)
@@ -85,7 +101,7 @@ export const HomeContent = () => {
         const companyId = JSON.parse(localStorage.getItem("company")).id;
         setCurrentCompanyId(companyId);
         handleGetCompanyInfo(companyId);
-        handleGetJobsByCompanyId(companyId,0,DefaultPageSize)
+        handleGetJobsByCompanyId(companyId, 0, DefaultPageSize)
     }, [])
     const handleCopy = async () => {
         try {
@@ -95,6 +111,91 @@ export const HomeContent = () => {
 
         }
     }
+
+    const handelJobCardClick = async (jobId: number) => {
+        setIsViewJobSide(true);
+        try {
+            const jobDetail: JobDetailProps = await getJobDetailById(jobId)
+            if (jobDetail) {
+                setCurrentJob(jobDetail)
+                const applicants: JobApplication[] = await getApplicationsByJobId(jobId)
+                if (applicants) {
+
+                    const sortedApplications = applicants.sort((a, b) => {
+                        return priorityMap[a.state] - priorityMap[b.state];
+                    });
+                    setApplicants(sortedApplications);
+                }
+            }
+
+        } catch (e) {
+            toast.error("Co loi xay ra")
+        }
+    }
+
+    const handleApplicantClick = async (userId: string, cvUrl: string, state: string, appId: number) => {
+        setIsOpenApplication(true)
+        setApplicationSate(state)
+        setCurrentAppId(appId)
+        try {
+            let userInfo: UserDto = await getUserBasicInfo(userId)
+            if (userInfo) {
+                userInfo = {...userInfo, cv: [cvUrl]};
+                setApplicant(userInfo)
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const exitApplicantView = () => {
+        setIsOpenApplication(false)
+        setApplicant(undefined)
+        setApplicationSate(undefined)
+    }
+
+    const handleAcceptApplication = async (appId: string | number) => {
+        try {
+            await acceptApplication(appId)
+            const newApplicants = applicants.map(item => {
+                if (item.id == appId) {
+                    item.state = "ACCEPTED"
+                }
+                return item;
+            })
+            setApplicants(newApplicants);
+            setApplicationSate("ACCEPTED")
+            toast.info("Application accepted")
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const handleRejectApplication = async (appId: string | number) => {
+        try {
+            await rejectApplication(appId)
+            const newApplicants = applicants.map(item => {
+                if (item.id == appId) {
+                    item.state = "REJECTED"
+                }
+                return item;
+            })
+
+            setApplicants(newApplicants);
+            setApplicationSate("REJECTED")
+            toast.info("Application rejected")
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    useEffect(() => {
+        const sortedApplications = applicants.sort((a, b) => {
+            return priorityMap[a.state] - priorityMap[b.state];
+        });
+        setApplicants(sortedApplications);
+    }, [applicants]);
+
     return (
         <div className={`flex flex-col mt-10`}>
             {/*banner*/}
@@ -150,13 +251,16 @@ export const HomeContent = () => {
                         <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
                             {
                                 jobsCards.map((item, index) => (
-                                    <JobEmployerView job={item} key={index} />
+                                    <div onClick={() => handelJobCardClick(item.jobId)}>
+                                        <JobEmployerView
+                                            job={item} key={index}/>
+                                    </div>
                                 ))
                             }
                         </div>
                         <div className={`flex justify-center py-3`}>
                             <Pagination
-                                current={1}
+                                current={currentPage}
                                 pageSize={DefaultPageSize}
                                 showSizeChanger={false}
                                 total={totalJobs}/>
@@ -193,34 +297,21 @@ export const HomeContent = () => {
                             {!isViewJobSide ? 'Chi tiết công việc' : 'Thông tin liên hệ'}
                         </h2>
                         {
-                            !isViewJobSide ? (
+                            isViewJobSide ? (
                                 <div className={`flex flex-col py-4 px-4`}>
                                     <h3>
                                         <p className={`font-[600] hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
-                                            Nhân Viên Kế Toán, Thu Nhập 7 - 9
-                                            Triệu
-                                            (Thanh
-                                            Trì - Hà Nội) </p>
+                                            {currentJob?.title}
+                                        </p>
                                     </h3>
                                     <ExpandableCard
                                         children={<div className={`pt-4`}>
                                             <p className={`font-semibold`}>Yêu cầu ứng viên</p>
-                                            <pre className={`whitespace-pre-wrap break-words`}>
-BAO GỒM:
-
-❋ Cà gai leo hỗ trợ điều trị hiệu quả viêm gan A - B - C, tăng cường giải độc gan.
-
-❋ Giảo cổ lam giàu acid amin, vitamin giúp chống oxy hóa, hạ mỡ máu, giảm căng thẳng.
-
-❋ Tỏi đen sản xuất theo công nghệ lên men hiện đại, có khả năng ngăn lão hóa, ngừa ung thư.
-
-❋ Sâm đại quang: Củ sâm đại quang, cây sâm đại quang, cây giống sâm đại quang
-
-❋ Các loại dược liệu khác: Ngưu bàng, thiên nhiên kiện, khôi nhung, khủng khẻng,..
-
-
+                                            <pre>
+                                                {currentJob?.requirements}
                                             </pre>
-                                            <a className={`text-green_default italic hover:underline cursor-pointer`}>
+                                            <a href={`/job/detail/${currentJob?.jobId}`}
+                                               className={`text-green_default italic hover:underline cursor-pointer`}>
                                                 Xem chi tiết công việc
                                             </a>
                                         </div>}
@@ -233,20 +324,25 @@ BAO GỒM:
                                         <div className={`max-h-[300px] overflow-y-auto`}>
                                             <List
                                                 itemLayout="horizontal"
-                                                dataSource={data}
-                                                renderItem={(item, index) => (
-                                                    <List.Item>
+                                                dataSource={applicants}
+                                                renderItem={(item) => (
+                                                    <List.Item
+                                                        className={`cursor-pointer`}
+                                                        onClick={() => handleApplicantClick(item.userId, item.cvUrl, item.state, item.id)}
+                                                    >
                                                         <List.Item.Meta
-                                                            className={`bg-green-50`}
+                                                            className={`border py-2 px-1 rounded-lg ${item.state == 'PENDING' ? 'bg-gray-50' : (item.state == 'ACCEPTED' ? ' bg-green-50' : ' bg-red-50')}`}
                                                             avatar={<Avatar size={"large"}
-                                                                            src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}/>}
-                                                            title={<a href="https://ant.design">{item.title}</a>}
+                                                                            src={item?.userAvatar}/>}
+                                                            title={<div>
+                                                                <a href="https://ant.design">{item.userName}</a>
+                                                            </div>}
                                                             description={
-                                                            <ExpandableCard
-                                                                expandColor={'from-green-50 h-10 bottom-8'}
-                                                                expandStyle={'h-fit opacity-700 text-14'}
-                                                                high={120}
-                                                                children={<p>Ant Design, a design language for background applications, is refined by Ant UED Team. Ant Design, a design language for background applications, is refined by Ant UED Team</p>}/>
+                                                                <ExpandableCard
+                                                                    expandColor={'from-green-50'}
+                                                                    expandStyle={'h-fit opacity-70 text-14'}
+                                                                    high={70}
+                                                                    children={<p>{item?.referenceLetter}</p>}/>
                                                             }
                                                         />
                                                     </List.Item>
@@ -310,34 +406,123 @@ BAO GỒM:
                     </div>
                 </div>
             </div>
-            {/*<CustomModal*/}
-            {/*    handleModalClicks={() => {*/}
-            {/*    }}*/}
-            {/*    handleCloseModal={() => {*/}
-            {/*    }}*/}
-            {/*    handleOutModalClick={() => {*/}
-            {/*    }}*/}
-            {/*    closeOnIcon={true}*/}
-            {/*    notMaxWidth={true}*/}
-            {/*    bottom={<div className={`bg-bg_default rounded-b-lg py-4 w-full justify-end px-10 flex gap-6`}>*/}
-            {/*        <button*/}
-            {/*            className={`w-fit px-2  mx-3 rounded  min-w-[70px] py-2 text-black opacity-70 hover:bg-gray-100 font-bold`}>*/}
-            {/*            Từ chối*/}
-            {/*        </button>*/}
-            {/*        <button*/}
-            {/*            className={`w-fit px-2 hover:bg-green-600 mx-3 rounded bg-green_default py-2 text-white font-bold`}>*/}
-            {/*            Chấp nhận*/}
-            {/*        </button>*/}
+            {
+                isOpenApplication && (
+                    <CustomModal
+                        handleModalClicks={() => {
+                        }}
+                        handleCloseModal={exitApplicantView}
+                        handleOutModalClick={() => {
+                        }}
+                        closeOnIcon={true}
+                        notMaxWidth={true}
+                        bottom={
 
-            {/*    </div>}*/}
-            {/*    child={<div*/}
-            {/*        className="bg-white flex flex-col overflow-x-hidden gap-3  overflow-y-auto border-b rounded-xl shadow p-5 pt-0 px-0 relative z-10 min-h-4 ">*/}
-            {/*        <FlexStickyLayout*/}
-            {/*            url={'https://jobfinder-kienluu.s3.ap-southeast-1.amazonaws.com/Luu-Dinh-Kien--TopCV.vn-291024.172109.pdf'}/>*/}
+                            <div className={`bg-bg_default rounded-b-lg py-4 w-full justify-end px-10 flex gap-6`}>
+                                <button
+                                    onClick={()=>handleRejectApplication(currentAppId)}
+                                    disabled={applicationState!='PENDING'}
+                                    className={`w-fit px-2  mx-3 rounded disabled:bg-gray-400 transition-all duration-300  min-w-[70px] py-2 text-black opacity-70 hover:bg-gray-100 font-bold`}>
+                                    Từ chối
+                                </button>
+                                <button
+                                    disabled={applicationState!='PENDING'}
+                                    onClick={() => handleAcceptApplication(currentAppId)}
+                                    className={`w-fit px-2 hover:bg-green-600 disabled:bg-gray-400 mx-3 transition-all duration-300 rounded bg-green_default py-2 text-white font-bold`}>
+                                    Chấp nhận
+                                </button>
+                            </div>
 
-            {/*    </div>}*/}
+                        }
 
-            {/*/>*/}
+                        child={
+                            <div className={`flex `}>
+                                <div className={`w-96 border-r-2`}>
+                                    <div className={`w-full flex p-4 flex-col gap-6`}>
+                                        <div className={`flex gap-4 items-center`}>
+                                            <img src={applicant?.avatar} alt='avatar'
+                                                 className={`rounded-full object-cover aspect-square h-20 border`}/>
+                                            <p className={`font-semibold`}>{applicant?.name}</p>
+                                        </div>
+                                        <div className={`flex flex-col gap-4`}>
+                                            <div className={`flex gap-6 overflow-x-hidden`}>
+                                                <div className={``}>
+                                                    <IoMail size={20}
+                                                            fill={"#00b14f"}/>
+                                                </div>
+                                                <div className={`flex-1 overflow-x-hidden`}>
+                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.email}</p>
+
+                                                </div>
+                                            </div>
+                                            <div className={`flex gap-6 overflow-x-hidden`}>
+                                                <div className={``}>
+                                                    <FaPhoneAlt size={20}
+                                                                fill={"#00b14f"}/>
+                                                </div>
+                                                <div className={`flex-1 overflow-x-hidden`}>
+                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.phone}</p>
+
+                                                </div>
+                                            </div>
+                                            <div className={`flex gap-6 overflow-x-hidden`}>
+                                                <div className={``}>
+                                                    <FaLocationDot size={20}
+                                                                   fill={"#00b14f"}/>
+                                                </div>
+                                                <div className={`flex-1 overflow-x-hidden`}>
+                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.address}</p>
+
+                                                </div>
+                                            </div>
+                                            <div className={`flex gap-6 overflow-x-hidden`}>
+                                                <div className={``}>
+                                                    <PiBuildingOfficeFill size={20}
+                                                                          fill={"#00b14f"}/>
+                                                </div>
+                                                <div className={`flex-1 overflow-x-hidden`}>
+                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.university}</p>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        {
+                                            applicationState == "ACCEPTED" && (
+                                                <div className={`flex-1 mt-auto flex flex-col justify-end`}>
+                                                    <div className={` flex justify-center gap-6`}>
+                                                        <div>
+                                                            <a href={`/message/${currentCompanyId}`}>
+                                                                <SiImessage size={28}
+                                                                            fill={"#00b14f"}/>
+                                                            </a>
+                                                        </div>
+                                                        <div>
+                                                            <a href={`mailto:${applicant?.email}`} target="_blank"
+                                                               rel="noopener noreferrer">
+                                                                <ImMail size={28}
+                                                                        fill={"#00b14f"}/>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
+                                </div>
+                                <div
+                                    className="bg-white flex flex-col overflow-x-hidden gap-3  overflow-y-auto border-b rounded-xl shadow p-5 pt-0 px-0 relative z-10 min-h-4 ">
+                                    <FlexStickyLayout
+                                        url={applicant?.cv[0]}/>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    />
+                )
+            }
         </div>
     )
 }
@@ -345,20 +530,23 @@ BAO GỒM:
 export default EmployerHome;
 
 type JobEmployerViewProps = {
-    job: EmployerJobCard
+    job: EmployerJobCard,
+
 }
 
-const JobEmployerView :React.FC<JobEmployerViewProps>= (item) => {
-    const [job, setJob]= useState<EmployerJobCard>(item.job)
-    const [applications, setApplications]=useState<JobApplication[]>([])
+const JobEmployerView: React.FC<JobEmployerViewProps> = (item) => {
+    const [job, setJob] = useState<EmployerJobCard>(item.job)
+    const [applications, setApplications] = useState<JobApplication[]>([])
 
-    const refineApplications = (items: JobApplication[])=>{
-        if(items.length > 0 ){
-            items=items.slice(0,3)
+    const refineApplications = (items: JobApplication[]) => {
+        if (items.length > 5) {
+            items = items.slice(0, 3)
             const odd = items[items.length - 1]
-            items.push({...odd,
+            items.push({
+                ...odd,
                 userName: 'View more',
-                userAvatar: 'https://w7.pngwing.com/pngs/602/173/png-transparent-ellipsis-computer-icons-more-miscellaneous-monochrome-black-thumbnail.png'})
+                userAvatar: 'https://w7.pngwing.com/pngs/602/173/png-transparent-ellipsis-computer-icons-more-miscellaneous-monochrome-black-thumbnail.png'
+            })
         }
         setApplications(items)
 
@@ -407,16 +595,24 @@ const JobEmployerView :React.FC<JobEmployerViewProps>= (item) => {
                     <div className={`flex gap-1 justify-start items-center`}>
                         <p>Ứng viên: </p>
                         <ul className={`flex m-0 flex-wrap`}>
-                            {
-                                applications.map((item, index) => (
-                                    <li title={item.userName}
-                                        className={`h-6 aspect-square`}>
-                                        <img
-                                            src={item.userAvatar}
-                                            className={`h-6 aspect-square object-cover border border-white  rounded-full`} alt=""/>
-                                    </li>
-                                ))
-                            }
+                            <Avatar.Group
+                                max={{
+                                    count: 1,
+                                    style: {
+                                        color: '#f56a00',
+                                        backgroundColor: '#fde3cf',
+                                        width: '24px',
+                                        height: '24px'
+                                    },
+                                }}
+                            >
+                                {
+                                    applications.map((item, index) => (
+                                        <Avatar size={"small"} src={item.userAvatar} key={index}/>
+                                    ))
+                                }
+                            </Avatar.Group>
+
 
                         </ul>
                     </div>

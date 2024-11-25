@@ -165,3 +165,19 @@ export const isSavedJob = async (jobId: string|number, userId: any) => {
 export const getJobsByCompanyId = async (companyId: string, page: number, size=DefaultPageSize ) => {
     return await instance.get(`/job/company/${companyId}?page=${page}&size=${size}`).then((response: any) => response.data)
 }
+
+export const getApplicationsByJobId = async (jobId: string|number) => {
+    return await instance.get(`${applicationPath}/job/${jobId}`).then((response: any) => response.data)
+}
+
+export const getUserBasicInfo = async (userId: string) => {
+    return await instance.get(`/user/${userId}/basic`).then((response: any) => response.data)
+}
+export const acceptApplication = async (appId: any) => {
+    return await instance.post(`/application/${appId}/accept`).then((response: any) => response.data)
+}
+
+export const rejectApplication = async (appId: any) => {
+    return await instance.post(`/application/${appId}/reject`).then((response: any) => response.data)
+}
+
