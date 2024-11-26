@@ -6,19 +6,22 @@ export type Participant = {
   name: string
   avatar: string
 }
+
+
 export type ChatMessage = {
   id: string
   senderId: string
   recipientId: string
-  conversationId: string
+  conversationId: number
   content: string
-  timestamp: Date,
+  timestamp: Date|string,
   type: string
   // status: 'SENT'| "RECEIVED" | "DELIVERED"
 }
 export type Conversation = {
-  id: string
-  userIds: string[]
+  id: number
+  senderId: string
+  receiverId: string
   modifiedAt: Date
   lastMessage: string,
   type: string
@@ -29,7 +32,7 @@ const backendIP= import.meta.env.VITE_BACKEND_IP
 // Hàm kết nối WebSocket
 export const connectWebSocket = (onConnected: () => void): void => {
   client = new Client({
-    brokerURL: `ws://${backendIP}:8080/ws`,
+    brokerURL: `ws://${backendIP}:8088/ws`,
     onConnect: onConnected,
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,

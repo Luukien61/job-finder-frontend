@@ -6495,8 +6495,18 @@ export const jobTypes=[
 export const companyBackendPath = '/api/companies'
 export const defaultCompanyLogo ='https://res.cloudinary.com/dmi3xizxq/image/upload/v1732355405/company_default_a6vjzg.png'
 export const defaultCompanyWallpaper='https://static.topcv.vn/v4/image/normal-company/cover/company_cover_1.jpg'
+export const reportQuota='Hãy tìm hiểu kỹ về nhà tuyển dụng và công việc bạn ứng tuyển. Bạn nên cẩn trọng với những công việc yêu cầu nộp phí, hoặc những hợp đồng mập mờ, không rõ ràng.\n' +
+    'Nếu bạn thấy rằng tin tuyển dụng này không đúng, hãy phản ánh với chúng tôi.'
 
-
+export const reportOptions = [
+    { value: 'Tin rác', label: 'Tin rác' },
+    { value: 'Thông tin sai sự thật', label: 'Thông tin sai sự thật' },
+    { value: 'Tin trùng lặp', label: 'Tin trùng lặp' },
+    { value: 'Ngôn từ xúc phạm', label: 'Ngôn từ xúc phạm' },
+    { value: 'Gian lận/Quảng cáo lừa đảo', label: 'Gian lận/Quảng cáo lừa đảo' },
+    { value: 'Nội dung vi phạm pháp luật', label: 'Nội dung vi phạm pháp luật' },
+    { value: 'Lý do khác', label: 'Lý do khác' },
+];
 
 
 

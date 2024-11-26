@@ -47,11 +47,10 @@ export const searchUserByEmail = async (email: string) => {
 
 export const searchConversationByUserIds = async (user1Id: string, user2Id: string) => {
     return await instance
-        .get(`/conversation?user1=${user1Id}&user2=${user2Id}`)
+        .get(`/conversation?sender=${user1Id}&receiver=${user2Id}`)
         .then((response) => response.data)
 }
 export type ConversationRequest = {
-    id: string,
     senderId: string,
     recipientId: string,
     type: string,
@@ -71,7 +70,7 @@ export const getParticipant = async (id: string) => {
     return await instance.get(`/participant/${id}`).then((response) => response.data)
 }
 
-export const getMessagesByConversationId = async (id: string) => {
+export const getMessagesByConversationId = async (id: number) => {
     return await instance.get(`/message/${id}`).then((response) => response.data)
 }
 
@@ -185,3 +184,6 @@ export const getCurrentParticipant = async (id: string) => {
     return await instance.get(`${messagePath}/${id}`).then((response: any) => response.data)
 }
 
+export const createReport=async (jobId: string, request: any) => {
+    return await instance.post(`/api/reports/${jobId}`, request).then((response: any) => response.data)
+}

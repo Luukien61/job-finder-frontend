@@ -980,7 +980,7 @@ export const CustomModal: React.FC<CustomModalProps> = (item) => {
                     <div className={`overflow-y-auto ${item.high}`}>
                         {
                             item.closeOnIcon && (
-                                <div className={`w-full flex justify-end py-1 border-b`}>
+                                <div className={`w-full flex justify-end py-1 pr-2 border-b`}>
                                     <IoIosCloseCircle
                                         onClick={item.handleCloseModal}
                                         className={`cursor-pointer`}

@@ -12,7 +12,7 @@ import {toast, ToastContainer} from "react-toastify";
 import {applyJob, getCompanyInfo, getJobDetailById, getUserDto, isAppliedJob, loginUser} from "@/axios/Request.ts";
 import {format} from 'date-fns';
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
-import {Checkbox, Form, Input, Modal, Select, Spin} from "antd";
+import {Checkbox, Form, FormProps, Input, Modal, Select, Spin} from "antd";
 import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {UserResponse} from "@/page/GoogleCode.tsx";
@@ -25,8 +25,13 @@ import {
     unSaveJobHandler
 } from "@/service/ApplicationService.ts";
 import {JobDetailProps} from "@/info/ApplicationType.ts";
+import {reportOptions, reportQuota} from "@/info/AppInfo.ts";
 
-
+type FieldType = {
+    username?: string;
+    password?: string;
+    remember?: string;
+};
 export type SelectProps = {
     value: string,
     label: string;
@@ -36,6 +41,8 @@ export type SelectProps = {
 const JobDetail = () => {
     const navigate = useNavigate();
     const {id} = useParams();
+    const [isLogin, setIsLogin] = useState<boolean>(false);
+    const [openReports, setOpenReports] = useState<boolean>(false)
     const [openModal, setOpenModal] = useState<boolean>(false)
     const [openLogin, setOpenLogin] = useState<boolean>(false)
     const [isConfirmCheck, setIsConfirmCheck] = useState<boolean>(false);
@@ -46,7 +53,10 @@ const JobDetail = () => {
     const [currentUser, setCurrentUser] = useState<UserDto>();
     const [userCvs, setUserCvs] = useState<SelectProps[]>([]);
     const [isSaved, setIsSaved] = useState<boolean>(false);
+    const [loginEmail, setLoginEmail] = useState<string>("");
+    const [loginPassword, setLoginPassword] = useState<string>("");
     const {TextArea} = Input;
+    const [modalTypeRequestOpen, setModalTypeRequestOpen] = useState<string>('');
 
     const handleModalClicks = useCallback((event: React.MouseEvent) => {
         event.stopPropagation()
@@ -82,7 +92,7 @@ const JobDetail = () => {
     }
 
     const checkJobSaveStatus = async (jobId, userId) => {
-        if(userId){
+        if (userId) {
             const saveStatus: boolean = await checkIsJobSaved(jobId, userId)
             setIsSaved(saveStatus)
         }
@@ -98,11 +108,20 @@ const JobDetail = () => {
         const user = JSON.parse(localStorage.getItem("user"));
         if (user) {
             setCurrentUser(user)
+            setIsLogin(true)
             checkJobSaveStatus(id, user.id)
         }
 
     }, []);
 
+    const handleReportClick = () => {
+        if (isLogin) {
+            setOpenReports(true)
+        } else {
+            setOpenLogin(true)
+            setModalTypeRequestOpen('REPORT')
+        }
+    }
 
 
     const handleApplyJobClick = async () => {
@@ -122,6 +141,7 @@ const JobDetail = () => {
             }
         } else {
             setOpenLogin(true)
+            setModalTypeRequestOpen('APPLY')
 
         }
 
@@ -179,24 +199,34 @@ const JobDetail = () => {
             }
         }
     }, [openModal]);
+    const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
+        console.log('Failed:', errorInfo);
+    };
 
-    const handleLogin = async (values: any) => {
-        setIsLoading(true);
-        try {
-            const userResponse: UserResponse = await loginUser({email: values.email, password: values.password})
-            if (userResponse) {
-                localStorage.setItem("user", JSON.stringify(userResponse))
-                toast.info("User logged in successfully")
-                setOpenLogin(false)
-                setOpenModal(true)
-                setIsConfirmCheck(false)
-            } else {
-                toast.error("User logged in successfully")
+    const handleLogin = async () => {
+        if (loginEmail && loginPassword) {
+            setIsLoading(true);
+            try {
+                const userResponse: UserResponse = await loginUser({email: loginEmail, password: loginPassword})
+                if (userResponse) {
+                    localStorage.setItem("user", JSON.stringify(userResponse))
+                    toast.info("User logged in successfully")
+                    setOpenLogin(false)
+                    if (modalTypeRequestOpen == 'APPLY') {
+                        setOpenModal(true)
+                    }
+                    if (modalTypeRequestOpen == 'REPORT') {
+                        setOpenReports(true)
+                    }
+                    setIsConfirmCheck(false)
+                } else {
+                    toast.error("User logged in successfully")
+                }
+            } catch (e: any) {
+                toast.error(e.response)
             }
-        } catch (e: any) {
-            toast.error(e.response)
+            setIsLoading(false)
         }
-        setIsLoading(false)
     }
 
     const handleSave = async () => {
@@ -211,6 +241,7 @@ const JobDetail = () => {
         }
     }
 
+
     const handleUnSave = async () => {
         try {
             const saved = await unSaveJobHandler(id, currentUser.id, () => {
@@ -219,6 +250,23 @@ const JobDetail = () => {
         } catch (e) {
             setIsSaved(true)
             toast.error(e.response.data)
+        }
+    }
+    const handleCreateReport = async (values: any) => {
+        console.log("Click")
+        try {
+            const reason = values.type + " - " + values.reason;
+            if (currentUser && currentUser.id && id && company) {
+                const report = {
+                    userId: currentUser.id,
+                    jobId: id,
+                    companyId: company.id,
+                    rpReason: reason,
+                }
+                console.log(report)
+            }
+        } catch (e) {
+            toast.error("Co loi xay ra")
         }
     }
 
@@ -447,6 +495,7 @@ const JobDetail = () => {
                                                 tuyển dụng: Nếu bạn thấy rằng tin tuyển dụng này không đúng hoặc có dấu
                                                 hiệu
                                                 lừa đảo, <span
+                                                    onClick={handleReportClick}
                                                     className={`text-green_default cursor-pointer hover:underline`}>hãy phản ánh với chúng tôi.</span>
                                             </p>
                                         </div>
@@ -764,9 +813,9 @@ const JobDetail = () => {
                                     </h4>
                                 </div>
                                 <Form
+                                    name='apply'
                                     onFinish={handleApplyJob}
                                     scrollToFirstError={true}
-                                    form={form}
                                 >
                                     <div className={`m-0 max-h-[70vh] overflow-y-auto px-8 relative`}>
                                         <div className={`flex gap-4 py-4 items-end`}>
@@ -857,7 +906,6 @@ const JobDetail = () => {
                    onCancel={handleCloseLoginModal}>
                 <div className={`w-full flex justify-center`}>
                     <Form
-                        onFinish={handleLogin}
                         scrollToFirstError={true}
                         form={form}
                         className={`w-full flex justify-center`}
@@ -873,8 +921,11 @@ const JobDetail = () => {
                                     <Input
                                         prefix={<IoPersonCircleSharp className={`mr-2`} size={24}
                                                                      fill={"#00b14f"}/>}
+
                                         type={'email'}
                                         allowClear={true}
+                                        value={loginEmail}
+                                        onChange={e => setLoginEmail(e.target.value)}
                                         spellCheck={false}
                                         className={`p-2 outline-none  rounded border mt-2 w-full`}/>
                                 </Form.Item>
@@ -892,13 +943,15 @@ const JobDetail = () => {
                                                                     fill={"#00b14f"}/>}
                                         type={'password'}
                                         allowClear={true}
+                                        value={loginPassword}
+                                        onChange={e => setLoginPassword(e.target.value)}
                                         spellCheck={false}
                                         className={`p-2 outline-none  rounded border mt-2 w-full`}/>
                                 </Form.Item>
                             </div>
                             <div>
                                 <Checkbox
-                                    value={isConfirmCheck}
+                                    checked={isConfirmCheck}
                                     onChange={() => setIsConfirmCheck(pre => !pre)}
                                     required={true}
                                 >Tôi đã đọc và đồng ý với <span
@@ -909,8 +962,8 @@ const JobDetail = () => {
                             <Form.Item>
                                 <div className={`w-full flex justify-center  `}>
                                     <button
+                                        onClick={handleLogin}
                                         type="submit"
-                                        disabled={!isConfirmCheck}
                                         className={`py-2 rounded disabled:bg-gray-200 font-semibold hover:bg-green-600 bg-green_default w-full text-white`}>
                                         Đăng nhập
                                     </button>
@@ -942,6 +995,126 @@ const JobDetail = () => {
 
                 </div>
             </Modal>
+
+            <Modal
+                open={openReports}
+                destroyOnClose={true}
+                footer={null}
+                style={{top: '30px'}}
+                width={600}
+                onCancel={()=>setOpenReports(false)}
+                closeIcon={<IoMdCloseCircle size={24}
+                                            fill={"#00b14f"}/>}
+            >
+                <div className={`w-full p-2 flex *:w-full flex-col gap-4`}>
+                    <div className={`w-full flex  justify-center mt-2`}>
+                        <p className={`text-[24px] font-semibold text-green_default`}>Phản ánh tin tuyển dụng không
+                            chính xác</p>
+
+                    </div>
+                    <div className={`flex  items-center justify-center`}>
+                        <p className={`text-center text-14 opacity-70`}>{reportQuota}</p>
+                    </div>
+                    <Form
+                        name={'reports'}
+                        onFinish={handleCreateReport}
+                        onFinishFailed={onFinishFailed}
+                        form={form}>
+                        <div className={`flex *:w-full flex-col gap-6`}>
+                            <div className={` flex items-start`}>
+                                <div className={`w-1/4`}>
+                                    <p className={`font-semibold`}>Tin tuyển dụng</p>
+                                </div>
+                                <div className={`w-3/4 pl-4`}>
+                                    {job?.title}
+                                </div>
+
+                            </div>
+                            <div className={` flex items-center`}>
+                                <div className={`w-1/4`}>
+                                    <p className={`font-semibold`}>Email</p>
+                                </div>
+                                <div className={`w-3/4 pl-4`}>
+                                    <Form.Item style={{marginBottom: '0px'}}>
+                                        <Input
+                                            style={{marginBottom: '0px'}}
+                                            disabled={true}
+                                            size={"large"}
+                                            value={currentUser?.email}/>
+                                    </Form.Item>
+                                </div>
+
+                            </div>
+                            <div className={` flex items-center`}>
+                                <div className={`w-1/4`}>
+                                    <p className={`font-semibold`}>Số điện thoại</p>
+                                </div>
+                                <div className={`w-3/4 pl-4`}>
+                                    <Form.Item name={'phone'} style={{marginBottom: '0px'}}>
+                                        <Input
+                                            allowClear={true}
+                                            style={{marginBottom: '0px'}}
+                                            size={"large"}
+                                            value={currentUser?.phone}/>
+                                    </Form.Item>
+                                </div>
+
+                            </div>
+                            <div className={` flex items-center`}>
+                                <div className={`w-1/4`}>
+                                    <p className={`font-semibold`}>Vi phạm</p>
+                                </div>
+                                <div className={`w-3/4 pl-4`}>
+                                    <Form.Item rules={[{required: true, message: 'Chọn vi phạm'}]} name={'type'} style={{marginBottom: '0px'}}>
+                                        <Select
+                                            style={{marginBottom: '0px'}}
+                                            size={"large"}
+                                            options={reportOptions}/>
+                                    </Form.Item>
+                                </div>
+
+                            </div>
+                            <div className={` flex items-start`}>
+                                <div className={`w-1/4`}>
+                                    <p className={`font-semibold`}>Nội dung</p>
+                                </div>
+                                <div className={`w-3/4 pl-4`}>
+                                    <Form.Item  name={'reason'} style={{marginBottom: '0px'}}>
+                                        <TextArea
+                                            showCount={true}
+                                            className={'text-14'}
+                                            spellCheck={false}
+                                            placeholder={'Bạn vui lòng cung cấp rõ thông tin hoặc bất kỳ bằng chứng nào nếu có'}
+                                            style={{marginBottom: '0px', height: '150px'}}
+                                            size={"large"}
+                                            />
+                                    </Form.Item>
+                                </div>
+
+                            </div>
+                            <div className={`flex mt-2 justify-end gap-3 items-center`}>
+                                <div>
+                                    <button className={`rounded-md border border-[#d9d9d9] py-1 px-4 `}>
+                                        Đóng
+                                    </button>
+                                </div>
+                                <div>
+                                    <Form.Item style={{marginBottom: '0px'}}>
+                                        <button
+                                            type="submit"
+                                            className={`rounded-md bg-green_nga text-white hover:bg-green-600 py-1 px-4 `}>
+                                            Gửi
+                                        </button>
+                                    </Form.Item>
+                                </div>
+
+                            </div>
+                        </div>
+                    </Form>
+                </div>
+
+            </Modal>
+
             {isLoading && <Spin style={{zIndex: 2000}} size="large" fullscreen={true}/>}
             <ToastContainer
                 position="top-center"

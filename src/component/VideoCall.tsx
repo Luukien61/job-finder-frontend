@@ -137,19 +137,7 @@ const VideoCall: React.FC<VideoCallProps> = ({
           {
             urls: [
               'stun:stun1.l.google.com:19302',
-              'stun:stun2.l.google.com:19302',
-              'stun:stun3.l.google.com:19302',
-              'stun:stun4.l.google.com:19302'
             ]
-          },
-          {
-            urls: [
-              'turn:18.142.115.156:3478',
-              'turn:18.142.115.156:3478?transport=udp',
-              'turn:18.142.115.156:3478?transport=tcp'
-            ],
-            username: 'luukien',
-            credential: '123456'
           }
         ]
       })
@@ -226,7 +214,6 @@ const VideoCall: React.FC<VideoCallProps> = ({
 
     // Bắt đầu timeout 15 giây
     timeoutRef.current = setTimeout(() => {
-      toast.error('The user does not reply')
       handleCallTimeout()
     }, 10000) // 15 giây
   }

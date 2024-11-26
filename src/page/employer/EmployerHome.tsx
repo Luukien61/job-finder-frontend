@@ -7,8 +7,8 @@ import {MdLocationPin} from "react-icons/md";
 import LocationMap from "@/component/employer/LocationMap.tsx";
 import {IoMdMap} from "react-icons/io";
 import Footer from "@/component/Footer.tsx";
-import {Avatar, Input, List, Pagination} from "antd";
-import {Outlet} from "react-router-dom";
+import {Avatar, Button, Input, List, Pagination} from "antd";
+import {Outlet, useNavigate} from "react-router-dom";
 import {
     acceptApplication,
     getApplicationsByJobId,
@@ -33,6 +33,7 @@ import {FaPhoneAlt} from "react-icons/fa";
 import {FaLocationDot} from "react-icons/fa6";
 import {SiImessage} from "react-icons/si";
 import {ImMail} from "react-icons/im";
+import {useMessageReceiverState} from "@/zustand/AppState.ts";
 
 
 const EmployerHome = () => {
@@ -82,6 +83,8 @@ export const HomeContent = () => {
         'ACCEPTED': 1,
         'REJECTED': 2
     };
+    const {setReceiverId} = useMessageReceiverState()
+
 
     const handleGetCompanyInfo = async (id: string) => {
         const response: CompanyInfo = await getCompanyInfo(id);
@@ -91,7 +94,7 @@ export const HomeContent = () => {
     const handleGetJobsByCompanyId = async (id: string, page: number, size = DefaultPageSize) => {
         const response: PageableResponse<EmployerJobCard> = await getJobsByCompanyId(id, page, size);
         if (response) {
-            setCurrentPage(response.pageable.pageNumber)
+            setCurrentPage(response.pageable.pageNumber + 1)
             setTotalJobs(response.totalElements)
             setJobsCards(response.content)
         }
@@ -196,6 +199,17 @@ export const HomeContent = () => {
         setApplicants(sortedApplications);
     }, [applicants]);
 
+    const handleMessageForward = (receiverId: string) => {
+        if (receiverId) {
+            setReceiverId(receiverId);
+            window.open(`/message/${currentCompanyId}`, "_blank", "noopener,noreferrer");
+        }
+    }
+
+    const onPageNumberChange = async (page: number, size: number) => {
+        await handleGetJobsByCompanyId(currentCompanyId, page - 1);
+    }
+
     return (
         <div className={`flex flex-col mt-10`}>
             {/*banner*/}
@@ -260,6 +274,7 @@ export const HomeContent = () => {
                         </div>
                         <div className={`flex justify-center py-3`}>
                             <Pagination
+                                onChange={onPageNumberChange}
                                 current={currentPage}
                                 pageSize={DefaultPageSize}
                                 showSizeChanger={false}
@@ -294,11 +309,11 @@ export const HomeContent = () => {
                 <div className={`pl-5 flex-1 flex flex-col gap-6 h-fit sticky top-24`}>
                     <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
                         <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            {!isViewJobSide ? 'Chi tiết công việc' : 'Thông tin liên hệ'}
+                            {isViewJobSide ? 'Chi tiết công việc' : 'Thông tin liên hệ'}
                         </h2>
                         {
                             isViewJobSide ? (
-                                <div className={`flex flex-col py-4 px-4`}>
+                                <div className={`flex transition-all duration-500 flex-col py-4 px-4`}>
                                     <h3>
                                         <p className={`font-[600] hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
                                             {currentJob?.title}
@@ -321,7 +336,7 @@ export const HomeContent = () => {
                                         <h2 className="border-l-[6px] mb-4 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
                                             Ứng viên
                                         </h2>
-                                        <div className={`max-h-[300px] overflow-y-auto`}>
+                                        <div className={`max-h-[300px] bg-gray-50 rounded-lg  overflow-y-auto`}>
                                             <List
                                                 itemLayout="horizontal"
                                                 dataSource={applicants}
@@ -349,6 +364,11 @@ export const HomeContent = () => {
                                                 )}
                                             />
                                         </div>
+                                        {/*<div className={`w-full p-2 rounded-lg flex justify-center cursor-pointer`}>*/}
+                                        {/*    <Button  className={`w-full bg-blue-400 text-white`} size={"large"} variant="solid">*/}
+                                        {/*        Hoàn thành*/}
+                                        {/*    </Button>*/}
+                                        {/*</div>*/}
                                     </div>
                                 </div>
                             ) : (
@@ -374,35 +394,58 @@ export const HomeContent = () => {
                     </div>
                     <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
                         <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Chia sẻ với bạn bè
+                            {isViewJobSide ? 'Địa chỉ công ty' : 'Chia sẻ'}
                         </h2>
-                        <div className={` w-full flex flex-col gap-4 bg-white min-h-[100px] px-5 py-4`}>
-                            <p>Sao chép đường dẫn</p>
-                            <Input
-                                suffix={<PiCopySimple size={20} onClick={handleCopy} className={`cursor-pointer`}
-                                                      fill={"#00b14f"}/>}
-                                contentEditable={false}
-                                value={window.location.href}
-                                variant={'filled'}
-                                readOnly={true}
-                            />
-                            <div className={`mt-3 flex flex-col gap-3`}>
-                                <p>Chia sẻ qua mạng xã hội</p>
-                                <div className={`flex gap-4`}>
-                                    <img
-                                        className={`rounded-full cursor-pointer border w-8 p-1 aspect-square object-cover`}
-                                        alt=""
-                                        src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/facebook.png"/>
-                                    <img className={`rounded-full cursor-pointer border w-8 p-1 aspect-square`}
-                                         alt="" data-ll-status="loaded"
-                                         src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/twitter.png"/>
-                                    <img
-                                        className={`rounded-full cursor-pointer border w-8 p-1 aspect-square object-cover`}
-                                        alt="" data-ll-status="loaded"
-                                        src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/linked.png"/>
+                        {
+                            isViewJobSide ? (
+                                <div className={` w-full flex flex-col gap-4 transition-all duration-300 bg-white min-h-[100px] px-5 py-4`}>
+                                    <div className={`flex flex-col gap-2`}>
+                                        <div className={`flex gap-3`}>
+                                            <MdLocationPin size={24} fill={"#00b14f"}/>
+                                            <p>Địa chỉ công ty</p>
+                                        </div>
+                                        <p className={`opacity-70 ml-2`}>{currentCompany?.address}</p>
+                                    </div>
+                                    <div className={`flex gap-3`}>
+                                        <IoMdMap size={24} fill={"#00b14f"}/>
+                                        <p>Xem bản đồ</p>
+                                    </div>
+                                    <LocationMap
+                                        location={currentCompany?.address}
+                                    />
+
                                 </div>
-                            </div>
-                        </div>
+                            ) : (
+                                <div className={` w-full flex flex-col gap-4 bg-white min-h-[100px] px-5 py-4`}>
+                                    <p>Sao chép đường dẫn</p>
+                                    <Input
+                                        suffix={<PiCopySimple size={20} onClick={handleCopy}
+                                                              className={`cursor-pointer`}
+                                                              fill={"#00b14f"}/>}
+                                        contentEditable={false}
+                                        value={window.location.href}
+                                        variant={'filled'}
+                                        readOnly={true}
+                                    />
+                                    <div className={`mt-3 flex flex-col gap-3`}>
+                                        <p>Chia sẻ qua mạng xã hội</p>
+                                        <div className={`flex gap-4`}>
+                                            <img
+                                                className={`rounded-full cursor-pointer border w-8 p-1 aspect-square object-cover`}
+                                                alt=""
+                                                src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/facebook.png"/>
+                                            <img className={`rounded-full cursor-pointer border w-8 p-1 aspect-square`}
+                                                 alt="" data-ll-status="loaded"
+                                                 src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/twitter.png"/>
+                                            <img
+                                                className={`rounded-full cursor-pointer border w-8 p-1 aspect-square object-cover`}
+                                                alt="" data-ll-status="loaded"
+                                                src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/linked.png"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             </div>
@@ -417,29 +460,27 @@ export const HomeContent = () => {
                         closeOnIcon={true}
                         notMaxWidth={true}
                         bottom={
-
                             <div className={`bg-bg_default rounded-b-lg py-4 w-full justify-end px-10 flex gap-6`}>
                                 <button
-                                    onClick={()=>handleRejectApplication(currentAppId)}
-                                    disabled={applicationState!='PENDING'}
-                                    className={`w-fit px-2  mx-3 rounded disabled:bg-gray-400 transition-all duration-300  min-w-[70px] py-2 text-black opacity-70 hover:bg-gray-100 font-bold`}>
+                                    onClick={() => handleRejectApplication(currentAppId)}
+                                    disabled={applicationState != 'PENDING'}
+                                    className={`w-fit px-2  mx-3 rounded disabled:opacity-50 disabled:bg-gray-400 transition-all duration-300  min-w-[70px] py-2 text-black opacity-70 hover:bg-gray-100 font-bold`}>
                                     Từ chối
                                 </button>
                                 <button
-                                    disabled={applicationState!='PENDING'}
+                                    disabled={applicationState != 'PENDING'}
                                     onClick={() => handleAcceptApplication(currentAppId)}
-                                    className={`w-fit px-2 hover:bg-green-600 disabled:bg-gray-400 mx-3 transition-all duration-300 rounded bg-green_default py-2 text-white font-bold`}>
+                                    className={`w-fit px-2 hover:bg-green-600 disabled:opacity-70 disabled:bg-gray-400 mx-3 transition-all duration-300 rounded bg-green_default py-2 text-white font-bold`}>
                                     Chấp nhận
                                 </button>
                             </div>
-
                         }
 
                         child={
                             <div className={`flex `}>
-                                <div className={`w-96 border-r-2`}>
-                                    <div className={`w-full flex p-4 flex-col gap-6`}>
-                                        <div className={`flex gap-4 items-center`}>
+                                <div className={`w-96 bg-gray-200 p-4 border-r-2`}>
+                                    <div className={`w-full rounded-lg bg-white  flex p-4  flex-col gap-6`}>
+                                        <div className={`flex  gap-4 items-center`}>
                                             <img src={applicant?.avatar} alt='avatar'
                                                  className={`rounded-full object-cover aspect-square h-20 border`}/>
                                             <p className={`font-semibold`}>{applicant?.name}</p>
@@ -451,7 +492,7 @@ export const HomeContent = () => {
                                                             fill={"#00b14f"}/>
                                                 </div>
                                                 <div className={`flex-1 overflow-x-hidden`}>
-                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.email}</p>
+                                                    <p className={`max-w-[100%-110px] opacity-70 truncate`}>{applicant?.email}</p>
 
                                                 </div>
                                             </div>
@@ -461,7 +502,7 @@ export const HomeContent = () => {
                                                                 fill={"#00b14f"}/>
                                                 </div>
                                                 <div className={`flex-1 overflow-x-hidden`}>
-                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.phone}</p>
+                                                    <p className={`max-w-[100%-110px] opacity-70 truncate`}>{applicant?.phone}</p>
 
                                                 </div>
                                             </div>
@@ -471,7 +512,7 @@ export const HomeContent = () => {
                                                                    fill={"#00b14f"}/>
                                                 </div>
                                                 <div className={`flex-1 overflow-x-hidden`}>
-                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.address}</p>
+                                                    <p className={`max-w-[100%-110px] opacity-70 truncate`}>{applicant?.address}</p>
 
                                                 </div>
                                             </div>
@@ -481,7 +522,7 @@ export const HomeContent = () => {
                                                                           fill={"#00b14f"}/>
                                                 </div>
                                                 <div className={`flex-1 overflow-x-hidden`}>
-                                                    <p className={`max-w-[100%-110px] truncate`}>{applicant?.university}</p>
+                                                    <p className={`max-w-[100%-110px] opacity-70 truncate`}>{applicant?.university}</p>
 
                                                 </div>
                                             </div>
@@ -491,19 +532,20 @@ export const HomeContent = () => {
                                             applicationState == "ACCEPTED" && (
                                                 <div className={`flex-1 mt-auto flex flex-col justify-end`}>
                                                     <div className={` flex justify-center gap-6`}>
-                                                        <div>
-                                                            <a href={`/message/${currentCompanyId}`} target="_blank">
+                                                        <div onClick={() => handleMessageForward(applicant?.id)}
+                                                             className={`w-1/2 bg-gray-50 hover:bg-gray-100 cursor-pointer flex justify-center p-2 rounded-lg border bg-`}>
+                                                            <div>
                                                                 <SiImessage size={28}
                                                                             fill={"#00b14f"}/>
-                                                            </a>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <a href={`mailto:${applicant?.email}`} target="_blank"
-                                                               rel="noopener noreferrer">
+                                                        <a href={`mailto:${applicant?.email}`} target="_blank"
+                                                           className={`w-1/2 flex bg-gray-50 justify-center hover:bg-gray-100 p-2 cursor-pointer rounded-lg border bg-`}>
+                                                            <div>
                                                                 <ImMail size={28}
                                                                         fill={"#00b14f"}/>
-                                                            </a>
-                                                        </div>
+                                                            </div>
+                                                        </a>
                                                     </div>
                                                 </div>
                                             )
@@ -537,28 +579,31 @@ type JobEmployerViewProps = {
 const JobEmployerView: React.FC<JobEmployerViewProps> = (item) => {
     const [job, setJob] = useState<EmployerJobCard>(item.job)
     const [applications, setApplications] = useState<JobApplication[]>([])
+    const currentDate = new Date();
+    const [isExpiry, setIsExpiry] = useState<boolean>(false);
 
-    const refineApplications = (items: JobApplication[]) => {
-        if (items.length > 5) {
-            items = items.slice(0, 3)
-            const odd = items[items.length - 1]
-            items.push({
-                ...odd,
-                userName: 'View more',
-                userAvatar: 'https://w7.pngwing.com/pngs/602/173/png-transparent-ellipsis-computer-icons-more-miscellaneous-monochrome-black-thumbnail.png'
-            })
-        }
-        setApplications(items)
-
-    }
+    // const refineApplications = (items: JobApplication[]) => {
+    //     if (items.length > 5) {
+    //         items = items.slice(0, 3)
+    //         const odd = items[items.length - 1]
+    //         items.push({
+    //             ...odd,
+    //             userName: 'View more',
+    //             userAvatar: 'https://w7.pngwing.com/pngs/602/173/png-transparent-ellipsis-computer-icons-more-miscellaneous-monochrome-black-thumbnail.png'
+    //         })
+    //     }
+    //     setApplications(items)
+    //
+    // }
 
     useEffect(() => {
         setJob(item.job)
-        refineApplications(item.job.applications)
+        setApplications(item.job.applications)
+        setIsExpiry(new Date(job?.expireDate) < currentDate)
     }, [item]);
     return (
         <div
-            className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
+            className={`rounded-[8px] hover:border hover:border-solid ${new Date(job?.expireDate) > currentDate ? ' hover:border-green_default bg-highlight_default' : ' hover:border-red-500 bg-red-50 border'}  w-full   cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
             {/*company logo*/}
             <div
                 className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
@@ -619,13 +664,13 @@ const JobEmployerView: React.FC<JobEmployerViewProps> = (item) => {
                     <div
                         className={`mt-auto flex items-end justify-between py-2`}>
                         <div className={`flex gap-4`}>
-                            <div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                            <div className={`rounded-[5px] bg-white  py-1 px-2 flex items-center justify-center`}>
                                 <p className={`text-black text-[14px] truncate `}>Hạn:
                                     <span className={`font-semibold`}> {convertDate(job.expireDate)}</span></p>
                             </div>
-                            <div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                <p className={`text-black text-[14px] truncate `}>Trạng thái: {job.state}</p>
-                            </div>
+                            {/*<div className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>*/}
+                            {/*    <p className={`text-black text-[14px] truncate `}>Trạng thái: {job.state}</p>*/}
+                            {/*</div>*/}
 
                         </div>
                     </div>

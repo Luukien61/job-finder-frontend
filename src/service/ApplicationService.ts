@@ -50,3 +50,9 @@ export const checkIsJobSaved = async (jobId: string | number, userId: any): Prom
         return false;
     }
 };
+
+export const formatDate = (date: Date) => {
+    return new Date(
+        date.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })
+    );
+}

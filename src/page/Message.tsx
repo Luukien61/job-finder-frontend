@@ -7,6 +7,7 @@ import {
     getCurrentParticipant,
     getMessagesByConversationId,
     getParticipant,
+    searchConversationByUserIds,
 } from '@/axios/Request'
 import {VscSend} from 'react-icons/vsc'
 import {CiImageOn} from 'react-icons/ci'
@@ -27,20 +28,19 @@ import VideoCall from '@/component/VideoCall'
 import {delay, UserResponse} from "@/page/GoogleCode.tsx";
 import {homePage} from "@/url/Url.ts";
 import {AppInfo} from "@/info/AppInfo.ts";
+import {useMessageReceiverState} from "@/zustand/AppState.ts";
+
 
 type QuickMessage = {
-    id: string
+    id: number
     recipientId: string
     avatar: string
     text: string
     name: string
-    time: Date
-    conversationId: string
+    time: Date|string
+    conversationId: number
     type: string
 }
-
-
-
 
 const Message = () => {
     const [typingMessage, setTypingMessage] = useState<string>('')
@@ -50,8 +50,9 @@ const Message = () => {
     const [privateChats, setPrivateChats] = useState<ChatMessage[]>([])
     const bottomRef = useRef<HTMLDivElement>(null)
     const [allQuickMessages, setAllQuickMessages] = useState<QuickMessage[]>([])
-    const [currentConversationId, setCurrentConversationId] = useState<string>()
+    const [currentConversationId, setCurrentConversationId] = useState<number>()
     const navigate = useNavigate()
+    const {receiverId,setReceiverId} = useMessageReceiverState()
 
 
     const onPrivateMessage = (payload: ChatMessage) => {
@@ -69,19 +70,21 @@ const Message = () => {
     }
 
     const handleScroll = () => {
-        bottomRef.current?.scrollIntoView({behavior: 'instant'})
+        if(bottomRef.current){
+            bottomRef.current?.scrollIntoView({behavior: 'instant', block: 'end', inline: 'nearest'})
+            window.scrollBy({
+                top: 50, // Điều chỉnh số pixel cách bottom
+                behavior: 'smooth'
+            });
+        }
     }
-
 
     const getAllConversation = async (userId: string) => {
         try {
             const conversations: Conversation[] = await getAllConversations(userId)
-            const quickMessagePromises = conversations.map(async (value) => {
-                const userIds = value.userIds
-                let participantId: string = userIds[1]
-                if (userIds[0] !== userId) {
-                    participantId = userIds[0]
-                }
+            console.log(conversations)
+            let quickMessagePromises: Promise<QuickMessage>[] = []
+            const refineQuickMessages = async (value: Conversation, participantId: string) => {
                 const participant: Participant = await getParticipant(participantId)
                 const quickMessage: QuickMessage = {
                     id: value.id,
@@ -94,7 +97,20 @@ const Message = () => {
                     type: value.type
                 }
                 return quickMessage
-            })
+            }
+            if (userId.startsWith("u_")) {
+                quickMessagePromises = conversations.map(async (value) => {
+                    const participantId = value.senderId
+                    return refineQuickMessages(value, participantId)
+                })
+            }
+            if (userId.startsWith("company_")) {
+                quickMessagePromises = conversations.map(async (value) => {
+                    const participantId = value.receiverId
+                    return refineQuickMessages(value, participantId)
+                })
+            }
+
             const quickMessages = await Promise.all(quickMessagePromises)
             // @ts-ignore
             quickMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
@@ -121,7 +137,6 @@ const Message = () => {
                 return message;
             });
 
-            console.log("Updated Messages: ", updatedMessages);
 
             // Sắp xếp lại mảng và trả về mảng mới
             return updatedMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
@@ -129,7 +144,7 @@ const Message = () => {
 
     }
 
-    const getMessageByConversationId = async (conversationId: string) => {
+    const getMessageByConversationId = async (conversationId: number) => {
         try {
             let messages: ChatMessage[] = await getMessagesByConversationId(conversationId)
             if (messages.length > 0) {
@@ -143,6 +158,7 @@ const Message = () => {
             toast.error(e.response.data)
         }
     }
+
 
     useEffect(() => {
 
@@ -161,18 +177,23 @@ const Message = () => {
         }
 
         let rawUser = JSON.parse(localStorage.getItem('user'))
-        if(!rawUser) {
+        if (!rawUser) {
             rawUser = JSON.parse(localStorage.getItem('company'))
+            if (receiverId) {
+                handleGetConversationByUserIds(rawUser.id, receiverId)
+            }
         }
-        if(rawUser){
+        if (rawUser) {
             getLogInUser(rawUser.id)
-        }else {
-            navigate('/login',{replace: true})
+        } else {
+            navigate('/login', {replace: true})
         }
+
+        return setReceiverId(undefined)
 
     }, [])
 
-    const handleClickQuickMessage = async (conversationId: string, participantId: string) => {
+    const handleClickQuickMessage = async (conversationId: number, participantId: string) => {
         const participant: Participant = await getParticipant(participantId)
         setCurrentRecipient(participant)
         setCurrentConversationId(conversationId)
@@ -186,7 +207,7 @@ const Message = () => {
 
     useEffect(() => {
         handleScroll()
-    }, [privateChats])
+    }, [privateChats.length])
 
     const sendMessages = async (message: string | null) => {
         let type: string = 'image'
@@ -196,20 +217,18 @@ const Message = () => {
         }
 
         if (message.trim() !== '' && currentRecipient && loginUser) {
-            let conversationId = currentConversationId || ''
+            let conversationId = currentConversationId
             let isConverExist = true
             if (!currentConversationId) {
-                conversationId = Date.now().toString()
                 const request: ConversationRequest = {
-                    id: conversationId, //const uniqueId = uuidv4();
                     message: message,
                     type: type,
                     recipientId: currentRecipient.id,
                     senderId: currentUserId,
                     createdAt: new Date()
                 }
-                await createNewConversation(request)
-                setCurrentConversationId(conversationId)
+                const createdConversation = await createNewConversation(request)
+                conversationId=createdConversation.id
                 isConverExist = false
             }
             const messageItem: ChatMessage = {
@@ -221,7 +240,7 @@ const Message = () => {
                 conversationId: conversationId,
                 type: type
             }
-
+            console.log(messageItem)
             sendMessage('/app/private-message', messageItem)
             setTypingMessage('')
             setPrivateChats((prevState) => [...prevState, messageItem])
@@ -233,8 +252,9 @@ const Message = () => {
 
     const createNewConversation = async (request: ConversationRequest) => {
         try {
-            setCurrentConversationId(request.id)
-            await createConversation(request)
+            const createdConversation =  await createConversation(request)
+            setCurrentConversationId(createdConversation.id)
+            return createdConversation
         } catch (e: any) {
             toast.error(e.response.data)
         }
@@ -267,6 +287,24 @@ const Message = () => {
         }
     }
 
+    const handleGetConversationByUserIds = async (senderId: string, receiverId: string) => {
+        try {
+            const conversation: Conversation = await searchConversationByUserIds(senderId, receiverId)
+            if (conversation) {
+                setCurrentConversationId(conversation.id)
+                getMessageByConversationId(conversation.id)
+            }
+            else {setCurrentConversationId(undefined)}
+
+        } catch (err) {
+            toast.error(err)
+            setCurrentConversationId(undefined)
+        }
+        const participant: Participant = await getParticipant(receiverId)
+        setCurrentRecipient(participant)
+
+    }
+
 
     return (
         <div className={`overflow-hidden `}>
@@ -275,36 +313,40 @@ const Message = () => {
                 <div
                     className={`w-[25%] px-3 min-w-[300px] h-screen flex flex-col relative min-h-screen  z-10 bg-white border-r border-r-gray-400 border-gray  overflow-hidden `}
                 >
-                    <div className={`w-full flex justify-start mt-4 bg-green_nga px-2 py-2 rounded-lg gap-4 items-center`}>
-                        <a className={`flex justify-start gap-4 items-center`}
-                            href={homePage}>
-                            <img className={`w-8 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
-                            <p className={`font-bold text-[24px] text-white font-inter`}>{AppInfo.appName}</p>
-                        </a>
+                    <div className={`rounded-lg bg-green-50 border p-3 mb-2`}>
+                        <div
+                            className={`w-full flex justify-start bg-green_nga px-2 py-2 rounded-lg gap-4 items-center`}>
+                            <a className={`flex justify-start gap-4 items-center`}
+                               href={homePage}>
+                                <img className={`w-8 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                                <p className={`font-bold text-[24px] text-white font-inter`}>{AppInfo.appName}</p>
+                            </a>
 
-                    </div>
-                    {/*current user*/}
-                    <div className={`border-b shadow sticky bg-white rounded mt-2 inset-0 z-20 bg-inherit pl-3 pb-3`}>
-                        <div className={`flex gap-4 pt-4 pl-0 pb-3`}>
-                            <div className={`flex gap-4 rounded-full cursor-pointer`}>
-                                <img
-                                    className={`w-[80px] rounded-full aspect-square object-cover`}
-                                    src={loginUser?.avatar}
-                                    alt={'avatar'}
-                                />
-                                <div className={`flex items-center justify-start truncate`}>
-                                    <p className={`font-bold text-[18px]`}>{loginUser ? loginUser.name : ''}</p>
+                        </div>
+                        {/*current user*/}
+                        <div
+                            className={` ounded  bg-inherit pl-2 `}>
+                            <div className={`flex gap-4 pt-4 pl-0 `}>
+                                <div className={`flex gap-4 rounded-full cursor-pointer`}>
+                                    <img
+                                        className={`w-[48px] rounded-full aspect-square object-cover`}
+                                        src={loginUser?.avatar}
+                                        alt={'avatar'}
+                                    />
+                                    <div className={`flex items-center justify-start truncate`}>
+                                        <p className={`font-bold text-[18px]`}>{loginUser ? loginUser.name : ''}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className={`overflow-y-scroll bg-white `}>
+                    <div className={`overflow-y-scroll bg-white py-2`}>
                         {/*item*/}
                         {allQuickMessages.map((value, index) => (
                             <div
                                 key={index}
                                 onClick={() => handleClickQuickMessage(value.conversationId, value.recipientId)}
-                                className={`px-2 mt-1 hover:bg-gray-100 border-t cursor-pointer rounded py-3  flex gap-x-2 ${currentRecipient && currentRecipient.id == value.recipientId ? 'bg-[#E5EFFF]' : 'bg-white'}`}
+                                className={`px-2 mt-1 hover:bg-gray-100 border-t cursor-pointer rounded py-3  flex gap-x-2 ${currentRecipient && currentRecipient.id == value.recipientId ? 'bg-[#E5EFFF]' : 'bg-gray-50'}`}
                             >
                                 <div className={` flex items-center gap-x-3 w-[90%]`}>
                                     <img

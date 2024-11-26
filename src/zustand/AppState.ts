@@ -1,6 +1,7 @@
 import {create} from 'zustand'
 import {UserDto} from "@/page/UserProfile.tsx";
 import {UserSignupResponse} from "@/page/SignUp.tsx";
+import {createJSONStorage, persist} from 'zustand/middleware'
 
 interface BearState {
     bears: number
@@ -14,7 +15,7 @@ const useBearStore = create<BearState>()(
     })
 )
 
-export type PdfProcessed={
+export type PdfProcessed = {
     name: string,
     phone: string,
     email: string,
@@ -26,39 +27,39 @@ export type PdfProcessed={
     pdfUrl?: string,
 }
 
-type PdfProcessedItem ={
+type PdfProcessedItem = {
     item: PdfProcessed,
-    setItem : (item: PdfProcessed) => void
+    setItem: (item: PdfProcessed) => void
 }
 
-export const usePdfProcessed =create<PdfProcessedItem>(
+export const usePdfProcessed = create<PdfProcessedItem>(
     (set) => ({
-        item : null,
-        setItem : (item: PdfProcessed) => set({item: item}),
+        item: null,
+        setItem: (item: PdfProcessed) => set({item: item}),
     })
 )
 
 
-type PdfItems ={
+type PdfItems = {
     url: string,
     setUrl: (url: string) => void
 }
-export const usePdfItems =create<PdfItems>(
+export const usePdfItems = create<PdfItems>(
     (set) => ({
-        url : '',
-        setUrl : (url: string) => set(() => ({url:url}))
+        url: '',
+        setUrl: (url: string) => set(() => ({url: url}))
     })
 )
 
-type UserDtoState={
+type UserDtoState = {
     user: UserDto,
     setUser: (user: UserDto) => void
 }
 
-export const UserDtoState=create<UserDtoState>(
+export const UserDtoState = create<UserDtoState>(
     (set) => ({
-        user : null,
-        setUser : (user: UserDto) => set({user:user}),
+        user: null,
+        setUser: (user: UserDto) => set({user: user}),
     })
 )
 
@@ -67,9 +68,26 @@ type UserCreationProps = {
     user: UserSignupResponse,
     setUser: (user: UserSignupResponse) => void
 }
-export const UserCreationState=create<UserCreationProps>(
+export const UserCreationState = create<UserCreationProps>(
     (set) => ({
-        user : null,
-        setUser : (user: UserSignupResponse) => set({user:user}),
+        user: null,
+        setUser: (user: UserSignupResponse) => set({user: user}),
     })
+)
+
+type MessageReceiverProps = {
+    receiverId: string,
+    setReceiverId: (id: string) => void
+}
+
+export const useMessageReceiverState = create<MessageReceiverProps>()(
+    persist(
+        (set) => ({
+            receiverId: '',
+            setReceiverId: (id: string) => set({receiverId: id}),
+        }),
+        {
+            name: 'receiverId'
+        },
+    )
 )
