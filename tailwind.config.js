@@ -7,6 +7,7 @@ export default {
     ],
     theme: {
         extend: {
+            clipPath: { 'polygon-shape': 'polygon(0 0, 0 100%, 100% 50%)', },
             colors: {
 			    dark : "#0e4a2c",
                 bg_default: '#F0F0F0',
@@ -16,6 +17,7 @@ export default {
                 bg_secondary: "#D9D9D9FF",
                 blue_light: "#E8F6F9",
                 green_light: "#D3FFDE",
+                text_color: "#263a4d",
                 highlight_default: "#f2fbf6",
                 primary: {
                     DEFAULT: 'hsl(var(--primary))',

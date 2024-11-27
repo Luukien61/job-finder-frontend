@@ -35,6 +35,8 @@ const VideoCall: React.FC<VideoCallProps> = ({
 
   useEffect(() => {
     if (client) {
+      console.log(client)
+      console.log(userId)
       webRTCService.current = new WebRTCService(client, userId)
       webRTCService.current.setSignalHandler(handleWebRTCSignal)
     }
@@ -177,7 +179,6 @@ const VideoCall: React.FC<VideoCallProps> = ({
 
   const startCall = async (): Promise<void> => {
     setStart(true)
-    toast.success('Calling...')
     await delay(100)
     try {
       await initLocalStream()

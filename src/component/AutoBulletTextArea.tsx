@@ -1,9 +1,16 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useRef} from 'react';
 import {Input} from 'antd';
 
 const { TextArea } = Input;
+interface Props {
+    style?: string,
+    value: string,
+    onChange: React.Dispatch<React.SetStateAction<string>>,
+    placeholder: string,
+    minHigh?: number,
+}
 
-const AutoBulletTextArea = ({minHeight = 100, style = '', value, onChange, placeholder = ''}) => {
+const AutoBulletTextArea : React.FC<Props> = ({placeholder, value,onChange, style='', minHigh=100}) => {
     const textAreaRef = useRef(null);
 
     const handleKeyDown = (e) => {
@@ -46,14 +53,47 @@ const AutoBulletTextArea = ({minHeight = 100, style = '', value, onChange, place
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+
+        // Thêm dấu `-` vào đầu mỗi dòng, nhưng cho phép xóa hoàn toàn
+        const updatedText = value
+            .split('\n') // Chia các dòng
+            .map((line) => {
+                // Nếu dòng trống hoặc người dùng đang xóa, giữ nguyên dòng
+                if (line.trim() === '') return '';
+                // Thêm `-` vào đầu dòng nếu chưa có
+                return line.startsWith('-') ? line : `- ${line}`;
+            })
+            .join('\n'); // Ghép lại các dòng
+
+        onChange(updatedText);
+    };
+    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
+        const pasteText = e.clipboardData.getData('text');
+        const updatedText = pasteText
+            .split('\n')
+            .map((line) => (line.startsWith('-') ? line : `- ${line}`))
+            .join('\n');
+        if(value){
+            onChange(`${value}\n${updatedText}`);
+        }else {
+            onChange(`${updatedText}`);
+        }
+
+
+    };
+
     return (
         <TextArea
             onKeyDown={handleKeyDown}
             ref={textAreaRef}
-            style={{height: 300, minHeight: minHeight}} className={`text-16 p-4 ${style}`}
+            style={{height: 300, minHeight: minHigh}} className={`text-16 p-4 ${style}`}
             spellCheck={false}
             value={value}
-            onChange={(e)=>onChange(e.target.value)}
+            onPaste={handlePaste}
+            onChange={handleChange}
             placeholder={placeholder}
         />
     );

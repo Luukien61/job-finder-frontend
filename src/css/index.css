@@ -288,6 +288,13 @@ input{
 .ant-input-outlined:focus{
     border-color: #25b849 !important;
 }
+.ant-input-outlined:hover {
+    border-color: #25b849;
+    background-color: #ffffff;
+}
+.ant-select-selector {
+    border-color: #25b849;
+}
 
 .bg-gradient-to-green{
     @apply bg-gradient-to-r from-[#212f3f] to-[#00b14f]

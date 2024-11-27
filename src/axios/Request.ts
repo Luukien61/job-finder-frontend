@@ -185,5 +185,9 @@ export const getCurrentParticipant = async (id: string) => {
 }
 
 export const createReport=async (jobId: string, request: any) => {
-    return await instance.post(`/api/reports/${jobId}`, request).then((response: any) => response.data)
+    return await instance.post(`/api/reports/job?id=${jobId}`, request).then((response: any) => response.data)
+}
+const companyPath = '/api/companies'
+export const canPostJob=async (companyId: string) => {
+    return await instance.get(`${companyPath}/${companyId}/possibility/job`).then((response: any) => response.data)
 }

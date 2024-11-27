@@ -61,7 +61,7 @@ const AddJob = () => {
                 <AutoBulletTextArea
                     value={description}
                     placeholder={'Mô tả chi tiết công việc...'}
-                    onChange={setDescription}/>
+                    onChange={setDescription} style={''} />
             </Form.Item>
 
         },
@@ -153,8 +153,11 @@ const AddJob = () => {
                 navigate('/employer')
             }
         }catch(error){
-            toast.error(error)
+            toast.error(error.response.data)
         }
+    }
+    const handleCancel = () => {
+        navigate('/employer')
     }
 
     return (
@@ -426,6 +429,8 @@ const AddJob = () => {
                         </div>
                         <div className={`w-full pb-1 pt-3 my-2 flex items-center  justify-end gap-2  border-t-[2px]`}>
                             <button
+                                onClick={handleCancel}
+                                type={'button'}
                                 className={`w-fit px-2  mx-3 rounded  min-w-[70px] py-2 text-black opacity-70 hover:bg-gray-100 font-bold`}>
                                 Hủy
                             </button>

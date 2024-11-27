@@ -88,7 +88,7 @@ const Header = () => {
                             Đăng ký
                         </button>
                         <button
-                            onClick={() => navigate('/employer/entry/signup')}
+                            onClick={() => navigate('/employer/entry/login')}
                             type={"button"}
                             className={`rounded bg-black hover:bg-gray-900 text-white text-center whitespace-nowrap cursor-pointer select-none items-center font-medium gap-2 h-[40px] justify-center px-4`}>
                             Nhà tuyển dụng

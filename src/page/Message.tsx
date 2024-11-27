@@ -388,14 +388,16 @@ const Message = () => {
                             />
                             <p className={`font-bold`}>{currentRecipient.name}</p>
                             <div className={`flex-1 flex justify-end`}>
-                                <VideoCall
-                                    senderName={loginUser ? loginUser.name : ''}
-                                    senderAvatar={loginUser ? loginUser.avatar : ''}
-                                    userName={currentRecipient.name}
-                                    client={client}
-                                    userId={currentUserId}
-                                    targetUserId={currentRecipient && currentRecipient.id}
-                                />
+                                {client&&(
+                                    <VideoCall
+                                        senderName={loginUser ? loginUser.name : ''}
+                                        senderAvatar={loginUser ? loginUser.avatar : ''}
+                                        userName={currentRecipient.name}
+                                        client={client}
+                                        userId={currentUserId}
+                                        targetUserId={currentRecipient && currentRecipient.id}
+                                    />
+                                )}
                             </div>
                         </div>
                         {/*content*/}

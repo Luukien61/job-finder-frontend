@@ -9,7 +9,7 @@ const EmployerHeader = () => {
                 {/*App logo*/}
                 <div>
                     <a
-                        href="/employer/home"
+                        href="/employer"
                         target='_self'
                         className="mr-3 flex-none overflow-hidden w-auto flex items-center gap-2"
                     >

@@ -2,17 +2,25 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {GoClock} from "react-icons/go";
 import {FiSend} from "react-icons/fi";
 import {FaRegHeart, FaHeart} from "react-icons/fa6";
-import {MdEmail, MdReportGmailerrorred} from "react-icons/md";
+import {MdEmail, MdKeyboardDoubleArrowRight, MdReportGmailerrorred} from "react-icons/md";
 import {BiSolidLeaf} from "react-icons/bi";
 import {SearchBar} from "@/component/Content.tsx";
 import {PiFolderUser} from "react-icons/pi";
 import {IoPersonCircleSharp, IoWarning} from "react-icons/io5";
 import {useNavigate, useParams} from "react-router-dom";
 import {toast, ToastContainer} from "react-toastify";
-import {applyJob, getCompanyInfo, getJobDetailById, getUserDto, isAppliedJob, loginUser} from "@/axios/Request.ts";
+import {
+    applyJob,
+    createReport,
+    getCompanyInfo,
+    getJobDetailById,
+    getUserDto,
+    isAppliedJob,
+    loginUser
+} from "@/axios/Request.ts";
 import {format} from 'date-fns';
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
-import {Checkbox, Form, FormProps, Input, Modal, Select, Spin} from "antd";
+import {Checkbox, Form, FormProps, Input, Modal, Select, Spin, Tooltip} from "antd";
 import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {UserResponse} from "@/page/GoogleCode.tsx";
@@ -203,30 +211,30 @@ const JobDetail = () => {
         console.log('Failed:', errorInfo);
     };
 
-    const handleLogin = async () => {
-        if (loginEmail && loginPassword) {
-            setIsLoading(true);
-            try {
-                const userResponse: UserResponse = await loginUser({email: loginEmail, password: loginPassword})
-                if (userResponse) {
-                    localStorage.setItem("user", JSON.stringify(userResponse))
-                    toast.info("User logged in successfully")
-                    setOpenLogin(false)
-                    if (modalTypeRequestOpen == 'APPLY') {
-                        setOpenModal(true)
-                    }
-                    if (modalTypeRequestOpen == 'REPORT') {
-                        setOpenReports(true)
-                    }
-                    setIsConfirmCheck(false)
-                } else {
-                    toast.error("User logged in successfully")
+    const handleLogin = async (values: any) => {
+        setIsLoading(true);
+        try {
+            const userResponse: UserResponse = await loginUser({email: values.email, password: values.password})
+            if (userResponse) {
+                localStorage.setItem("user", JSON.stringify(userResponse))
+                toast.info("User logged in successfully")
+                setOpenLogin(false)
+                window.location.reload()
+                if (modalTypeRequestOpen == 'APPLY') {
+                    setOpenModal(true)
                 }
-            } catch (e: any) {
-                toast.error(e.response)
+                if (modalTypeRequestOpen == 'REPORT') {
+                    setOpenReports(true)
+                }
+                setIsConfirmCheck(false)
+            } else {
+                toast.error("Có lỗi xảy ra")
             }
-            setIsLoading(false)
+        } catch (e: any) {
+            toast.error(e.response)
         }
+        setIsLoading(false)
+
     }
 
     const handleSave = async () => {
@@ -253,7 +261,6 @@ const JobDetail = () => {
         }
     }
     const handleCreateReport = async (values: any) => {
-        console.log("Click")
         try {
             const reason = values.type + " - " + values.reason;
             if (currentUser && currentUser.id && id && company) {
@@ -263,11 +270,16 @@ const JobDetail = () => {
                     companyId: company.id,
                     rpReason: reason,
                 }
-                console.log(report)
+                await createReport(id, report)
+                toast.info("Tố cáo thành công")
             }
         } catch (e) {
-            toast.error("Co loi xay ra")
+            console.log(e)
+            toast.error(e.response.data)
         }
+    }
+    const handleCloseReport=()=>{
+        setOpenReports(false)
     }
 
 
@@ -357,9 +369,9 @@ const JobDetail = () => {
                                                     fill="white"></path>
                                             </svg>
                                         </div>
-                                        <div className={`flex flex-col gap-[2px]`}>
+                                        <div className={`flex overflow-x-hidden flex-col gap-[2px]`}>
                                             <div>Địa điểm</div>
-                                            <div className={`font-bold break-words`}>{job?.location}</div>
+                                            <div className={`font-bold truncate break-words`}>{job?.location}</div>
                                         </div>
                                     </div>
                                     {/*experience*/}
@@ -579,10 +591,12 @@ const JobDetail = () => {
                                                                                 29/12/2024</p>
                                                                         </div>
                                                                     </div>
-                                                                    {/*<div*/}
-                                                                    {/*    className={`bg-white p-1 rounded-full hover:bg-green-300 `}>*/}
-                                                                    {/*    <FaRegHeart color={"green"}/>*/}
-                                                                    {/*</div>*/}
+                                                                    <div
+                                                                        className={`bg-white p-1 rounded-full`}>
+                                                                        <Tooltip title={'Lưu'}>
+                                                                            <FaRegHeart color={"green"}/>
+                                                                        </Tooltip>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -906,8 +920,10 @@ const JobDetail = () => {
                    onCancel={handleCloseLoginModal}>
                 <div className={`w-full flex justify-center`}>
                     <Form
+                        name={'login'}
                         scrollToFirstError={true}
                         form={form}
+                        onFinish={handleLogin}
                         className={`w-full flex justify-center`}
                     >
                         <div className={`w-[90%] flex flex-col gap-6`}>
@@ -962,7 +978,7 @@ const JobDetail = () => {
                             <Form.Item>
                                 <div className={`w-full flex justify-center  `}>
                                     <button
-                                        onClick={handleLogin}
+                                        disabled={!isConfirmCheck}
                                         type="submit"
                                         className={`py-2 rounded disabled:bg-gray-200 font-semibold hover:bg-green-600 bg-green_default w-full text-white`}>
                                         Đăng nhập
@@ -1002,7 +1018,7 @@ const JobDetail = () => {
                 footer={null}
                 style={{top: '30px'}}
                 width={600}
-                onCancel={()=>setOpenReports(false)}
+                onCancel={handleCloseReport}
                 closeIcon={<IoMdCloseCircle size={24}
                                             fill={"#00b14f"}/>}
             >
@@ -1017,9 +1033,9 @@ const JobDetail = () => {
                     </div>
                     <Form
                         name={'reports'}
+                        form={form}
                         onFinish={handleCreateReport}
-                        onFinishFailed={onFinishFailed}
-                        form={form}>
+                        onFinishFailed={onFinishFailed}>
                         <div className={`flex *:w-full flex-col gap-6`}>
                             <div className={` flex items-start`}>
                                 <div className={`w-1/4`}>
@@ -1050,7 +1066,7 @@ const JobDetail = () => {
                                     <p className={`font-semibold`}>Số điện thoại</p>
                                 </div>
                                 <div className={`w-3/4 pl-4`}>
-                                    <Form.Item name={'phone'} style={{marginBottom: '0px'}}>
+                                    <Form.Item rules={[{required:true, message: "Số điện thoại không được để trống "}]} name={'phone'} style={{marginBottom: '0px'}}>
                                         <Input
                                             allowClear={true}
                                             style={{marginBottom: '0px'}}
@@ -1065,7 +1081,8 @@ const JobDetail = () => {
                                     <p className={`font-semibold`}>Vi phạm</p>
                                 </div>
                                 <div className={`w-3/4 pl-4`}>
-                                    <Form.Item rules={[{required: true, message: 'Chọn vi phạm'}]} name={'type'} style={{marginBottom: '0px'}}>
+                                    <Form.Item rules={[{required: true, message: 'Chọn vi phạm'}]} name={'type'}
+                                               style={{marginBottom: '0px'}}>
                                         <Select
                                             style={{marginBottom: '0px'}}
                                             size={"large"}
@@ -1079,7 +1096,7 @@ const JobDetail = () => {
                                     <p className={`font-semibold`}>Nội dung</p>
                                 </div>
                                 <div className={`w-3/4 pl-4`}>
-                                    <Form.Item  name={'reason'} style={{marginBottom: '0px'}}>
+                                    <Form.Item rules={[{required:true, message:"Nội dung không được để trống"}]} name={'reason'} style={{marginBottom: '0px'}}>
                                         <TextArea
                                             showCount={true}
                                             className={'text-14'}
@@ -1087,14 +1104,17 @@ const JobDetail = () => {
                                             placeholder={'Bạn vui lòng cung cấp rõ thông tin hoặc bất kỳ bằng chứng nào nếu có'}
                                             style={{marginBottom: '0px', height: '150px'}}
                                             size={"large"}
-                                            />
+                                        />
                                     </Form.Item>
                                 </div>
 
                             </div>
                             <div className={`flex mt-2 justify-end gap-3 items-center`}>
                                 <div>
-                                    <button className={`rounded-md border border-[#d9d9d9] py-1 px-4 `}>
+                                    <button
+                                        onClick={handleCloseReport}
+                                        type={'button'}
+                                        className={`rounded-md border hover:border-green_nga border-[#d9d9d9] py-1 px-4 `}>
                                         Đóng
                                     </button>
                                 </div>
@@ -1141,7 +1161,10 @@ export type JobWidthCardProps = {
     location: string,
     experience: number,
     expireDate: Date,
-    field?: string
+    field?: string,
+    quickView: boolean,
+    onClick?: () => void,
+    onQuickViewClick?: (event: React.MouseEvent) => void,
 }
 
 
@@ -1151,6 +1174,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
         navigate(`/job/detail/${job.jobId}`)
     }
     const expireDate = new Date(job.expireDate);
+    const isExpire= expireDate.getTime() < new Date().getTime();
     const formattedDate = expireDate.toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
@@ -1158,7 +1182,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
     });
     return (
         <div onClick={handleJobCardClick}
-             className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
+             className={`rounded-[8px] outline outline-1 outline-[#acf2cb] group hover:border relative hover:border-solid ${isExpire ? 'hover:border-red-500 bg-red-50': 'hover:border-green_default bg-highlight_default'}  w-full  cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
             {/*company logo*/}
             <div
                 className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
@@ -1173,7 +1197,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                 </a>
             </div>
             {/*card body*/}
-            <div className={`flex-1`}>
+            <div className={`w-[calc(100%-120px)] `}>
                 <div className={`flex flex-col h-full`}>
                     <div className={`mb-auto`}>
                         <div className={`flex `}>
@@ -1187,10 +1211,10 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                                             {job.title}</p>
                                     </a>
                                 </h3>
-                                <div className={`w-full`}>
+                                <div className={``}>
                                     <a href={`/company/${job.companyId}`}
                                        target="_blank">
-                                        <p className={`break-words text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
+                                        <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
                                     </a>
                                 </div>
                             </div>
@@ -1201,9 +1225,9 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                     </div>
                     <div
                         className={`mt-auto flex items-end justify-between py-2`}>
-                        <div className={`flex gap-4`}>
+                        <div className={`flex gap-4 overflow-hidden`}>
                             <div
-                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                className={`rounded-[5px] overflow-x-hidden max-w-[33%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
                                 <p className={`text-black text-[14px] truncate `}>{job.location}</p>
                             </div>
                             <div
@@ -1223,6 +1247,18 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                         {/*</div>*/}
                     </div>
                 </div>
+                {
+                    job.quickView && (
+                        <div
+                            onClick={job.onQuickViewClick}
+                            className={`absolute top-[40%] right-10 group-hover:block hidden transition-transform duration-500`}>
+                            <div className={`rounded-full flex p-1 border bg-[#e3faed] items-center  text-[#15bf61]`}>
+                                <p className={`text-[12px]`}>Xem nhanh</p>
+                                <MdKeyboardDoubleArrowRight/>
+                            </div>
+                        </div>
+                    )
+                }
             </div>
         </div>
     )

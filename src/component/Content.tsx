@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {experiences, provinces, salaries} from "../info/AppInfo.ts";
+import {experiences, provinces, provinces_2, salaries} from "../info/AppInfo.ts";
 import {CiLocationOn, CiSearch} from "react-icons/ci";
 import {IoIosArrowDown} from "react-icons/io";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
@@ -13,6 +13,7 @@ import CountUp from "react-countup";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import Autoplay from "embla-carousel-autoplay";
+import {Select} from "antd";
 
 const Content = () => {
     const {ref, inView} = useInView({
@@ -313,7 +314,7 @@ export const SearchBar=()=>{
     }
     return(
         <div className={`flex w-full`}>
-            <div className={`rounded-l-2xl bg-white flex items-center flex-1 ml-4 h-14 `}>
+            <div className={`rounded-l-2xl bg-white pr-4  flex items-center flex-1 ml-4 h-14 `}>
                 {/*<FilterItem items={fields} value={field} handleChoose={handleFieldChoose}*/}
                 {/*            handleOpen={handleFieldClick}*/}
                 {/*            isOpen={isFieldOpen} style={"!w-[720px] grid-cols-4 mt-4"}/>*/}
@@ -326,29 +327,15 @@ export const SearchBar=()=>{
                     className={`bg-transparent shadow-none pl-3  placeholder:font-normal font-bold flex-1 leading-6 p-0 outline-none focus:outline-none mx-3 `}
                     placeholder="Tìm công việc ..."
                 />
-                <div
-                    onClick={handleOpenLocation}
-                    className={`border-r border-l border-gray-300 my-1 w-40 flex-col gap-y-2`}>
-                    <div
-                        className={`mx-2 gap-x-4 items-center py-1 rounded hover:bg-gray-100 cursor-pointer flex justify-center h-full`}>
-                        <CiLocationOn/>
-                        <p>{locationChoose}</p>
-                    </div>
-                    <div className={`relative z-[100]`}>
-                        <div
-                            className={`absolute inset-0 max-h-48 overflow-y-auto space-y-3 rounded bg-white h-fit p-2 drop-shadow-2xl ${locationOpen ? 'block' : 'hidden'}`}>
-                            {
-                                Object.values(provinces).map((province, index) => (
-                                    <div
-                                        onClick={handleLocationChoose.bind(null, province)}
-                                        key={index}
-                                        className={`rounded hover:bg-gray-100 cursor-pointer py-1 px-1`}>
-                                        <p>{province}</p>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                    </div>
+                <div className={`w-fit`}>
+                    <Select
+                        onChange={handleLocationChoose}
+                        style={{width: '170px'}}
+                        defaultValue={'Toàn quốc'}
+                        className={`w-fit`}
+                        size={"large"}
+                        options={provinces_2}
+                    />
                 </div>
             </div>
             <div

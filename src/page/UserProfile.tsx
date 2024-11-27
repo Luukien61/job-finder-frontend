@@ -56,7 +56,7 @@ export interface UserDto {
     searchHistory: string[]; // Danh sách các lịch sử tìm kiếm
 }
 
-const note = [
+export const note = [
     "Nội dung mô tả công việc sơ sài, không đồng nhất với công việc thực tế",
     "Hứa hẹn \"việc nhẹ lương cao\", không cần bỏ nhiều công sức dễ dàng lấy tiền \"khủng\"",
     "Yêu cầu tải app, nạp tiền, làm nhiệm vụ",
@@ -64,7 +64,7 @@ const note = [
     "Yêu cầu ký kết giấy tờ không rõ ràng hoặc nộp giấy tờ gốc",
     "Địa điểm phỏng vấn bất bình thường"
 ]
-type WarningNote = {
+export type WarningNote = {
     img: string,
     note: string,
 }
@@ -1038,6 +1038,7 @@ export const SavedJobList = () => {
                                     title={value.title}
                                     minSalary={value.minSalary}
                                     maxSalary={value.maxSalary}
+                                    quickView={false}
                                 />
                             ))}
                         </div>
@@ -1096,6 +1097,7 @@ export const AppliedJobList = () => {
                                     title={value.title}
                                     minSalary={value.minSalary}
                                     maxSalary={value.maxSalary}
+                                    quickView={false}
                                 />
                             ))}
                         </div>

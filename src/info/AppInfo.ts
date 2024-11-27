@@ -73,12 +73,97 @@ export const provinces: { [key: number]: string } = {
     62: "Hưng Yên",
     63: "Nam Định",
 };
-export const filters = [
-    "Location",
-    "Salary",
-    "Experience",
-    "Field"
+export const provinces_2 = [
+    { value: "Toàn quốc", label: "Toàn quốc" },
+    { value: "Hà Nội", label: "Hà Nội" },
+    { value: "TP Hồ Chí Minh", label: "TP Hồ Chí Minh" },
+    { value: "Đà Nẵng", label: "Đà Nẵng" },
+    { value: "Cần Thơ", label: "Cần Thơ" },
+    { value: "Bà Rịa - Vũng Tàu", label: "Bà Rịa - Vũng Tàu" },
+    { value: "Khánh Hòa", label: "Khánh Hòa" },
+    { value: "Đồng Nai", label: "Đồng Nai" },
+    { value: "Bình Dương", label: "Bình Dương" },
+    { value: "Hải Phòng", label: "Hải Phòng" },
+    { value: "Long An", label: "Long An" },
+    { value: "Quảng Ninh", label: "Quảng Ninh" },
+    { value: "Đồng Tháp", label: "Đồng Tháp" },
+    { value: "Tiền Giang", label: "Tiền Giang" },
+    { value: "An Giang", label: "An Giang" },
+    { value: "Bình Định", label: "Bình Định" },
+    { value: "Phú Yên", label: "Phú Yên" },
+    { value: "Bình Phước", label: "Bình Phước" },
+    { value: "Hậu Giang", label: "Hậu Giang" },
+    { value: "Vĩnh Long", label: "Vĩnh Long" },
+    { value: "Thái Nguyên", label: "Thái Nguyên" },
+    { value: "Bắc Giang", label: "Bắc Giang" },
+    { value: "Nghệ An", label: "Nghệ An" },
+    { value: "Thanh Hóa", label: "Thanh Hóa" },
+    { value: "Thừa Thiên Huế", label: "Thừa Thiên Huế" },
+    { value: "Kiên Giang", label: "Kiên Giang" },
+    { value: "Bến Tre", label: "Bến Tre" },
+    { value: "Bắc Ninh", label: "Bắc Ninh" },
+    { value: "Lâm Đồng", label: "Lâm Đồng" },
+    { value: "Bạc Liêu", label: "Bạc Liêu" },
+    { value: "Quảng Nam", label: "Quảng Nam" },
+    { value: "Quảng Ngãi", label: "Quảng Ngãi" },
+    { value: "Cà Mau", label: "Cà Mau" },
+    { value: "Ninh Bình", label: "Ninh Bình" },
+    { value: "Nam Định", label: "Nam Định" },
+    { value: "Hà Nam", label: "Hà Nam" },
+    { value: "Thái Bình", label: "Thái Bình" },
+    { value: "Vĩnh Phúc", label: "Vĩnh Phúc" },
+    { value: "Tây Ninh", label: "Tây Ninh" },
+    { value: "Phú Thọ", label: "Phú Thọ" },
+    { value: "Hòa Bình", label: "Hòa Bình" },
+    { value: "Hà Tĩnh", label: "Hà Tĩnh" },
+    { value: "Quảng Trị", label: "Quảng Trị" },
+    { value: "Gia Lai", label: "Gia Lai" },
+    { value: "Đắk Lắk", label: "Đắk Lắk" },
+    { value: "Đắk Nông", label: "Đắk Nông" },
+    { value: "Kon Tum", label: "Kon Tum" },
+    { value: "Điện Biên", label: "Điện Biên" },
+    { value: "Lào Cai", label: "Lào Cai" },
+    { value: "Yên Bái", label: "Yên Bái" },
+    { value: "Sơn La", label: "Sơn La" },
+    { value: "Lạng Sơn", label: "Lạng Sơn" },
+    { value: "Cao Bằng", label: "Cao Bằng" },
+    { value: "Hà Giang", label: "Hà Giang" },
+    { value: "Bắc Kạn", label: "Bắc Kạn" },
+    { value: "Tuyên Quang", label: "Tuyên Quang" },
+    { value: "Lai Châu", label: "Lai Châu" },
+    { value: "Ninh Thuận", label: "Ninh Thuận" },
+    { value: "Quảng Bình", label: "Quảng Bình" },
+    { value: "Trà Vinh", label: "Trà Vinh" },
+    { value: "Sóc Trăng", label: "Sóc Trăng" },
+    { value: "Bình Thuận", label: "Bình Thuận" },
+    { value: "Hưng Yên", label: "Hưng Yên" },
+    { value: "Nam Định", label: "Nam Định" }
+];
+
+export const salaryFilters=[
+    {value: 'Dưới 5 triệu',range: [0,5], label: 'Dưới 5 triệu'},
+    {value: '5 - 10 triệu',range: [5,10], label: '5 - 10 triệu'},
+    {value: '10 - 15 triệu',range: [10,15], label: '10 - 15 triệu'},
+    {value: '15 - 20 triệu',range: [15,20], label: '15 - 20 triệu'},
+    {value: '20 - 30 triệu',range: [20,30], label: '20 - 30 triệu'},
+    {value: '30 - 50 triệu',range: [30,50], label: '30 - 50 triệu'},
+    {value: 'Trên 50 triệu',range: [50], label: 'Trên 50 triệu'},
 ]
+export const experienceFilter=[
+    {year: [1], label: '1 năm',value: '1 năm'},
+    {year: [2], label: '2 năm',value: '2 năm'},
+    {year: [3], label: '3 năm',value: '3 năm'},
+    {year: [4], label: '4 năm',value: '4 năm'},
+    {year: [5], label: '5 năm',value: '5 năm'},
+    {year: [5,100], label: 'Trên 5 năm',value: 'Tyear năm'},
+]
+export const sortFilter=[
+    {value: "Mới nhất", label: "Mới nhất"},
+    {value: "Cũ nhất", label: "Cũ nhất"},
+    {value: "Lương cao đến thấp", label: "Lương cao đến thấp"},
+]
+
+
 export const salaries = [
     [5], [5, 10], [10, 20], [20]
 ]
@@ -6471,6 +6556,7 @@ export const genderOptions = [
 ]
 
 export const jobFields = [
+    { value: 'Khác', label: 'Khác' },
     { value: 'Công nghệ thông tin', label: 'Công nghệ thông tin' },
     { value: 'Kế toán - Kiểm toán', label: 'Kế toán - Kiểm toán' },
     { value: 'Nhân sự', label: 'Nhân sự' },
@@ -6484,7 +6570,7 @@ export const jobFields = [
     { value: 'Ngân hàng - Tài chính', label: 'Ngân hàng - Tài chính' },
     { value: 'Bất động sản', label: 'Bất động sản' },
     { value: 'Du lịch - Nhà hàng - Khách sạn', label: 'Du lịch - Nhà hàng - Khách sạn' },
-    { value: 'Khác', label: 'Khác' }
+
 ];
 
 export const jobTypes=[

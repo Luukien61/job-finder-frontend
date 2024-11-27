@@ -16,6 +16,7 @@ import EmployerEntry from "@/page/employer/EmployerEntry.tsx";
 import EmployerLogin from "@/page/employer/EmployerLogin.tsx";
 import EmployerHome, {HomeContent} from "@/page/employer/EmployerHome.tsx";
 import AddJob from "@/page/employer/AddJob.tsx";
+import JobSearch from "@/page/JobSearch.tsx";
 
 const AppRouter = () => {
     return (
@@ -23,6 +24,7 @@ const AppRouter = () => {
             <Route path="/" element={<App/>}>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path={'/job/detail/:id'} element={<JobDetail/>}/>
+                <Route path={'/search'} element={<JobSearch/>}/>
             </Route>
             <Route path={'/login'} element={<LogIn/>}/>
             <Route path={"/login/oauth2/code/google"} element={<GoogleCode/>}/>
