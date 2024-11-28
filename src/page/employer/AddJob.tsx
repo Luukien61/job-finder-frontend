@@ -13,7 +13,7 @@ import {DiRequirejs} from "react-icons/di";
 import {GiOfficeChair, GiReceiveMoney} from "react-icons/gi";
 import dayjs from "dayjs";
 import {BsClock, BsGenderAmbiguous, BsPeople} from "react-icons/bs";
-import {dayOfWeek, genderOptions, jobFields, jobPositions, jobTypes} from "@/info/AppInfo.ts";
+import {dayOfWeek, genderOptions, jobFields, jobPositions, jobTypes, provinces_2} from "@/info/AppInfo.ts";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import {addJob} from "@/axios/Request.ts";
 import {toast} from "react-toastify";
@@ -61,7 +61,7 @@ const AddJob = () => {
                 <AutoBulletTextArea
                     value={description}
                     placeholder={'Mô tả chi tiết công việc...'}
-                    onChange={setDescription} style={''} />
+                    onChange={setDescription} style={''}/>
             </Form.Item>
 
         },
@@ -101,7 +101,7 @@ const AddJob = () => {
 
     useEffect(() => {
         const company = JSON.parse(localStorage.getItem('company'));
-        if(company){
+        if (company) {
             setCompanyId(company.id)
         }
     }, []);
@@ -125,11 +125,14 @@ const AddJob = () => {
         }
     }
 
-    const handleAddJob =async (values: any) => {
-        const workTime = startTimes+'-'+endTimes+', '+startDate+'-'+endDate;
-        const request ={
+
+    const handleAddJob = async (values: any) => {
+
+        const workTime = startTimes + '-' + endTimes + ', ' + startDate + '-' + endDate;
+        const request = {
             companyId: companyId,
             title: title,
+            createdAt: new Date(),
             description: description,
             requirements: requirement,
             benefits: benefit,
@@ -137,6 +140,7 @@ const AddJob = () => {
             minSalary: minSalary,
             maxSalary: maxSalary,
             gender: gender,
+            province: values.province,
             location: location,
             role: role,
             quantity: values.quantity,
@@ -145,19 +149,19 @@ const AddJob = () => {
             field: field,
             expireDate: format(expireDate, 'yyyy-MM-dd'),
         }
-        try{
-            const response= await addJob(companyId, request)
-            if(response){
+        try {
+            const response = await addJob(companyId, request)
+            if (response) {
                 toast.info("Đăng bài thành công!")
                 await delay(1500)
-                navigate('/employer')
+                window.location.href='/employer'
             }
-        }catch(error){
+        } catch (error) {
             toast.error(error.response.data)
         }
     }
     const handleCancel = () => {
-        navigate('/employer')
+        window.location.href='/employer'
     }
 
     return (
@@ -211,89 +215,110 @@ const AddJob = () => {
 
                 </div>
                 {/*right side*/}
-                <div className={`pl-5 w-1/3 flex flex-col gap-6 h-fit sticky top-24`}>
+                <div className={` w-1/3 flex flex-col gap-6 h-fit sticky top-24`}>
                     <div
-                        className={`rounded-lg p-6 gap-8 flex flex-col bg-white border-solid border-[2px]  overflow-hidden border-green_default `}>
-                        <div className={`flex flex-col gap-4 `}>
-                            <div className={`flex gap-1 items-center justify-start`}>
-                                <MdAccessTimeFilled size={20}
-                                                    fill={"#00b14f"}/>
-                                <p className={`font-semibold text-18`}>Thời gian làm việc </p>
-                            </div>
+                        className={`rounded-lg gap-8 flex flex-col bg-white border-solid border-[2px]  overflow-hidden border-green_default `}>
+                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-[20px] font-semibold leading-7 m-0`}>
+                            Thông tin cơ bản
+                        </h2>
+                        <div className={`px-6 pb-4 gap-8 flex flex-col`}>
                             <div className={`flex flex-col gap-4 `}>
-                                <TimePicker.RangePicker
-                                    needConfirm={false}
-                                    size={"large"}
-                                    onChange={(_dayjs, dateString) => handleWorkTimeChange(dateString)}
-                                    defaultValue={[startTime, endTime]}
-                                    format={hourFormat}/>
-                                <div className={`flex gap-3 items-center`}>
-                                    <Select
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e)}
-                                        defaultValue="Thứ hai"
-                                        style={{width: 120}}
-                                        options={dayOfWeek}
-                                    />
-                                    <p className={`flex-1 text-center`}>đến</p>
-                                    <Select
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e)}
-                                        defaultValue="Thứ sáu"
-                                        style={{width: 120}}
-                                        options={dayOfWeek}
-                                    />
+                                <div className={`flex gap-1 items-center justify-start`}>
+                                    <MdAccessTimeFilled size={20}
+                                                        fill={"#00b14f"}/>
+                                    <p className={`font-semibold text-18`}>Thời gian làm việc </p>
+                                </div>
+                                <div className={`flex flex-col gap-4 `}>
+                                    <TimePicker.RangePicker
+                                        needConfirm={false}
+                                        size={"large"}
+                                        onChange={(_dayjs, dateString) => handleWorkTimeChange(dateString)}
+                                        defaultValue={[startTime, endTime]}
+                                        format={hourFormat}/>
+                                    <div className={`flex gap-3 items-center`}>
+                                        <Select
+                                            value={startDate}
+                                            onChange={(e) => setStartDate(e)}
+                                            defaultValue="Thứ hai"
+                                            style={{width: 120}}
+                                            options={dayOfWeek}
+                                        />
+                                        <p className={`flex-1 text-center`}>đến</p>
+                                        <Select
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e)}
+                                            defaultValue="Thứ sáu"
+                                            style={{width: 120}}
+                                            options={dayOfWeek}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className={`flex flex-col gap-3`}>
-                            <div className={`flex gap-1 items-center justify-start`}>
-                                <MdAttachMoney size={20}
-                                               fill={"#00b14f"}/>
-                                <p className={`font-semibold text-18`}>Mức lương</p>
+                            <div className={`flex flex-col gap-3`}>
+                                <div className={`flex gap-1 items-center justify-start`}>
+                                    <MdAttachMoney size={20}
+                                                   fill={"#00b14f"}/>
+                                    <p className={`font-semibold text-18`}>Mức lương</p>
+                                </div>
+                                <div className={`flex gap-1 items-center justify-between`}>
+                                    <p className={`ml-1`}>Từ</p>
+                                    <InputNumber min={1} max={100} value={minSalary} onChange={(e) => setMinSalary(e)}
+                                                 defaultValue={3}/>
+                                    <p>đến</p>
+                                    <InputNumber min={1} max={100} value={maxSalary} onChange={(e) => setMaxSalary(e)}
+                                                 defaultValue={5}/>
+                                    <p>triệu</p>
+                                </div>
                             </div>
-                            <div className={`flex gap-1 items-center justify-between`}>
-                                <p className={`ml-1`}>Từ</p>
-                                <InputNumber min={1} max={100} value={minSalary} onChange={(e) => setMinSalary(e)}
-                                             defaultValue={3}/>
-                                <p>đến</p>
-                                <InputNumber min={1} max={100} value={maxSalary} onChange={(e) => setMaxSalary(e)}
-                                             defaultValue={5}/>
-                                <p>triệu</p>
-                            </div>
-                        </div>
-                        <div className={` flex flex-col gap-4 `}>
-                            <div className={`flex gap-1 items-center justify-start`}>
-                                <MdLocationPin size={20}
-                                               fill={"#00b14f"}/>
-                                <p className={`font-semibold text-18`}>Địa điểm</p>
-                            </div>
-                            <div>
-                                <Form.Item
-                                    name='location'
-                                    rules={
-                                        [
-                                            {
-                                                required: true,
-                                                message: 'Vui lòng điền địa chỉ',
-                                            },
-                                        ]
-                                    }>
-                                    <Input
-                                        value={location}
-                                        onChange={(e) => setLocation(e.target.value)}
-                                        placeholder={location}
-                                        size={'large'}
-                                        spellCheck={false}
-                                        className={`text-16`}/>
+                            <div className={` flex flex-col gap-4 `}>
+                                <div className={`flex gap-1 items-center justify-start`}>
+                                    <MdLocationPin size={20}
+                                                   fill={"#00b14f"}/>
+                                    <p className={`font-semibold text-18`}>Địa điểm</p>
+                                </div>
+                                <div className={`flex items-center`}>
+                                    <Form.Item
+                                        name='location'
+                                        rules={
+                                            [
+                                                {
+                                                    required: true,
+                                                    message: 'Vui lòng điền địa chỉ',
+                                                },
+                                            ]
+                                        }>
+                                        <Input
+                                            autoComplete='off'
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            placeholder={location}
+                                            size={'large'}
+                                            addonAfter={<Form.Item name={'province'}
+                                                                   rules={[{required: true, message: ''}]}
+                                                                   style={{marginBottom: 0, width: '145px'}}>
+                                                <Select
+                                                    showArrow={false}
+                                                    placeholder={'Tỉnh thành phố'}
+                                                    className={`h-[42px]  w-full`}
+                                                    optionFilterProp="label"
+                                                    options={provinces_2}
+                                                />
+                                            </Form.Item>}
+                                            spellCheck={false}
+                                            className={`text-16`}/>
 
-                                </Form.Item>
+                                    </Form.Item>
+
+
+                                </div>
 
                             </div>
-
                         </div>
                     </div>
-                    <div className={`rounded-lg bg-white pt-4 overflow-hidden border-2 border-green_default `}>
+                    <div className={`rounded-lg bg-white  overflow-hidden border-2 border-green_default `}>
+                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-[20px] font-semibold leading-7 m-0`}>
+                            Thông tin khác
+                        </h2>
                         <div className={`max-h-[400px] py-2 overflow-y-auto`}>
                             <div className={`p-6 flex flex-col gap-8 `}>
                                 {/*vi tri*/}
@@ -323,10 +348,10 @@ const AddJob = () => {
                                             <p className={`font-semibold text-18 line-clamp-1 `}>Số lượng</p>
                                         </div>
                                         <Form.Item name='quantity'
-                                                   rules={[{required:true, message: 'Chọn số lượng tuyển'}]}
-                                                   style={{marginBottom: '0px', width: '50%'}} >
+                                                   rules={[{required: true, message: 'Chọn số lượng tuyển'}]}
+                                                   style={{marginBottom: '0px', width: '50%'}}>
                                             <InputNumber
-                                                style={{width:'100%'}}
+                                                style={{width: '100%'}}
                                                 size={'large'}
                                                 className={`flex-1 text-center`}
                                                 min={1} max={100}/>
@@ -344,13 +369,13 @@ const AddJob = () => {
                                         </div>
                                         <Form.Item
                                             name='experience'
-                                                   rules={[{required:true, message: 'Chọn kinh nghiệm'}]}
-                                                   style={{marginBottom: '0px', width: '50%'}} >
+                                            rules={[{required: true, message: 'Chọn kinh nghiệm'}]}
+                                            style={{marginBottom: '0px', width: '50%'}}>
                                             <InputNumber
                                                 size={'large'}
                                                 addonAfter={'năm'}
                                                 className={`flex-1 text-center text-16`}
-                                                min={0} max={100} />
+                                                min={0} max={100}/>
                                         </Form.Item>
                                     </div>
                                 </div>

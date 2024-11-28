@@ -1028,13 +1028,14 @@ export const SavedJobList = () => {
                             {savedJobList.map((value, index) => (
                                 <JobWidthCard
                                     key={index}
+                                    createDate={value.createDate}
                                     companyName={value.companyName}
                                     logo={value.logo}
                                     jobId={value.jobId}
                                     companyId={value.companyId}
                                     experience={value.experience}
                                     expireDate={value.expireDate}
-                                    location={value.location}
+                                    province={value.province}
                                     title={value.title}
                                     minSalary={value.minSalary}
                                     maxSalary={value.maxSalary}
@@ -1087,13 +1088,14 @@ export const AppliedJobList = () => {
                             {appliedJobs.map((value, index) => (
                                 <JobWidthCard
                                     key={index}
+                                    createDate={value.createDate}
                                     companyName={value.companyName}
                                     logo={value.logo}
                                     jobId={value.jobId}
                                     companyId={value.companyId}
                                     experience={value.experience}
                                     expireDate={value.expireDate}
-                                    location={value.location}
+                                    province={value.province}
                                     title={value.title}
                                     minSalary={value.minSalary}
                                     maxSalary={value.maxSalary}

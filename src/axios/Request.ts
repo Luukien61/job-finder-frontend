@@ -191,3 +191,7 @@ const companyPath = '/api/companies'
 export const canPostJob=async (companyId: string) => {
     return await instance.get(`${companyPath}/${companyId}/possibility/job`).then((response: any) => response.data)
 }
+
+export const searchJobs=async (params: string) => {
+   return await instance.get(`/job/search?${params}`).then((response: any) => response.data)
+}

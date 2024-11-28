@@ -44,6 +44,7 @@ export type JobDetailProps = {
     companyName: string;
     title: string;
     location: string;
+    province: string;
     description: string;
     requirements: string;
     benefits: string;
@@ -60,3 +61,26 @@ export type JobDetailProps = {
     type: string;
     field: string;
 };
+
+export type SearchProps={
+    keyword: string,
+    location?: string,
+    minSalary?: number,
+    maxSalary?: number,
+    experience?: number,
+    page?: number,
+    size?: number,
+}
+export type JobSearchResult={
+    "id": number,
+    "title": string,
+    "location": string,
+    "companyName": string,
+    "companyId": string,
+    "logo": string,
+    "experience": number,
+    "minSalary": number,
+    "maxSalary": number,
+    "expiryDate": Date,
+    "createDate": Date
+}

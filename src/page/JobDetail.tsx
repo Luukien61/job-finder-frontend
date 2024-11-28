@@ -371,7 +371,7 @@ const JobDetail = () => {
                                         </div>
                                         <div className={`flex overflow-x-hidden flex-col gap-[2px]`}>
                                             <div>Địa điểm</div>
-                                            <div className={`font-bold truncate break-words`}>{job?.location}</div>
+                                            <div className={`font-bold truncate break-words`}>{job?.province || ''}</div>
                                         </div>
                                     </div>
                                     {/*experience*/}
@@ -462,7 +462,7 @@ const JobDetail = () => {
                                         <div className={`job_description_item `}>
                                             <h3>Địa điểm</h3>
                                             <pre className={`break-words `}>
-                                                {job?.location}
+                                                {job?.location}, {job?.province}
                                             </pre>
                                         </div>
                                         <div className={`job_description_item `}>
@@ -800,7 +800,7 @@ const JobDetail = () => {
                                             </svg>
                                         </div>
                                         <div className={`flex flex-col `}>
-                                            <p>Giới tình </p>
+                                            <p>Giới tính</p>
                                             <p className={`font-bold`}>{job?.gender}</p>
                                         </div>
                                     </div>
@@ -1158,13 +1158,14 @@ export type JobWidthCardProps = {
     companyId: string,
     minSalary: number,
     maxSalary: number,
-    location: string,
+    province: string,
+    createDate: Date,
     experience: number,
     expireDate: Date,
     field?: string,
     quickView: boolean,
     onClick?: () => void,
-    onQuickViewClick?: (event: React.MouseEvent) => void,
+    onQuickViewClick?: (event: React.MouseEvent, id: number) => void,
 }
 
 
@@ -1211,10 +1212,10 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                                             {job.title}</p>
                                     </a>
                                 </h3>
-                                <div className={``}>
-                                    <a href={`/company/${job.companyId}`}
+                                <div className={`w-fit`}>
+                                    <a  href={`/company/${job.companyId}`}
                                        target="_blank">
-                                        <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
+                                        <p className={`break-words max-w-full w-fit  text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
                                     </a>
                                 </div>
                             </div>
@@ -1228,7 +1229,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                         <div className={`flex gap-4 overflow-hidden`}>
                             <div
                                 className={`rounded-[5px] overflow-x-hidden max-w-[33%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                <p className={`text-black text-[14px] truncate `}>{job.location}</p>
+                                <p className={`text-black text-[14px] truncate `}>{job.province}</p>
                             </div>
                             <div
                                 className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
@@ -1250,7 +1251,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                 {
                     job.quickView && (
                         <div
-                            onClick={job.onQuickViewClick}
+                            onClick={(e)=>job.onQuickViewClick(e,job.jobId)}
                             className={`absolute top-[40%] right-10 group-hover:block hidden transition-transform duration-500`}>
                             <div className={`rounded-full flex p-1 border bg-[#e3faed] items-center  text-[#15bf61]`}>
                                 <p className={`text-[12px]`}>Xem nhanh</p>

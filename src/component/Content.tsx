@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {experiences, provinces, provinces_2, salaries} from "../info/AppInfo.ts";
-import {CiLocationOn, CiSearch} from "react-icons/ci";
+import {CiSearch} from "react-icons/ci";
 import {IoIosArrowDown} from "react-icons/io";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
 import {Label} from "@/components/ui/label.tsx";
@@ -14,6 +14,9 @@ import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious}
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import Autoplay from "embla-carousel-autoplay";
 import {Select} from "antd";
+import {SearchProps} from "@/info/ApplicationType.ts";
+import {createSearchParams} from "@/service/ApplicationService.ts";
+import {useNavigate} from "react-router-dom";
 
 const Content = () => {
     const {ref, inView} = useInView({
@@ -302,24 +305,30 @@ const Search = () => {
     )
 }
 
+
 export const SearchBar=()=>{
     const [search, setSearch] = useState("");
-    const [locationOpen, setLocationOpen] = useState<boolean>(false)
-    const [locationChoose, setLocationChoose] = useState<string>('Toàn quốc')
-    const handleOpenLocation = () => {
-        setLocationOpen(!locationOpen);
-    }
+    const [locationChoose, setLocationChoose] = useState<string>('')
     const handleLocationChoose = (locationChoose: string) => {
         setLocationChoose(locationChoose);
+    }
+
+
+    const handleOnSearch = async () => {
+        if(search&&search.trim().length > 0){
+            try{
+                const param : SearchProps= {keyword: search, location: locationChoose};
+                const searchParams = createSearchParams(param);
+                console.log(searchParams);
+                window.location.href=`/search?${searchParams}`;
+            }catch (error){
+                console.log(error)
+            }
+        }
     }
     return(
         <div className={`flex w-full`}>
             <div className={`rounded-l-2xl bg-white pr-4  flex items-center flex-1 ml-4 h-14 `}>
-                {/*<FilterItem items={fields} value={field} handleChoose={handleFieldChoose}*/}
-                {/*            handleOpen={handleFieldClick}*/}
-                {/*            isOpen={isFieldOpen} style={"!w-[720px] grid-cols-4 mt-4"}/>*/}
-                {/*<div className={`border h-[60%] bg-black`}>*/}
-                {/*</div>*/}
                 <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -339,6 +348,7 @@ export const SearchBar=()=>{
                 </div>
             </div>
             <div
+                onClick={handleOnSearch}
                 className={` font-bold rounded-r-2xl bg-green_default hover:bg-green-600 text-white px-2 py-1 cursor-pointer flex gap-x-1 items-center`}>
                 <CiSearch/>
                 <p className={`cursor-pointer`}>Tìm kiếm</p>

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SearchBar} from "@/component/Content.tsx";
 import {Pagination, Select} from "antd";
 import {experienceFilter, provinces_2, salaryFilters, sortFilter} from "@/info/AppInfo.ts";
@@ -10,13 +10,83 @@ import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious}
 import Autoplay from "embla-carousel-autoplay";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import {note, WarningNote} from "@/page/UserProfile.tsx";
-import {DefaultPageSize} from "@/info/ApplicationType.ts";
+import {
+    DefaultPageSize,
+    JobDetailProps,
+    JobSearchResult,
+    PageableResponse,
+    SearchProps
+} from "@/info/ApplicationType.ts";
 import {MdKeyboardDoubleArrowRight} from "react-icons/md";
 import {IoCloseCircleSharp} from "react-icons/io5";
+import {useLocation, useNavigate} from "react-router-dom";
+import {getJobDetailById, searchJobs} from "@/axios/Request.ts";
+import {convertDate, createSearchParams} from "@/service/ApplicationService.ts";
+import {toast} from "react-toastify";
 
 const JobSearch = () => {
-    const [salaryRange, setSalaryRange] = useState(0);
+
     const [isQuickView, setIsQuickView] = useState<boolean>(false);
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const [job, setJob] = useState<JobDetailProps>()
+
+    const [keyword, setKeyword] = useState<string | null>(queryParams.get('keyword'));
+    const [locationParam, setLocationParam] = useState<string | null>(queryParams.get('location'));
+    const [minSalary, setMinSalary] = useState<number | null>(queryParams.has('minSalary') ? parseInt(queryParams.get('minSalary')!) : null);
+    const [maxSalary, setMaxSalary] = useState<number | null>(queryParams.has('maxSalary') ? parseInt(queryParams.get('maxSalary')!) : null);
+    const [experience, setExperience] = useState<number | null>(queryParams.has('experience') ? parseInt(queryParams.get('experience')!) : null);
+    const [page, setPage] = useState<number | null>(queryParams.has('page') ? parseInt(queryParams.get('page')!) : 0);
+    const [size, setSize] = useState<number | null>(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
+    const [jobResult, setJobResult] = useState<JobSearchResult[]>([])
+    const [pageableResult, setPageableResult] = useState<PageableResponse<JobSearchResult>>()
+    const navigate = useNavigate();
+    const [totalElements, setTotalElements] = useState<number>(undefined)
+
+
+    const fetchJobs = async () => {
+        try {
+            const searchParams: string = handleCreateParamUrl()
+            console.log(searchParams)
+            const jobSearchResult: PageableResponse<JobSearchResult> = await searchJobs(searchParams);
+            setJobResult(jobSearchResult.content)
+            setPageableResult(jobSearchResult)
+            setTotalElements(jobSearchResult.totalElements)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+        setKeyword(queryParams.get('keyword'));
+        setLocationParam(queryParams.get('location'));
+        setMinSalary(queryParams.has('minSalary') ? parseInt(queryParams.get('minSalary')!) : null);
+        setMaxSalary(queryParams.has('maxSalary') ? parseInt(queryParams.get('maxSalary')!) : null);
+        setExperience(queryParams.has('experience') ? parseInt(queryParams.get('experience')!) : null);
+        setPage(queryParams.has('page') ? parseInt(queryParams.get('page')!) : 0)
+        setSize(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
+        console.log("Params: ", location.search);
+        fetchJobs();
+    }, [location.search]);
+
+
+    const handleCreateParamUrl = (): string => {
+        const params: SearchProps = {
+            keyword: keyword,
+            location: locationParam,
+            page: page,
+            size: size,
+            minSalary: minSalary,
+            maxSalary: maxSalary,
+            experience: experience,
+        }
+        return createSearchParams(params);
+    }
+
+    useEffect(() => {
+        const searchParam: string = handleCreateParamUrl()
+        navigate(`/search?${searchParam}`)
+    }, [page, size, keyword, locationParam, experience, maxSalary, minSalary]);
 
 
     const warningItem: WarningNote[] = []
@@ -28,12 +98,33 @@ const JobSearch = () => {
         warningItem.push(item)
     }
 
-    const handleQuickViewClick = (event: React.MouseEvent) => {
+    const handleQuickViewClick = (event: React.MouseEvent, id: number) => {
         event.stopPropagation()
+        getJobDetail(id)
         setIsQuickView(true);
     }
-    const handleExitQuickView=()=>{
+    const handleExitQuickView = () => {
         setIsQuickView(false);
+    }
+    const onPageNumberChange = (page: any) => {
+        setPage(page - 1)
+    }
+
+    const getJobDetail = async (id: number) => {
+        try {
+            const jobDetail: JobDetailProps = await getJobDetailById(id)
+            if (jobDetail) {
+                setJob(jobDetail)
+            } else {
+                toast.error("Có lỗi xảy ra")
+            }
+        } catch (e: any) {
+            toast.error(e.response.data)
+        }
+    }
+
+    const handleGoJobDetail=(id: number) => {
+        window.location.href = `/job/detail/${id}`
     }
 
     return (
@@ -106,24 +197,24 @@ const JobSearch = () => {
                         <div className={`w-full flex pb-10 transition-transform duration-300`}>
                             {
                                 isQuickView ? (
-                                    <div className={`w-full flex`}>
+                                    <div className={`w-full flex mt-3`}>
                                         {/*left*/}
-                                        <div className={`w-[438px]  pr-4 flex flex-col gap-4 flex-shrink-0 relative`}>
+                                        <div className={`w-[438px] pr-4  flex-shrink-0 relative`}>
                                             {
-                                                Array.from(Array(20).keys()).map((value, index) => (
-                                                    <div
-                                                        className={`rounded-[8px] group outline outline-1 outline-[#acf2cb] group hover:border relative hover:border-solid hover:border-green_default bg-highlight_default  w-full cursor-pointer flex items-start gap-[16px] m-auto p-[12px] transition-transform`}>
+                                                jobResult.map((value, index) => (
+                                                    <div key={index}
+                                                         className={`rounded-[8px] ${value.id == job?.jobId ? 'bg-highlight_default' : 'bg-white'} transition-colors duration-300 group mb-4 outline outline-2 outline-[#acf2cb] group hover:border relative hover:border-solid hover:border-green_default   w-full cursor-pointer flex items-start gap-[16px] m-auto p-[12px]`}>
                                                         {/*company logo*/}
                                                         <div
                                                             className={`flex items-start w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px]  object-contain p-2 relative `}>
                                                             <a className={` block overflow-hidden bg-white`}
                                                                target={"_blank"}
-                                                               href={`/company/`}>
+                                                               href={`/company/${value.companyId}`}>
                                                                 <img
-                                                                    src={'https://cdn-new.topcv.vn/unsafe/150x/https://static.topcv.vn/company_logos/cong-ty-tnhh-he-thong-saishunkan-viet-nam-60f916270d6bb.jpg'}
+                                                                    src={value.logo}
                                                                     className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
-                                                                    alt={''}
-                                                                    title={''}/>
+                                                                    alt={value.companyName}
+                                                                    title={value.companyName}/>
                                                             </a>
                                                         </div>
                                                         {/*card body*/}
@@ -136,19 +227,18 @@ const JobSearch = () => {
                                                                             <h3>
                                                                                 <a
                                                                                     target="_self"
-                                                                                    href={`/job/detail/`}>
+                                                                                    href={`/job/detail/${value.id}`}>
                                                                                     <p className={`font-[600] hover:text-green_default text-[16px] line-clamp-2  text-[#212f3f] leading-6 cursor-pointer`}>
-                                                                                        Java Dev (3 Years+), Signing
-                                                                                        Bonus Hấp Dẫn, Rất Ổn Định Lâu
-                                                                                        Dài</p>
+                                                                                        {value.title}
+                                                                                    </p>
                                                                                 </a>
                                                                             </h3>
-                                                                            <div className={``}>
-                                                                                <a href={`/company/`}
+                                                                            <div className={`w-fit`}>
+                                                                                <a href={`/company/${value.companyId}`}
                                                                                    target="_blank">
-                                                                                    <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>Công
-                                                                                        ty cổ phần Công nghệ thông tin
-                                                                                        Phú Minh (Phú Minh Teck)</p>
+                                                                                    <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>
+                                                                                        {value.companyName}
+                                                                                    </p>
                                                                                 </a>
                                                                             </div>
                                                                         </div>
@@ -158,12 +248,11 @@ const JobSearch = () => {
                                                                     </div>
                                                                 </div>
                                                                 <div className={`w-full flex  pr-2 mt-4 `}>
-                                                                    <p className={`text-green_default font-bold`}>10 -
-                                                                        15
-                                                                        triệu</p>
+                                                                    <p className={`text-green_default font-bold`}>{value.minSalary} - {value.maxSalary} triệu</p>
                                                                     <div
                                                                         className={`flex-1 flex justify-end items-center`}>
                                                                         <div
+                                                                            onClick={(e) => handleQuickViewClick(e, value.id)}
                                                                             className={`rounded-full flex p-1 border group-hover:opacity-100 opacity-0 transition-opacity duration-300  bg-[#e3faed] items-center  text-[#15bf61]`}>
                                                                             <p className={`text-[12px]`}>Xem</p>
                                                                             <MdKeyboardDoubleArrowRight/>
@@ -176,12 +265,11 @@ const JobSearch = () => {
                                                                         className={`flex gap-4 overflow-hidden w-full`}>
                                                                         <div
                                                                             className={`rounded-[5px] overflow-x-hidden max-w-[50%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>Hà
-                                                                                Nội: Cầu Giấy</p>
+                                                                            <p className={`text-black text-[14px] truncate `}>{value.location}</p>
                                                                         </div>
                                                                         <div
                                                                             className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>{`3 năm`}</p>
+                                                                            <p className={`text-black text-[14px] truncate `}>{value.experience} năm</p>
                                                                         </div>
 
                                                                     </div>
@@ -192,43 +280,50 @@ const JobSearch = () => {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div style={{clipPath: "polygon(0 0, 0 100%, 100% 50%)"}} className={`absolute top-1/2 h-4 transform w-[6px] left-full bg-green_default  -translate-y-1/2`}>
+                                                        <div style={{clipPath: "polygon(0 0, 0 100%, 100% 50%)"}}
+                                                             className={`absolute ${value.id == job?.jobId ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 top-1/2 h-4 transform w-[6px] left-full bg-green_default  -translate-y-1/2`}>
 
                                                         </div>
                                                     </div>
                                                 ))
                                             }
+                                            <div className={`w-full flex justify-center items-center`}>
+                                                <Pagination
+
+                                                    onChange={onPageNumberChange}
+                                                    current={page + 1}
+                                                    pageSize={DefaultPageSize}
+                                                    showSizeChanger={false}
+                                                    total={totalElements}/>
+                                            </div>
                                         </div>
                                         {/*right*/}
-                                        <div className={`flex-1 relative  min-h-[1px]  flex items-start overflow-visible pl-2`}>
+                                        <div
+                                            className={`flex-1 relative  min-h-[1px]  flex items-start overflow-visible pl-2`}>
                                             <div
-                                                className={`w-full block sticky top-[90px] h-fit rounded-md  bg-white p-6`}>
+                                                className={`w-full block sticky top-[90px] h-fit rounded-md border-2  border-[#acf2cb]  bg-white p-8 pt-4`}>
                                                 <div className={`flex items-start`}>
-                                                    <p className={`font-semibold text-[20px] line-clamp-2`}>Developer
-                                                        Java Fullstack Developer Java Fullstack Developer Java Fullstack
-                                                        Developer Java Fullstack Developer Java Fullstack Developer Java
-                                                        Fullstack</p>
+                                                    <p className={`font-semibold text-[20px] line-clamp-2`}>{job?.title}</p>
                                                     <div className={`flex-1 flex justify-end`}>
-                                                        <IoCloseCircleSharp onClick={handleExitQuickView} className={`cursor-pointer`} size={28}
+                                                        <IoCloseCircleSharp onClick={handleExitQuickView}
+                                                                            className={`cursor-pointer`} size={28}
                                                                             fill={"#00b14f"}/>
                                                     </div>
                                                 </div>
                                                 <div className={`flex gap-3 mt-4 border-b pb-4`}>
                                                     <div
                                                         className={`rounded-[4px] overflow-x-hidden max-w-[50%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>15-60
-                                                            trieu</p>
+                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>{job?.minSalary} - {job?.maxSalary} triệu</p>
                                                     </div>
                                                     <div
                                                         className={`rounded-[4px] overflow-x-hidden max-w-[50%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>Hà
-                                                            Nội: Cầu Giấy</p>
+                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>{job?.province}</p>
                                                     </div>
                                                     <div
                                                         className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>{`3 năm`}</p>
+                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>{job?.experience} năm</p>
                                                     </div>
-                                                    <div
+                                                    <div onClick={()=>handleGoJobDetail(job?.jobId)}
                                                         className={`flex flex-1 justify-end items-center cursor-pointer`}>
                                                         <p className={`text-green_default hover:underline font-semibold`}>Xem
                                                             chi tiết</p>
@@ -243,45 +338,27 @@ const JobSearch = () => {
                                                             {/*description*/}
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Mô tả công việc</h3>
-                                                                <pre>
-                                                                    - Tham gia phát triển dự án phần mềm
-- Các dự án thuộc domain: ngân hàng, tài chính, thị trường Nhật, thị trường nói tiếng Anh, ...
-- Thực hiện thiết kế, coding và unit test cho dự án.
-- Tham gia việc review code, hỗ trợ các thành viên trong nhóm.
-- Thực hiện công việc theo sự phân công của Trưởng nhóm/Quản lý dự án, phối hợp giữa các nhóm để phát triển dự án.
-                                                                </pre>
+                                                                <pre>{job?.description}</pre>
                                                             </div>
                                                             {/*requirement*/}
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Yêu cầu ứng viên</h3>
-                                                                <pre className={`break-words`}>
-                                                                    - Tham gia phát triển dự án phần mềm
-- Các dự án thuộc domain: ngân hàng, tài chính, thị trường Nhật, thị trường nói tiếng Anh, ...
-- Thực hiện thiết kế, coding và unit test cho dự án.
-- Tham gia việc review code, hỗ trợ các thành viên trong nhóm.
-- Thực hiện công việc theo sự phân công của Trưởng nhóm/Quản lý dự án, phối hợp giữa các nhóm để phát triển dự án.
-                                                                </pre>
+                                                                <pre className={`break-words`}>{job?.requirements}</pre>
                                                             </div>
                                                             {/*benefit*/}
                                                             <div className={`job_description_item `}>
-                                                                <h3 className={'tracking-normal'} >Quyền lợi</h3>
-                                                                <pre className={`break-words whitespace-pre-wrap`}>
-                                                                    - Tham gia phát triển dự án phần mềm
-- Các dự án thuộc domain: ngân hàng, tài chính, thị trường Nhật, thị trường nói tiếng Anh, ...
-- Thực hiện thiết kế, coding và unit test cho dự án.
-- Tham gia việc review code, hỗ trợ các thành viên trong nhóm.
-- Thực hiện công việc theo sự phân công của Trưởng nhóm/Quản lý dự án, phối hợp giữa các nhóm để phát triển dự án.
-                                                                </pre>
+                                                                <h3 className={'tracking-normal'}>Quyền lợi</h3>
+                                                                <pre className={`break-words whitespace-pre-wrap`}>{job?.benefits}</pre>
                                                             </div>
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Địa điểm</h3>
                                                                 <pre className={`break-words`}>
-
+                                                                    {job?.province}
                                                                 </pre>
                                                             </div>
                                                             <div className={`job_description_item `}>
-                                                            <p>Hạn nộp hồ sơ: <span
-                                                                    className={`font-semibold`}>31/12/2024</span>
+                                                                <p>Hạn nộp hồ sơ: <span
+                                                                    className={`font-semibold`}>{convertDate(job?.expireDate)}</span>
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -297,31 +374,32 @@ const JobSearch = () => {
                                             <div className={`py-2 flex flex-col gap-3`}>
                                                 <div className={`flex w-full flex-col bg-white px-6 py-6 rounded-md`}>
                                                     <div>
-                                                        {Array.from(Array(20).keys()).map((value, index) => (
+                                                        {jobResult.map((value, index) => (
                                                             <JobWidthCard
+                                                                createDate={value.createDate}
                                                                 onQuickViewClick={handleQuickViewClick}
                                                                 key={index}
-                                                                companyName={"CÔNG TY CỔ PHẦN TECHBANK SOFTWARE"}
-                                                                logo={'https://cdn-new.topcv.vn/unsafe/80x/https://static.topcv.vn/company_logos/fWr7TOqpMgRhSa90QEbEIufIFvGvpWXH_1727063635____77bbd23a77e8baeaa97c13b795780888.png'}
-                                                                jobId={1}
-                                                                companyId={'company_1234'}
-                                                                experience={2}
-                                                                expireDate={new Date(2024, 12, 30)}
-                                                                location={'Hồ Chí Minh'}
-                                                                title={'Mid/Sr Fullstack Developer (NodeJS/ReactJS/Java Script) '}
-                                                                minSalary={10}
-                                                                maxSalary={15}
+                                                                companyName={value.companyName}
+                                                                logo={value.logo}
+                                                                jobId={value.id}
+                                                                companyId={value.companyId}
+                                                                experience={value.experience}
+                                                                expireDate={value.expiryDate}
+                                                                province={value.location}
+                                                                title={value.title}
+                                                                minSalary={value.minSalary}
+                                                                maxSalary={value.maxSalary}
                                                                 quickView={true}
                                                             />
                                                         ))}
                                                     </div>
                                                     <div className={`w-full flex justify-center items-center`}>
                                                         <Pagination
-                                                            //onChange={onPageNumberChange}
-                                                            current={1}
+                                                            onChange={onPageNumberChange}
+                                                            current={page + 1}
                                                             pageSize={DefaultPageSize}
                                                             showSizeChanger={false}
-                                                            total={100}/>
+                                                            total={totalElements}/>
                                                     </div>
                                                 </div>
                                             </div>

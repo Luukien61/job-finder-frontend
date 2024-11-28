@@ -74,7 +74,7 @@ export const provinces: { [key: number]: string } = {
     63: "Nam Định",
 };
 export const provinces_2 = [
-    { value: "Toàn quốc", label: "Toàn quốc" },
+    { value: "", label: "Toàn quốc" },
     { value: "Hà Nội", label: "Hà Nội" },
     { value: "TP Hồ Chí Minh", label: "TP Hồ Chí Minh" },
     { value: "Đà Nẵng", label: "Đà Nẵng" },

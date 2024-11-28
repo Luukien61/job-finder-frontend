@@ -2,6 +2,7 @@ import {toast} from "react-toastify";
 import {isSavedJob, saveJob, unSaveJob} from "@/axios/Request.ts";
 import {SelectProps} from "@/page/JobDetail.tsx";
 import {format} from "date-fns";
+import {SearchProps} from "@/info/ApplicationType.ts";
 
 export const handleSaveJob = async (jobId: number|string, userId: string, action : any) : Promise<boolean> => {
     try{
@@ -55,4 +56,15 @@ export const formatDate = (date: Date) => {
     return new Date(
         date.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })
     );
+}
+
+export const createSearchParams=(params: SearchProps) : string=>{
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+        if (value || value === 0) {
+            searchParams.append(key, String(value));
+        }
+    });
+    return searchParams.toString();
 }
