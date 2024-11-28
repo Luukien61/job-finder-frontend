@@ -47,7 +47,6 @@ const JobSearch = () => {
     const fetchJobs = async () => {
         try {
             const searchParams: string = handleCreateParamUrl()
-            console.log(searchParams)
             const jobSearchResult: PageableResponse<JobSearchResult> = await searchJobs(searchParams);
             setJobResult(jobSearchResult.content)
             setPageableResult(jobSearchResult)
@@ -123,8 +122,46 @@ const JobSearch = () => {
         }
     }
 
-    const handleGoJobDetail=(id: number) => {
+    const handleGoJobDetail = (id: number) => {
         window.location.href = `/job/detail/${id}`
+    }
+    const handleLocationChange = (value: string) => {
+        setLocationParam(value)
+    }
+
+    const handleSalaryChange = (_value: any, option: ({ value: string, range: number[], label: string } | {
+        value: string,
+        range: number[],
+        label: string
+    }[])) => {
+        if (!Array.isArray(option)) {
+            const minSalary: number = option.range[0]
+            let maxSalary: number = undefined
+            if (option.range.length == 2) {
+                maxSalary = option.range[1]
+            }
+            setMinSalary(minSalary)
+            setMaxSalary(maxSalary)
+        }
+    }
+
+    const clearSalary = () => {
+        setMaxSalary(undefined)
+        setMinSalary(undefined)
+    }
+
+    const handleExperienceChange = (value: any, option: ({ year: number, label: string, value: string } | {
+        year: number,
+        label: string,
+        value: string
+    }[])) => {
+        if (!Array.isArray(option)) {
+            setExperience(option.year)
+        }
+    }
+
+    const clearExperience = () => {
+        setExperience(undefined)
     }
 
     return (
@@ -148,15 +185,18 @@ const JobSearch = () => {
                                 <div>
                                     <Select
                                         style={{width: '160px'}}
-                                        defaultValue={'Toàn quốc'}
+                                        defaultValue={locationParam || 'Toàn quốc'}
                                         className={`w-fit`}
                                         size={"large"}
+                                        onChange={handleLocationChange}
                                         options={provinces_2}
                                     />
                                 </div>
                                 <div>
                                     <Select
-
+                                        allowClear={true}
+                                        onClear={clearSalary}
+                                        onChange={handleSalaryChange}
                                         style={{width: '160px'}}
                                         placeholder={'Mức lương'}
                                         className={`w-fit`}
@@ -166,9 +206,12 @@ const JobSearch = () => {
                                 </div>
                                 <div>
                                     <Select
-
+                                        onChange={handleExperienceChange}
+                                        onClear={clearExperience}
+                                        allowClear={true}
                                         style={{width: '160px'}}
                                         placeholder={'Kinh nghiệm'}
+                                        defaultValue={experience&& (experience<6 ? `${experience} năm` : 'Trên 5 năm') }
                                         className={`w-fit`}
                                         size={"large"}
                                         options={experienceFilter}
@@ -203,7 +246,7 @@ const JobSearch = () => {
                                             {
                                                 jobResult.map((value, index) => (
                                                     <div key={index}
-                                                         className={`rounded-[8px] ${value.id == job?.jobId ? 'bg-highlight_default' : 'bg-white'} transition-colors duration-300 group mb-4 outline outline-2 outline-[#acf2cb] group hover:border relative hover:border-solid hover:border-green_default   w-full cursor-pointer flex items-start gap-[16px] m-auto p-[12px]`}>
+                                                         className={`rounded-[8px] ${value.id == job?.jobId ? 'bg-highlight_default' : 'bg-white'} transition-colors duration-300 group mb-4 outline outline-2 outline-[#acf2cb] group hover:outline-none hover:border relative hover:border-solid hover:border-green_default   w-full cursor-pointer flex items-start gap-[16px] m-auto p-[12px]`}>
                                                         {/*company logo*/}
                                                         <div
                                                             className={`flex items-start w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px]  object-contain p-2 relative `}>
@@ -323,8 +366,8 @@ const JobSearch = () => {
                                                         className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
                                                         <p className={`text-text_color text-[13px] truncate font-[500]`}>{job?.experience} năm</p>
                                                     </div>
-                                                    <div onClick={()=>handleGoJobDetail(job?.jobId)}
-                                                        className={`flex flex-1 justify-end items-center cursor-pointer`}>
+                                                    <div onClick={() => handleGoJobDetail(job?.jobId)}
+                                                         className={`flex flex-1 justify-end items-center cursor-pointer`}>
                                                         <p className={`text-green_default hover:underline font-semibold`}>Xem
                                                             chi tiết</p>
                                                         <MdKeyboardDoubleArrowRight className={`cursor-pointer`}
@@ -348,7 +391,8 @@ const JobSearch = () => {
                                                             {/*benefit*/}
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Quyền lợi</h3>
-                                                                <pre className={`break-words whitespace-pre-wrap`}>{job?.benefits}</pre>
+                                                                <pre
+                                                                    className={`break-words whitespace-pre-wrap`}>{job?.benefits}</pre>
                                                             </div>
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Địa điểm</h3>

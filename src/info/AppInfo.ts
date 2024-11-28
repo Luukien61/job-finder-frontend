@@ -150,12 +150,12 @@ export const salaryFilters=[
     {value: 'Trên 50 triệu',range: [50], label: 'Trên 50 triệu'},
 ]
 export const experienceFilter=[
-    {year: [1], label: '1 năm',value: '1 năm'},
-    {year: [2], label: '2 năm',value: '2 năm'},
-    {year: [3], label: '3 năm',value: '3 năm'},
-    {year: [4], label: '4 năm',value: '4 năm'},
-    {year: [5], label: '5 năm',value: '5 năm'},
-    {year: [5,100], label: 'Trên 5 năm',value: 'Tyear năm'},
+    {year: 1, label: '1 năm',value: '1 năm'},
+    {year: 2, label: '2 năm',value: '2 năm'},
+    {year: 3, label: '3 năm',value: '3 năm'},
+    {year: 4, label: '4 năm',value: '4 năm'},
+    {year: 5, label: '5 năm',value: '5 năm'},
+    {year: 6, label: 'Trên 5 năm',value: 'Trên 5 năm'},
 ]
 export const sortFilter=[
     {value: "Mới nhất", label: "Mới nhất"},
