@@ -96,7 +96,8 @@ export const HomeContent = () => {
             description: message,
             key,
             showProgress: true,
-            onClose: ()=>{},
+            onClose: () => {
+            },
         });
     };
 
@@ -226,15 +227,15 @@ export const HomeContent = () => {
     }
 
     const getCanPostJob = async () => {
-        if(currentCompanyId){
-            try{
-                const canPost :boolean= await canPostJob(currentCompanyId)
-                if(canPost){
-                    navigate(`/employer/job/new`)
-                }else {
+        if (currentCompanyId) {
+            try {
+                const canPost: boolean = await canPostJob(currentCompanyId)
+                if (canPost) {
+                    window.location.href= `/employer/job/new`
+                } else {
                     openNotification("Bạn đã vượt quá số bài đăng hàng tháng.")
                 }
-            }catch(err){
+            } catch (err) {
                 console.log(err);
             }
         }
@@ -305,9 +306,14 @@ export const HomeContent = () => {
                             <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
                                 {
                                     jobsCards.map((item, index) => (
-                                        <div onClick={() => handelJobCardClick(item.jobId)}>
+                                        <div className={`relative`} onClick={() => handelJobCardClick(item.jobId)}>
                                             <JobEmployerView
+                                                currentJobId={currentJob?.jobId}
                                                 job={item} key={index}/>
+                                            <div style={{clipPath: "polygon(0 0, 0 100%, 100% 50%)"}}
+                                                 className={`absolute ${item.jobId == currentJob?.jobId ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 top-1/2 h-4 transform w-[6px] left-full bg-green_default  -translate-y-1/2`}>
+
+                                            </div>
                                         </div>
                                     ))
                                 }
@@ -616,6 +622,7 @@ export default EmployerHome;
 
 type JobEmployerViewProps = {
     job: EmployerJobCard,
+    currentJobId: number
 
 }
 
@@ -625,19 +632,6 @@ const JobEmployerView: React.FC<JobEmployerViewProps> = (item) => {
     const currentDate = new Date();
     const [isExpiry, setIsExpiry] = useState<boolean>(false);
 
-    // const refineApplications = (items: JobApplication[]) => {
-    //     if (items.length > 5) {
-    //         items = items.slice(0, 3)
-    //         const odd = items[items.length - 1]
-    //         items.push({
-    //             ...odd,
-    //             userName: 'View more',
-    //             userAvatar: 'https://w7.pngwing.com/pngs/602/173/png-transparent-ellipsis-computer-icons-more-miscellaneous-monochrome-black-thumbnail.png'
-    //         })
-    //     }
-    //     setApplications(items)
-    //
-    // }
 
     useEffect(() => {
         setJob(item.job)
@@ -646,7 +640,7 @@ const JobEmployerView: React.FC<JobEmployerViewProps> = (item) => {
     }, [item]);
     return (
         <div
-            className={`rounded-[8px] hover:border hover:border-solid ${new Date(job?.expireDate) > currentDate ? ' hover:border-green_default bg-highlight_default' : ' hover:border-red-500 bg-red-50 border'}  w-full   cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
+            className={`rounded-[8px] relative ${job.jobId == item.currentJobId ? 'border border-solid border-green_default bg-white drop-shadow-lg' : ''} hover:border hover:border-solid ${new Date(job?.expireDate) > currentDate ? ' hover:border-green_default bg-highlight_default' : ' hover:border-red-500 bg-red-50 border'}  w-full   cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-colors duration-300`}>
             {/*company logo*/}
             <div
                 className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>

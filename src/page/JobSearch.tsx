@@ -344,7 +344,7 @@ const JobSearch = () => {
                                         <div
                                             className={`flex-1 relative  min-h-[1px]  flex items-start overflow-visible pl-2`}>
                                             <div
-                                                className={`w-full block sticky top-[90px] h-fit rounded-md border-2  border-[#acf2cb]  bg-white p-8 pt-4`}>
+                                                className={`w-full block sticky top-[100px] h-fit rounded-md border-2  border-[#acf2cb]  bg-white p-8 pt-4`}>
                                                 <div className={`flex items-start`}>
                                                     <p className={`font-semibold text-[20px] line-clamp-2`}>{job?.title}</p>
                                                     <div className={`flex-1 flex justify-end`}>
