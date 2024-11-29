@@ -38,6 +38,8 @@ const JobSearch = () => {
     const [experience, setExperience] = useState<number | null>(queryParams.has('experience') ? parseInt(queryParams.get('experience')!) : null);
     const [page, setPage] = useState<number | null>(queryParams.has('page') ? parseInt(queryParams.get('page')!) : 0);
     const [size, setSize] = useState<number | null>(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
+    const [sort, setSort] = useState<string | null>(queryParams.get('sort') || 'create-date')
+    const [order, setOrder] = useState<string | null>(queryParams.get('order') || 'desc')
     const [jobResult, setJobResult] = useState<JobSearchResult[]>([])
     const [pageableResult, setPageableResult] = useState<PageableResponse<JobSearchResult>>()
     const navigate = useNavigate();
@@ -64,7 +66,8 @@ const JobSearch = () => {
         setExperience(queryParams.has('experience') ? parseInt(queryParams.get('experience')!) : null);
         setPage(queryParams.has('page') ? parseInt(queryParams.get('page')!) : 0)
         setSize(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
-        console.log("Params: ", location.search);
+        setSort(queryParams.get('sort') || 'create-date');
+        setOrder(queryParams.get('order') || 'desc');
         fetchJobs();
     }, [location.search]);
 
@@ -78,6 +81,8 @@ const JobSearch = () => {
             minSalary: minSalary,
             maxSalary: maxSalary,
             experience: experience,
+            sort: sort,
+            order: order,
         }
         return createSearchParams(params);
     }
@@ -85,7 +90,7 @@ const JobSearch = () => {
     useEffect(() => {
         const searchParam: string = handleCreateParamUrl()
         navigate(`/search?${searchParam}`)
-    }, [page, size, keyword, locationParam, experience, maxSalary, minSalary]);
+    }, [page, size, keyword, locationParam, experience, maxSalary, minSalary, sort, order]);
 
 
     const warningItem: WarningNote[] = []
@@ -96,6 +101,12 @@ const JobSearch = () => {
         }
         warningItem.push(item)
     }
+
+    useEffect(() => {
+        if(jobResult.length==0) {
+            handleExitQuickView()
+        }
+    }, [jobResult.length]);
 
     const handleQuickViewClick = (event: React.MouseEvent, id: number) => {
         event.stopPropagation()
@@ -129,8 +140,8 @@ const JobSearch = () => {
         setLocationParam(value)
     }
 
-    const handleSalaryChange = (_value: any, option: ({ value: string, range: number[], label: string } | {
-        value: string,
+    const handleSalaryChange = (_value: any, option: ({ value: number, range: number[], label: string } | {
+        value: number,
         range: number[],
         label: string
     }[])) => {
@@ -164,6 +175,37 @@ const JobSearch = () => {
         setExperience(undefined)
     }
 
+    const handleSortChange = (
+        _value: any, option: ({ value: string, label: string, sort: string, order: string } | {
+            value: string,
+            label: string,
+            sort: string,
+            order: string
+        }[])
+    ) => {
+        if(!Array.isArray(option)) {
+            setSort(option.sort)
+            setOrder(option.order)
+        }
+    }
+
+    const handleClearFilter = () => {
+        setSort(undefined)
+        setOrder(undefined)
+    }
+
+    const defaultSortValue=()=>{
+        return sortFilter.filter(item => {
+            return item.value == `${sort}:${order}`
+        })
+    }
+
+    const deafaultSalaryRange=()=>{
+        return salaryFilters.filter(item => {
+            return item.value == minSalary
+        })
+    }
+
     return (
         <div>
             <div className={`w-full relative flex justify-center mb-4 bg-[#19734E]`}>
@@ -195,6 +237,7 @@ const JobSearch = () => {
                                 <div>
                                     <Select
                                         allowClear={true}
+                                        defaultValue={deafaultSalaryRange}
                                         onClear={clearSalary}
                                         onChange={handleSalaryChange}
                                         style={{width: '160px'}}
@@ -211,7 +254,7 @@ const JobSearch = () => {
                                         allowClear={true}
                                         style={{width: '160px'}}
                                         placeholder={'Kinh nghiệm'}
-                                        defaultValue={experience&& (experience<6 ? `${experience} năm` : 'Trên 5 năm') }
+                                        defaultValue={experience && (experience < 6 ? `${experience} năm` : 'Trên 5 năm')}
                                         className={`w-fit`}
                                         size={"large"}
                                         options={experienceFilter}
@@ -227,7 +270,11 @@ const JobSearch = () => {
                                     </div>
                                     <div>
                                         <Select
+                                            allowClear={true}
+                                            onChange={handleSortChange}
+                                            onClear={handleClearFilter}
                                             style={{width: '180px'}}
+                                            defaultValue={defaultSortValue}
                                             placeholder={'Sắp xếp'}
                                             className={`w-fit`}
                                             size={"large"}
@@ -330,15 +377,6 @@ const JobSearch = () => {
                                                     </div>
                                                 ))
                                             }
-                                            <div className={`w-full flex justify-center items-center`}>
-                                                <Pagination
-
-                                                    onChange={onPageNumberChange}
-                                                    current={page + 1}
-                                                    pageSize={DefaultPageSize}
-                                                    showSizeChanger={false}
-                                                    total={totalElements}/>
-                                            </div>
                                         </div>
                                         {/*right*/}
                                         <div
@@ -417,34 +455,55 @@ const JobSearch = () => {
                                         <div className={`w-[70%] pr-4 relative`}>
                                             <div className={`py-2 flex flex-col gap-3`}>
                                                 <div className={`flex w-full flex-col bg-white px-6 py-6 rounded-md`}>
-                                                    <div>
-                                                        {jobResult.map((value, index) => (
-                                                            <JobWidthCard
-                                                                createDate={value.createDate}
-                                                                onQuickViewClick={handleQuickViewClick}
-                                                                key={index}
-                                                                companyName={value.companyName}
-                                                                logo={value.logo}
-                                                                jobId={value.id}
-                                                                companyId={value.companyId}
-                                                                experience={value.experience}
-                                                                expireDate={value.expiryDate}
-                                                                province={value.location}
-                                                                title={value.title}
-                                                                minSalary={value.minSalary}
-                                                                maxSalary={value.maxSalary}
-                                                                quickView={true}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                    <div className={`w-full flex justify-center items-center`}>
-                                                        <Pagination
-                                                            onChange={onPageNumberChange}
-                                                            current={page + 1}
-                                                            pageSize={DefaultPageSize}
-                                                            showSizeChanger={false}
-                                                            total={totalElements}/>
-                                                    </div>
+                                                    {
+                                                        jobResult.length > 0 ? (
+                                                            <div>
+                                                                <div>
+                                                                    {jobResult.map((value, index) => (
+                                                                        <JobWidthCard
+                                                                            createDate={value.createDate}
+                                                                            onQuickViewClick={handleQuickViewClick}
+                                                                            key={index}
+                                                                            companyName={value.companyName}
+                                                                            logo={value.logo}
+                                                                            jobId={value.id}
+                                                                            companyId={value.companyId}
+                                                                            experience={value.experience}
+                                                                            expireDate={value.expiryDate}
+                                                                            province={value.location}
+                                                                            title={value.title}
+                                                                            minSalary={value.minSalary}
+                                                                            maxSalary={value.maxSalary}
+                                                                            quickView={true}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                                <div
+                                                                    className={`w-full flex justify-center items-center`}>
+                                                                    <Pagination
+                                                                        onChange={onPageNumberChange}
+                                                                        current={page + 1}
+                                                                        pageSize={DefaultPageSize}
+                                                                        showSizeChanger={false}
+                                                                        total={totalElements}/>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div>
+                                                                <div className={`flex items-center justify-center`}>
+                                                                    <img alt={"No result found"} className={`h-52`}
+                                                                         src={'https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/job-list/none-result.png'}/>
+                                                                </div>
+                                                                <div
+                                                                    className={`w-full flex justify-center items-center`}>
+                                                                    <p className={`opacity-70 text-text_color text-14`}>Chưa
+                                                                        tìm thấy việc làm phù hợp với yêu cầu của
+                                                                        bạn</p>
+
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    }
                                                 </div>
                                             </div>
                                         </div>

@@ -16,7 +16,6 @@ import Autoplay from "embla-carousel-autoplay";
 import {Select} from "antd";
 import {SearchProps} from "@/info/ApplicationType.ts";
 import {createSearchParams} from "@/service/ApplicationService.ts";
-import {useNavigate} from "react-router-dom";
 
 const Content = () => {
     const {ref, inView} = useInView({
@@ -326,10 +325,17 @@ export const SearchBar=()=>{
             }
         }
     }
+
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleOnSearch();
+        }
+    }
     return(
         <div className={`flex w-full`}>
             <div className={`rounded-l-2xl bg-white pr-4  flex items-center flex-1 ml-4 h-14 `}>
                 <input
+                    onKeyDown={handleKeyPress}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     spellCheck={false}

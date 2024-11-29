@@ -272,6 +272,7 @@ const JobDetail = () => {
                 }
                 await createReport(id, report)
                 toast.info("Tố cáo thành công")
+                handleCloseReport()
             }
         } catch (e) {
             console.log(e)

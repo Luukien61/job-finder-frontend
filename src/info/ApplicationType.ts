@@ -70,6 +70,8 @@ export type SearchProps={
     experience?: number,
     page?: number,
     size?: number,
+    sort?: string,
+    order?: string,
 }
 export type JobSearchResult={
     "id": number,

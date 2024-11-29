@@ -141,13 +141,13 @@ export const provinces_2 = [
 ];
 
 export const salaryFilters=[
-    {value: 'Dưới 5 triệu',range: [0,5], label: 'Dưới 5 triệu'},
-    {value: '5 - 10 triệu',range: [5,10], label: '5 - 10 triệu'},
-    {value: '10 - 15 triệu',range: [10,15], label: '10 - 15 triệu'},
-    {value: '15 - 20 triệu',range: [15,20], label: '15 - 20 triệu'},
-    {value: '20 - 30 triệu',range: [20,30], label: '20 - 30 triệu'},
-    {value: '30 - 50 triệu',range: [30,50], label: '30 - 50 triệu'},
-    {value: 'Trên 50 triệu',range: [50], label: 'Trên 50 triệu'},
+    {value: 0,range: [0,5], label: 'Dưới 5 triệu'},
+    {value: 5,range: [5,10], label: '5 - 10 triệu'},
+    {value: 10,range: [10,15], label: '10 - 15 triệu'},
+    {value: 15,range: [15,20], label: '15 - 20 triệu'},
+    {value: 20,range: [20,30], label: '20 - 30 triệu'},
+    {value: 30,range: [30,50], label: '30 - 50 triệu'},
+    {value: 50,range: [50], label: 'Trên 50 triệu'},
 ]
 export const experienceFilter=[
     {year: 1, label: '1 năm',value: '1 năm'},
@@ -158,9 +158,10 @@ export const experienceFilter=[
     {year: 6, label: 'Trên 5 năm',value: 'Trên 5 năm'},
 ]
 export const sortFilter=[
-    {value: "Mới nhất", label: "Mới nhất"},
-    {value: "Cũ nhất", label: "Cũ nhất"},
-    {value: "Lương cao đến thấp", label: "Lương cao đến thấp"},
+    {value: "create-date:desc", label: "Mới nhất", sort: "create-date", order: "desc"},
+    {value: "create-date:asc", label: "Cũ nhất", sort: "create-date", order: "asc"},
+    {value: "expiry-date:asc", label: "Sắp hết hạn", sort: "expiry-date", order: "asc"},
+    {value: "min-salary:desc", label: "Lương cao đến thấp", sort: "min-salary", order: "desc"},
 ]
 
 
