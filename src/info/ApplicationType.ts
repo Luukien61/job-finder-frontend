@@ -1,4 +1,5 @@
 export const DefaultPageSize = 10;
+export const DefaultRecommendationPageSize=12;
 
 export interface JobApplication {
     "id": number,

@@ -1,7 +1,7 @@
 import {instance} from "@/axios/Config.ts";
 import axios from "axios";
 import {companyBackendPath} from "@/info/AppInfo.ts";
-import {DefaultPageSize} from "@/info/ApplicationType.ts";
+import {DefaultPageSize, DefaultRecommendationPageSize} from "@/info/ApplicationType.ts";
 
 
 export const getMessages = async (id: string, page: number) => {
@@ -194,4 +194,14 @@ export const canPostJob=async (companyId: string) => {
 
 export const searchJobs=async (params: string) => {
    return await instance.get(`/job/search?${params}`).then((response: any) => response.data)
+}
+
+export const getRecommendedJob = async (body: any) => {
+    return await axios.post(`http://localhost:8000/recommendations`,body, {
+        headers: {'Content-Type': 'application/json'}
+    }).then((response: any) => response.data)
+}
+
+export const getNewJobs = async (page: number) => {
+    return await instance.get(`/job/news?page=${page}&size=${DefaultRecommendationPageSize}`).then((response: any) => response.data)
 }

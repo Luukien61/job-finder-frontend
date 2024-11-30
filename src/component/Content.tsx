@@ -274,10 +274,22 @@ const carouselBannerItem2: Banner = {
     targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
 }
 const carouselBannerItem3: Banner = {
-    id: 2,
+    id: 3,
     imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Banner%201.png",
     title: "abc",
     targetUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/Concentrix_Banner.png"
+}
+const carouselBannerItem4: Banner = {
+    id: 4,
+    imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/VUIHOC%20(2400x864)_2.png",
+    title: "abc",
+    targetUrl: "https://static.topcv.vn/img/VUIHOC%20(2400x864)_2.png"
+}
+const carouselBannerItem5: Banner = {
+    id: 4,
+    imageUrl: "https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/img/T1_Apollo%20(2).png",
+    title: "abc",
+    targetUrl: "https://static.topcv.vn/img/VUIHOC%20(2400x864)_2.png"
 }
 const carouselBannerItems = [carouselBannerItem, carouselBannerItem2, carouselBannerItem3]
 

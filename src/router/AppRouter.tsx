@@ -17,10 +17,12 @@ import EmployerLogin from "@/page/employer/EmployerLogin.tsx";
 import EmployerHome, {HomeContent} from "@/page/employer/EmployerHome.tsx";
 import AddJob from "@/page/employer/AddJob.tsx";
 import JobSearch from "@/page/JobSearch.tsx";
+import Admin from "@/page/Admin.tsx";
 
 const AppRouter = () => {
     return (
         <Routes>
+            <Route path="/admin" element={<Admin/>}/>
             <Route path="/" element={<App/>}>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path={'/job/detail/:id'} element={<JobDetail/>}/>

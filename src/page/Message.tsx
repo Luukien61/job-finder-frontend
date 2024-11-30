@@ -325,7 +325,7 @@ const Message = () => {
                         </div>
                         {/*current user*/}
                         <div
-                            className={` ounded  bg-inherit pl-2 `}>
+                            className={` rounded  bg-inherit pl-2 `}>
                             <div className={`flex gap-4 pt-4 pl-0 `}>
                                 <div className={`flex gap-4 rounded-full cursor-pointer`}>
                                     <img

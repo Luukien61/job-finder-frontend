@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
 import {AiOutlineGlobal} from "react-icons/ai";
 import {PiBuildingOfficeFill, PiCopySimple, PiPhoneLight} from "react-icons/pi";
@@ -80,6 +80,7 @@ export const HomeContent = () => {
     const [applicant, setApplicant] = useState<UserDto>();
     const [applicationState, setApplicationSate] = useState<string>();
     const [currentAppId, setCurrentAppId] = useState<number>();
+    const scrollRef = useRef(null);
     const priorityMap = {
         'PENDING': 0,
         'ACCEPTED': 1,
@@ -224,6 +225,7 @@ export const HomeContent = () => {
 
     const onPageNumberChange = async (page: number, size: number) => {
         await handleGetJobsByCompanyId(currentCompanyId, page - 1);
+        handleScroll()
     }
 
     const getCanPostJob = async () => {
@@ -238,6 +240,15 @@ export const HomeContent = () => {
             } catch (err) {
                 console.log(err);
             }
+        }
+    }
+
+    const handleScroll=()=>{
+        if(scrollRef.current){
+            const offset = 100; // Khoảng cách cách top (100px)
+            const elementTop = scrollRef.current.getBoundingClientRect().top;
+            const scrollPosition = window.pageYOffset + elementTop - offset;
+            window.scrollTo({ top: scrollPosition, behavior: "smooth" });
         }
     }
 
@@ -288,6 +299,7 @@ export const HomeContent = () => {
                         </div>
                     </div>
                 </div>
+                <div ref={scrollRef}/>
                 <div className={`flex w-full mb-10  relative mt-10 overflow-y-visible `}>
                     {/*left side*/}
                     <div className={`w-[calc(66%-70px)] pr-5 flex flex-col gap-6`}>
