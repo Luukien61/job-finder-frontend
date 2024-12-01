@@ -25,7 +25,7 @@ export const signUpUser = async (request: any) => {
     return await instance.post(`/user/signup`, request).then((response: any) => response.data)
 }
 
-export const loginUser=async (request: any) => {
+export const loginUser = async (request: any) => {
     return await instance.post(`/user/login`, request).then((response: any) => response.data)
 }
 
@@ -140,8 +140,8 @@ export const getCompanyInfo = async (id: string) => {
 export const getJobDetailById = async (id: string | number) => {
     return await instance.get(`/job/${id}`).then((response: any) => response.data)
 }
-const applicationPath='/application'
-export const applyJob = async ( request: any) => {
+const applicationPath = '/application'
+export const applyJob = async (request: any) => {
     return await instance.post(`${applicationPath}/apply`, request).then((response: any) => response.data)
 }
 
@@ -149,23 +149,23 @@ export const isAppliedJob = async (jobId: string, userId: string) => {
     return await instance.get(`${applicationPath}/applied?jobId=${jobId}&userId=${userId}`).then((response: any) => response.data)
 }
 
-export const saveJob = async (jobId: string|number, userId: any) => {
+export const saveJob = async (jobId: string | number, userId: any) => {
     return await instance.post(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
 }
 
-export const unSaveJob = async (jobId: string|number, userId: any) => {
+export const unSaveJob = async (jobId: string | number, userId: any) => {
     return await instance.post(`/user/${userId}/unsave?jobId=${jobId}`).then((response: any) => response.data)
 }
 
-export const isSavedJob = async (jobId: string|number, userId: any) => {
+export const isSavedJob = async (jobId: string | number, userId: any) => {
     return await instance.get(`/user/${userId}/save?jobId=${jobId}`).then((response: any) => response.data)
 }
 
-export const getJobsByCompanyId = async (companyId: string, page: number, size=DefaultPageSize ) => {
+export const getJobsByCompanyId = async (companyId: string, page: number, size = DefaultPageSize) => {
     return await instance.get(`/job/company/${companyId}?page=${page}&size=${size}`).then((response: any) => response.data)
 }
 
-export const getApplicationsByJobId = async (jobId: string|number) => {
+export const getApplicationsByJobId = async (jobId: string | number) => {
     return await instance.get(`${applicationPath}/job/${jobId}`).then((response: any) => response.data)
 }
 
@@ -179,29 +179,68 @@ export const acceptApplication = async (appId: any) => {
 export const rejectApplication = async (appId: any) => {
     return await instance.post(`/application/${appId}/reject`).then((response: any) => response.data)
 }
-const messagePath ='/message/participant'
+const messagePath = '/message/participant'
 export const getCurrentParticipant = async (id: string) => {
     return await instance.get(`${messagePath}/${id}`).then((response: any) => response.data)
 }
 
-export const createReport=async (jobId: string, request: any) => {
+export const createReport = async (jobId: string, request: any) => {
     return await instance.post(`/api/reports/job?id=${jobId}`, request).then((response: any) => response.data)
 }
 const companyPath = '/api/companies'
-export const canPostJob=async (companyId: string) => {
+export const canPostJob = async (companyId: string) => {
     return await instance.get(`${companyPath}/${companyId}/possibility/job`).then((response: any) => response.data)
 }
 
-export const searchJobs=async (params: string) => {
-   return await instance.get(`/job/search?${params}`).then((response: any) => response.data)
+export const searchJobs = async (params: string) => {
+    return await instance.get(`/job/search?${params}`).then((response: any) => response.data)
 }
 
 export const getRecommendedJob = async (body: any) => {
-    return await axios.post(`http://localhost:8000/recommendations`,body, {
+    return await axios.post(`http://localhost:8000/recommendations`, body, {
         headers: {'Content-Type': 'application/json'}
     }).then((response: any) => response.data)
 }
 
 export const getNewJobs = async (page: number) => {
     return await instance.get(`/job/news?page=${page}&size=${DefaultRecommendationPageSize}`).then((response: any) => response.data)
+}
+const ADMIN_PATH = '/admin'
+export const getEmployeesInMonth = async (month, year) => {
+    return await instance.get(`${ADMIN_PATH}/user/quantity`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
+}
+export const getTotalEmployees = async () => {
+    return await instance.get(`${ADMIN_PATH}/user/total`).then((response: any) => response.data)
+}
+export const getUserStatistics = async (month: number, year: number) => {
+    return await instance.get(`${ADMIN_PATH}/user/statistics?month=${month}&year=${year}`).then((response: any) => response.data)
+}
+export const getCompanyInMonth = async (month: number, year: number) => {
+    return await instance.get(`${ADMIN_PATH}/company/quantity`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
+}
+export const getJobsIn12Month = async (month: number, year: number) => {
+    return await instance.get(`${ADMIN_PATH}/job/quantity`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
+}
+export const getJobsAllFields = async (month: number, year: number) => {
+    return await instance.get(`${ADMIN_PATH}/jobs/fields`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
 }

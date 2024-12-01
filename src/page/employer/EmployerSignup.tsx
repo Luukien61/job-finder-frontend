@@ -114,6 +114,7 @@ const EmployerSignup = () => {
                         password: password,
                         address: fullAddress,
                         website: website,
+                        createdAt: new Date()
                     }
                     const response = await employerSignUp(request);
                     if(response){

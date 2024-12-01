@@ -163,6 +163,7 @@ const CompleteProfile = () => {
                 address: address,
                 dateOfBirth: format(date, 'yyyy-MM-dd'),
                 avatar: user_avatar,
+                createdAt: format(new Date(), 'yyyy-MM-dd')
             }
             try {
                 const response: UserSignupResponse = await completeProfile(userProfileCompleteRequest)

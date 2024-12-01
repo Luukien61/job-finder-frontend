@@ -87,3 +87,12 @@ export type JobSearchResult={
     "expiryDate": Date,
     "createDate": Date
 }
+
+export type UserStatistics = {
+    newMonthUsers: number;
+    lastMonthUsers: number;
+    totalUsers: number;
+    newCompanyUsers: number;
+    lastCompanyUsers: number;
+    totalCompanyUsers: number;
+}

@@ -68,3 +68,17 @@ export const createSearchParams=(params: SearchProps) : string=>{
     });
     return searchParams.toString();
 }
+
+export const getLast12Months=() =>{
+    const months = [];
+    const currentDate = new Date();
+
+    for (let i = 0; i < 12; i++) {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1); // Lùi từng tháng
+        const month = date.getMonth() + 1; // Lấy tháng (1-12)
+        const year = date.getFullYear(); // Lấy năm
+        months.push({ month, year });
+    }
+
+    return months.reverse();
+}

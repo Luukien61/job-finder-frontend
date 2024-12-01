@@ -1,24 +1,52 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {LuLayoutDashboard} from "react-icons/lu";
-import {FaBookOpen} from "react-icons/fa";
+import {FaBookOpen, FaUsers} from "react-icons/fa";
 import {Menu} from "antd";
 import {AiFillMessage} from "react-icons/ai";
 import {GrUserNew} from "react-icons/gr";
 import {
+    Area,
     Bar,
     BarChart,
     CartesianGrid,
+    ComposedChart,
     Legend,
+    Line,
     ResponsiveContainer,
-    XAxis,
-    YAxis,
     Tooltip,
-    LineChart,
-    Line, Area, AreaChart, ComposedChart
+    XAxis,
+    YAxis
 } from "recharts";
-
+import {
+    getCompanyInMonth,
+    getEmployeesInMonth,
+    getJobsAllFields,
+    getJobsIn12Month,
+    getUserStatistics
+} from "@/axios/Request.ts";
+import {UserStatistics} from "@/info/ApplicationType.ts";
+import {PiBuildingApartmentBold, PiBuildingApartmentFill} from "react-icons/pi";
+import {getLast12Months} from "@/service/ApplicationService.ts";
+type UserStatistics12 ={
+    "name": string,
+    "Ứng viên mới": number
+}
+type CompanyStatistics12 ={
+    "name": string,
+    "Nhà tuyển dụng mới": number
+}
+type JobsStatistics12 ={
+    "name": string,
+    "Bài đăng": number
+}
+type JobByFields={
+    name: string,
+    quantity: number,
+}
 
 const Admin = () => {
+    const [userStatistic, setUserStatistic] = useState<UserStatistics>();
+
     const menuItems = [
         {
             key: '1',
@@ -181,6 +209,103 @@ const Admin = () => {
             "amt": 2100
         }
     ]
+    const currentDate = new Date();
+    const [userMonths, setUserMonths] = useState<UserStatistics12[]>([]);
+    const [companyMonths, setCompanyMonths] = useState<CompanyStatistics12[]>([]);
+    const [jobMonths, setJobMonths] = useState<JobsStatistics12[]>([]);
+    const [jobByFields, setJobsByFields] = useState<JobByFields[]>([]);
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+
+    const fetchUserStatistics = async () => {
+        try {
+            const userStatistics: UserStatistics = await getUserStatistics(currentMonth, currentYear)
+            if (userStatistics) {
+                setUserStatistic(userStatistics)
+                console.log(userStatistics)
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const fetchLast12MonthUserStatistics = async () => {
+        const months = getLast12Months();
+        try {
+            const userMonths = await Promise.all(
+                months.map(async (item) => {
+                    let month = await getEmployeesInMonth(item.month, item.year)
+                    if (!month) {
+                        month = 0
+                    }
+                    return {
+                        'name': `T${item.month}`,
+                        'Ứng viên mới': month
+                    }
+                })
+            );
+            setUserMonths(userMonths);
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    const fetchLast12MonthCompanyStatistics = async () => {
+        const months = getLast12Months();
+        try {
+            const companyMonths = await Promise.all(
+                months.map(async (item) => {
+                    let month = await getCompanyInMonth(item.month, item.year)
+                    if (!month) {
+                        month = 0
+                    }
+                    return {
+                        'name': `T${item.month}`,
+                        'Nhà tuyển dụng mới': month
+                    }
+                })
+            );
+            setCompanyMonths(companyMonths);
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    const fetchLast12MonthJobsStatistics = async () => {
+        const months = getLast12Months();
+        try {
+            const jobMonths = await Promise.all(
+                months.map(async (item) => {
+                    let month = await getJobsIn12Month(item.month, item.year)
+                    if (!month) {
+                        month = 0
+                    }
+                    return {
+                        'name': `T${item.month}`,
+                        'Bài đăng': month
+                    }
+                })
+            );
+            setJobMonths(jobMonths);
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    const fetchJobByFields=async ()=>{
+        try{
+            const jobFields :JobByFields[]= await getJobsAllFields(11,currentYear)
+            setJobsByFields(jobFields);
+            console.log(jobFields)
+        }catch(e){
+            console.log(e)
+        }
+    }
+
+    useEffect(() => {
+        fetchUserStatistics()
+        fetchLast12MonthUserStatistics()
+        fetchLast12MonthCompanyStatistics()
+        fetchLast12MonthJobsStatistics()
+        fetchJobByFields()
+    }, []);
 
 
     return (
@@ -225,122 +350,35 @@ const Admin = () => {
                                 className={`font-normal text-[26px]`}>Dashboard</span></p>
                         </div>
                         <div className={`flex w-full`}>
-                            <div className={`p-3 w-1/4`}>
-                                <div className={`rounded-lg bg-white p-6`}>
-                                    <div className={`flex items-start`}>
-                                        <p className={`text-[#939ba2] uppercase font-semibold w-[120px]`}>Ứng viên mới
-                                            trong tháng</p>
-                                        <div className={`flex-1 flex justify-end`}>
-                                            <div
-                                                className={`p-3 rounded-full bg-[#d3e2f7] flex items-center justify-center`}>
-                                                <GrUserNew size={20} color={'#3B7DDD'}/>
-                                            </div>
+                            <UserStatisticCard statistic={userStatistic?.newMonthUsers}
+                                               name={'Ứng viên mới trong tháng'}
+                                               icon={<GrUserNew size={20} color={'#3B7DDD'}/>}
+                                               previousStatistics={userStatistic?.lastMonthUsers}/>
+                            <UserStatisticCard statistic={userStatistic?.totalUsers}
+                                               name={'Tổng số ứng viên'}
+                                               bottom={"toàn hệ thống"}
+                                               icon={<FaUsers size={20} color={'#3B7DDD'}/>}
+                            />
+                            <UserStatisticCard statistic={userStatistic?.newCompanyUsers}
+                                               name={'Nhà tuyển dụng mới trong tháng'}
+                                               previousStatistics={userStatistic?.lastCompanyUsers}
+                                               icon={<PiBuildingApartmentBold size={20} color={'#3B7DDD'}/>}
+                            />
+                            <UserStatisticCard statistic={userStatistic?.totalCompanyUsers}
+                                               name={'Nhà tuyển dụng '}
+                                               bottom={"toàn hệ thống"}
+                                               icon={<PiBuildingApartmentFill size={20} color={'#3B7DDD'}/>}
+                            />
 
-                                        </div>
-                                    </div>
-                                    <div className={`overflow-hidden w-full mt-5`}>
-                                        <p className={`text-[35px] font-[400] leading-8  ml-1 mb-5 `}>47482</p>
-
-                                    </div>
-                                    <div className={`flex w-full gap-2`}>
-                                        <div className={`bg-[#DCEEE9] rounded-md px-1 py-[2px]`}>
-                                            <p className={`text-[#1cbb8c]`}>3.65%</p>
-
-                                        </div>
-                                        <p className={`text-[#939ba2]`}>so với tháng trước</p>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={`p-3 w-1/4`}>
-                                <div className={`rounded-lg bg-white p-6`}>
-                                    <div className={`flex items-start`}>
-                                        <p className={`text-[#939ba2] uppercase font-semibold w-[120px]`}>Ứng viên mới
-                                            trong tháng</p>
-                                        <div className={`flex-1 flex justify-end`}>
-                                            <div
-                                                className={`p-3 rounded-full bg-[#d3e2f7] flex items-center justify-center`}>
-                                                <GrUserNew size={20} color={'#3B7DDD'}/>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <div className={`overflow-hidden w-full mt-5`}>
-                                        <p className={`text-[35px] font-[400] leading-8  ml-1 mb-5 `}>47482</p>
-
-                                    </div>
-                                    <div className={`flex w-full gap-2`}>
-                                        <div className={`bg-[#DCEEE9] rounded-md px-1 py-[2px]`}>
-                                            <p className={`text-[#1cbb8c]`}>3.65%</p>
-
-                                        </div>
-                                        <p className={`text-[#939ba2]`}>so với tháng trước</p>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={`p-3 w-1/4`}>
-                                <div className={`rounded-lg bg-white p-6`}>
-                                    <div className={`flex items-start`}>
-                                        <p className={`text-[#939ba2] uppercase font-semibold w-[120px]`}>Ứng viên mới
-                                            trong tháng</p>
-                                        <div className={`flex-1 flex justify-end`}>
-                                            <div
-                                                className={`p-3 rounded-full bg-[#d3e2f7] flex items-center justify-center`}>
-                                                <GrUserNew size={20} color={'#3B7DDD'}/>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <div className={`overflow-hidden w-full mt-5`}>
-                                        <p className={`text-[35px] font-[400] leading-8  ml-1 mb-5 `}>47482</p>
-
-                                    </div>
-                                    <div className={`flex w-full gap-2`}>
-                                        <div className={`bg-[#DCEEE9] rounded-md px-1 py-[2px]`}>
-                                            <p className={`text-[#1cbb8c]`}>3.65%</p>
-
-                                        </div>
-                                        <p className={`text-[#939ba2]`}>so với tháng trước</p>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={`p-3 w-1/4`}>
-                                <div className={`rounded-lg bg-white p-6`}>
-                                    <div className={`flex items-start`}>
-                                        <p className={`text-[#939ba2] uppercase font-semibold w-[120px]`}>Ứng viên mới
-                                            trong tháng</p>
-                                        <div className={`flex-1 flex justify-end`}>
-                                            <div
-                                                className={`p-3 rounded-full bg-[#d3e2f7] flex items-center justify-center`}>
-                                                <GrUserNew size={20} color={'#3B7DDD'}/>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <div className={`overflow-hidden w-full mt-5`}>
-                                        <p className={`text-[35px] font-[400] leading-8  ml-1 mb-5 `}>47482</p>
-
-                                    </div>
-                                    <div className={`flex w-full gap-2`}>
-                                        <div className={`bg-[#DCEEE9] rounded-md px-1 py-[2px]`}>
-                                            <p className={`text-[#1cbb8c]`}>3.65%</p>
-                                        </div>
-                                        <p className={`text-[#939ba2]`}>so với tháng trước</p>
-
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         <div className={`flex w-full p-3 `}>
                             <div className={`w-1/2 py-3 px-3 pl-0`}>
                                 <div className={`h-[280px] pr-3 py-3 bg-white rounded-lg`}>
                                     <ResponsiveContainer>
-                                        <BarChart width={530} height={250} data={employeeData}>
+                                        <BarChart width={530} height={250} data={userMonths}>
                                             <CartesianGrid strokeDasharray="3 3"/>
                                             <XAxis dataKey="name"/>
-                                            <YAxis/>
+                                            <YAxis allowDecimals={false}/>
                                             <Tooltip/>
                                             <Legend/>
                                             <Bar dataKey="Ứng viên mới" fill="#8884d8"/>
@@ -352,13 +390,13 @@ const Admin = () => {
                             <div className={`w-1/2 py-3 px-3 pr-0`}>
                                 <div className={`h-[280px] py-3 pr-3 bg-white rounded-lg`}>
                                     <ResponsiveContainer>
-                                        <BarChart width={530} height={250} data={employeeData}>
+                                        <BarChart width={530} height={250} data={companyMonths}>
                                             <CartesianGrid strokeDasharray="3 3" opacity={0.5}/>
                                             <XAxis dataKey="name"/>
-                                            <YAxis/>
+                                            <YAxis allowDecimals={false}/>
                                             <Tooltip/>
                                             <Legend/>
-                                            <Bar dataKey="Ứng viên mới" fill="#82ca9d"/>
+                                            <Bar dataKey="Nhà tuyển dụng mới" fill="#82ca9d"/>
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -366,13 +404,13 @@ const Admin = () => {
                             </div>
                         </div>
                         <div className={`flex w-full p-3`}>
-                            <div className={`h-[350px] w-full py-3  rounded-lg bg-white`}>
-                                <ResponsiveContainer>
-                                    <ComposedChart width={730} height={250} data={jobTotalYear}
-                                               margin={{top: 5, right: 30, left: 20, bottom: 5}}>
+                            <div className={`h-[390px] w-full py-3 flex flex-col gap-0  rounded-lg bg-white`}>
+                                <ResponsiveContainer height={350} >
+                                    <ComposedChart width={730} height={250} data={jobMonths}
+                                                   margin={{top: 5, right: 30, left: 20, bottom: 10}}>
                                         <CartesianGrid strokeDasharray="3 3" opacity={0.5}/>
-                                        <XAxis dataKey="name"/>
-                                        <YAxis/>
+                                        <XAxis dataKey="name" label={{ value: 'Tháng', position: 'insideBottomRight', offset: -5 }}/>
+                                        <YAxis allowDecimals={false} label={{ value: 'Bài đăng', angle: -90, position: 'insideLeft'}}/>
                                         <Tooltip/>
                                         <defs>
                                             <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
@@ -390,7 +428,23 @@ const Admin = () => {
                                         <Line type="monotone" dataKey="Bài đăng"
                                               strokeWidth={4} stroke="#82ca9d"/>
                                     </ComposedChart>
+
                                 </ResponsiveContainer>
+                                <div className={`w-full flex justify-center  items-center`}>
+                                    <div className="recharts-legend-item legend-item-0">
+                                        <svg className="recharts-surface inline-block mr-3" width="14" height="14"
+                                             viewBox="0 0 32 32">
+                                            <title></title>
+                                            <desc></desc>
+                                            <path stroke-width="4" fill="none" stroke="#82ca9d" d="M0,16h10.666666666666666
+                                                A5.333333333333333,5.333333333333333,0,1,1,21.333333333333332,16
+                                                H32M21.333333333333332,16
+                                                A5.333333333333333,5.333333333333333,0,1,1,10.666666666666666,16"
+                                                  className="recharts-legend-icon"></path>
+                                        </svg>
+                                        <span className="recharts-legend-item-text text-[#82ca9d]">Bài đăng</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -402,3 +456,59 @@ const Admin = () => {
 };
 
 export default Admin;
+type UserStatisticsProps = {
+    name: string;
+    icon: any,
+    statistic: number,
+    previousStatistics?: number,
+    bottom?: any
+}
+
+const UserStatisticCard: React.FC<UserStatisticsProps> = (item) => {
+    const [percentage, setPercentage] = useState<number>();
+    useEffect(() => {
+        const previous = item.previousStatistics
+        if (previous) {
+            const odd = item.statistic - previous;
+            const percentage = ((odd / previous) * 100).toFixed(2)
+            setPercentage(parseInt(percentage))
+        }
+    }, [item]);
+    return (
+        <div className={`p-3 w-1/4`}>
+            <div className={`rounded-lg bg-white p-6 h-[200px]`}>
+                <div className={`flex items-start`}>
+                    <p className={`text-[#939ba2] uppercase font-semibold w-[170px]`}>{item.name}</p>
+                    <div className={`flex-1 flex justify-end`}>
+                        <div
+                            className={`p-3 rounded-full bg-[#d3e2f7] flex items-center justify-center`}>
+                            {item.icon}
+                        </div>
+
+                    </div>
+                </div>
+                <div className={`overflow-hidden w-full mt-5`}>
+                    <p className={`text-[35px] font-[400] leading-8  ml-1 mb-5 `}>{item.statistic?.toLocaleString('vi-VN')}</p>
+
+                </div>
+                {
+                    item.previousStatistics ? (
+                        <div className={`flex w-full gap-2`}>
+                            <div
+                                className={`min-w-12 flex justify-center ${percentage >= 0 ? 'bg-[#DCEEE9]' : 'bg-[#F5DEE0]'} rounded-md px-1 py-[2px]`}>
+                                <p className={` ${percentage >= 0 ? 'text-[#1cbb8c]' : 'text-[#dc3545]'}`}>{percentage}%</p>
+
+                            </div>
+                            <p className={`text-[#939ba2]`}>so với tháng trước</p>
+
+                        </div>
+                    ) : (
+                        <div className={`flex w-full gap-2 pt-[3px]`}>
+                            <p className={`text-[#939ba2]`}>{item.bottom}</p>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    )
+}
