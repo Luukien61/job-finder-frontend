@@ -144,10 +144,10 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
                                 src={job.logo} alt=""/>
                         </div>
                         <div className={`border-b w-[calc(100%-96px)] border-[#dfdfdf] pb-1 overflow-hidden`}>
-                            <div className={`flex flex-col gap-y-1 `}>
+                            <div className={`flex flex-col gap-y-1 overflow-hidden`}>
                                 <p className={`text-green-500 h-12 font-bold  line-clamp-2`}>{job.title}</p>
                                 <p onClick={(e) => onCompanyClick(e, job.companyId)}
-                                   className={`text-gray-500 w-fit hover:underline font-medium`}>{job.companyName}</p>
+                                   className={`text-gray-500 w-fit hover:underline h-12 line-clamp-2 font-medium`}>{job.companyName}</p>
                                 <p className={`text-green-500 font-bold text-[17px]`}>{job.minSalary} - {job.maxSalary} triệu</p>
                             </div>
                         </div>

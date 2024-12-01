@@ -244,3 +244,16 @@ export const getJobsAllFields = async (month: number, year: number) => {
         }
     }).then((response: any) => response.data)
 }
+
+export const getJobByCompaniesInMonth = async (month: number, year: number) => {
+    return await instance.get(`${ADMIN_PATH}/jobs/company`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
+}
+
+export const getDailyJobs = async (month: number, year: number) => {
+    return await instance.get(`${ADMIN_PATH}/job/quantity/day`, {params: {month,year}}).then((response: any) => response.data)
+}

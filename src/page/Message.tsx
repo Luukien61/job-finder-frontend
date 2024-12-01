@@ -31,7 +31,7 @@ import {AppInfo} from "@/info/AppInfo.ts";
 import {useMessageReceiverState} from "@/zustand/AppState.ts";
 
 
-type QuickMessage = {
+export type QuickMessage = {
     id: number
     recipientId: string
     avatar: string
