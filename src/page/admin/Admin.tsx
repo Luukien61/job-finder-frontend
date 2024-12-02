@@ -102,7 +102,6 @@ const Admin = () => {
         },
     ]
     const handleMenuItemChange = (item: any) => {
-        console.log(item);
         navigate(`${item.key}`)
     }
     return (
@@ -160,7 +159,7 @@ export const AdminDashboard = () => {
             position: "right",
             align: "center",
         },
-        sliceVisibilityThreshold: 0.1,
+        // sliceVisibilityThreshold: 0.1,
         pieHole: 0.4,
         is3D: false,
     };
@@ -296,6 +295,7 @@ export const AdminDashboard = () => {
             const jobFields: JobByFields[] = await getJobsAllFields(month, year)
             let sortedJobs = jobFields.sort((a, b) => b.quantity - a.quantity)
             if (sortedJobs.length > 5) {
+                console.log(sortedJobs)
                 const top5Fields = jobFields.slice(0, 5)
                 const others = sortedJobs.slice(5);
                 const otherQuantity = others.reduce((sum, job) => sum + job.quantity, 0);
@@ -318,11 +318,12 @@ export const AdminDashboard = () => {
         try {
             const data: JobByCompanyMonths[] = await getJobByCompaniesInMonth(month, year)
             if (data) {
-                const newData = data.map((item) => {
+                let newData = data.map((item) => {
                     const previous = item.previousQuantity
                     const statistic = (item.quantity - previous)
                     return {...item, statistic: statistic};
                 })
+                newData=newData.sort((a, b) => b.quantity - a.quantity);
                 setJobByCompanyMonths(newData);
             }
 
@@ -758,12 +759,12 @@ export const AdminMessage = () => {
             }
         }
 
-        const rawUser = JSON.parse(localStorage.getItem('user'))
-        if (rawUser) {
-            getLogInUser(rawUser.id)
-        } else {
-            navigate('/login', {replace: true})
-        }
+        // const rawUser = JSON.parse(localStorage.getItem('user'))
+        // if (rawUser) {
+        //     getLogInUser(rawUser.id)
+        // } else {
+        //     navigate('/login', {replace: true})
+        // }
 
 
     }, [])

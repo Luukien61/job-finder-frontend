@@ -149,6 +149,7 @@ export const AdminReport = () => {
     const onCloseDetails = () => {
         setIsBanRequest(false)
         setIsViewDetail(false)
+
     }
 
     const onBanCancel = () => {
@@ -163,7 +164,10 @@ export const AdminReport = () => {
             }
             try {
                 await banCompany(jobDetail.companyId, banRequest);
+                await fetchReports()
+                setCurrentJobReports(undefined)
                 setIsViewDetail(false)
+
                 openSuccessNotification("Bạn đã khóa tài khoản nhà tuyển dụng thành công")
             } catch (error) {
                 openErrorNotification("Có lỗi xảy ra, xin vui lòng thử lại sau.")
