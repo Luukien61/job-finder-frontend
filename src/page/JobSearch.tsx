@@ -404,6 +404,10 @@ const JobSearch = () => {
                                                         className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
                                                         <p className={`text-text_color text-[13px] truncate font-[500]`}>{job?.experience} năm</p>
                                                     </div>
+                                                    <div
+                                                        className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                                        <p className={`text-text_color text-[13px] truncate font-[500]`}>{job?.workTime}</p>
+                                                    </div>
                                                     <div onClick={() => handleGoJobDetail(job?.jobId)}
                                                          className={`flex flex-1 justify-end items-center cursor-pointer`}>
                                                         <p className={`text-green_default hover:underline font-semibold`}>Xem
@@ -415,7 +419,7 @@ const JobSearch = () => {
                                                 </div>
                                                 <div className={`h-[438px] bg-white overflow-y-auto pr-2 relative`}>
                                                     <div className={`flex flex-col py-4 gap-[20px] h-fit `}>
-                                                        <div className={`flex flex-col gap-[16px] `}>
+                                                    <div className={`flex flex-col gap-[16px] `}>
                                                             {/*description*/}
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Mô tả công việc</h3>

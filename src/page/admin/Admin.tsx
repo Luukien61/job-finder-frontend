@@ -30,8 +30,8 @@ import {
     getJobsIn12Month,
     getMessagesByConversationId,
     getParticipant,
-    getUserStatistics,
-    searchConversationByUserIds
+    getParticipantById,
+    getUserStatistics
 } from "@/axios/Request.ts";
 import {UserStatistics} from "@/info/ApplicationType.ts";
 import {PiBuildingApartmentBold, PiBuildingApartmentFill} from "react-icons/pi";
@@ -40,20 +40,15 @@ import {Chart} from "react-google-charts";
 import {delay, UserResponse} from "@/page/GoogleCode.tsx";
 import {
     ChatMessage,
-    client,
     connectWebSocket,
     Conversation,
     Participant,
     sendMessage,
     subscribeToTopic
 } from "@/service/WebSocketService.ts";
-import {useNavigate} from "react-router-dom";
-import {useMessageReceiverState} from "@/zustand/AppState.ts";
+import {Outlet, useNavigate} from "react-router-dom";
 import {toast, ToastContainer} from "react-toastify";
 import {imageUpload} from "@/service/Upload.ts";
-import {homePage} from "@/url/Url.ts";
-import {AppInfo} from "@/info/AppInfo.ts";
-import VideoCall from "@/component/VideoCall.tsx";
 import {CiImageOn} from "react-icons/ci";
 import {VscSend} from "react-icons/vsc";
 import {QuickMessage} from "@/page/Message.tsx";
@@ -88,24 +83,77 @@ interface JobByCompanyMonths {
 }
 
 const Admin = () => {
-    const [userStatistic, setUserStatistic] = useState<UserStatistics>();
+    const navigate = useNavigate();
     const menuItems = [
         {
-            key: '1',
+            key: '',
             icon: <LuLayoutDashboard size={16} color={'white'}/>,
             label: 'Trang chủ',
         },
         {
-            key: '2',
+            key: 'reports',
             icon: <FaBookOpen size={16} fill={'white'}/>,
             label: 'Phản ánh',
         },
         {
-            key: '3',
+            key: 'messages',
             icon: <AiFillMessage size={16} fill={'white'}/>,
             label: 'Tin nhắn',
         },
     ]
+    const handleMenuItemChange = (item: any) => {
+        console.log(item);
+        navigate(`${item.key}`)
+    }
+    return (
+        <div>
+            <div className={` flex`}>
+                <div className={`h-fit text-white fixed min-h-screen py-4 px-4 w-[240px] bg-[#222e3c]`}>
+                    <div className={`mt-4`}>
+                        <div className={`flex ml-3 justify-start`}>
+                            <p className={`font-bold text-[24px]`}>JobFinder</p>
+                        </div>
+                        <div
+                            className={` rounded  bg-inherit pl-2 `}>
+                            <div className={`flex gap-4 pt-4 pl-0 `}>
+                                <div className={`flex gap-4 rounded-full cursor-pointer`}>
+                                    <img
+                                        className={`w-[48px] rounded-full aspect-square object-cover`}
+                                        src={"https://res.cloudinary.com/dmi3xizxq/image/upload/v1732423764/yp4elkx2acqdx5e4xjci.jpg"}
+                                        alt={'avatar'}
+                                    />
+                                    <div className={`flex flex-col items-start justify-start truncate`}>
+                                        <p className={`font-bold text-[18px]`}>Luu Dinh Kien</p>
+                                        <p className={`text-[#adb5bd]`}>Admin</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className={`mt-10`}>
+                        <Menu
+                            onSelect={handleMenuItemChange}
+                            theme="dark"
+                            style={{backgroundColor: '#222e3c'}}
+                            defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['sub1']}
+                            items={menuItems}
+                        />
+                    </div>
+                </div>
+                <div className={`ml-[240px] overflow-x-hidden w-[calc(100vw-240px)]`}>
+                    <Outlet/>
+                </div>
+
+            </div>
+        </div>
+    );
+};
+
+export default Admin;
+
+export const AdminDashboard = () => {
+    const [userStatistic, setUserStatistic] = useState<UserStatistics>();
     const options = {
         title: "Bài đăng theo lĩnh vực trong tháng",
         legend: {
@@ -324,7 +372,7 @@ const Admin = () => {
     }
 
     const onMonthChange = (date: dayjs.Dayjs, dateString: (string | string[])) => {
-        if(!Array.isArray(dateString)) {
+        if (!Array.isArray(dateString)) {
             const [month, year] = dateString.split('-');
             fetchDailyJobInMonth(parseInt(month), parseInt(year));
         }
@@ -343,226 +391,185 @@ const Admin = () => {
         fetchJobByFields(currentMonth, currentYear)
         fetchJobByCompanies(currentMonth, currentYear)
     }, []);
-
-
     return (
-        <div>
-            <div className={` flex`}>
-                <div className={`h-fit text-white fixed min-h-screen py-4 px-4 w-[240px] bg-[#222e3c]`}>
-                    <div className={`mt-4`}>
-                        <div className={`flex justify-start`}>
-                            <p className={`font-bold text-[24px]`}>JobFinder</p>
-                        </div>
-                        <div
-                            className={` rounded  bg-inherit pl-2 `}>
-                            <div className={`flex gap-4 pt-4 pl-0 `}>
-                                <div className={`flex gap-4 rounded-full cursor-pointer`}>
-                                    <img
-                                        className={`w-[48px] rounded-full aspect-square object-cover`}
-                                        src={"https://res.cloudinary.com/dmi3xizxq/image/upload/v1732423764/yp4elkx2acqdx5e4xjci.jpg"}
-                                        alt={'avatar'}
-                                    />
-                                    <div className={`flex flex-col items-start justify-start truncate`}>
-                                        <p className={`font-bold text-[18px]`}>Luu Dinh Kien</p>
-                                        <p className={`text-[#adb5bd]`}>Admin</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div className={`w-full px-[60px] py-10`}>
+            <div>
+                <p className={`w-fit font-bold text-[26px] pl-3`}>JobFinder <span
+                    className={`font-normal text-[26px]`}>Dashboard</span></p>
+            </div>
+            <div className={`flex w-full`}>
+                <UserStatisticCard statistic={userStatistic?.newMonthUsers}
+                                   name={'Ứng viên mới trong tháng'}
+                                   icon={<GrUserNew size={20} color={'#3B7DDD'}/>}
+                                   previousStatistics={userStatistic?.lastMonthUsers}/>
+                <UserStatisticCard statistic={userStatistic?.totalUsers}
+                                   name={'Tổng số ứng viên'}
+                                   bottom={"toàn hệ thống"}
+                                   icon={<FaUsers size={20} color={'#3B7DDD'}/>}
+                />
+                <UserStatisticCard statistic={userStatistic?.newCompanyUsers}
+                                   name={'Nhà tuyển dụng mới trong tháng'}
+                                   previousStatistics={userStatistic?.lastCompanyUsers}
+                                   icon={<PiBuildingApartmentBold size={20} color={'#3B7DDD'}/>}
+                />
+                <UserStatisticCard statistic={userStatistic?.totalCompanyUsers}
+                                   name={'Nhà tuyển dụng '}
+                                   bottom={"toàn hệ thống"}
+                                   icon={<PiBuildingApartmentFill size={20} color={'#3B7DDD'}/>}
+                />
+
+            </div>
+            <div className={`flex w-full p-3 `}>
+                <div className={`w-1/2 py-3 px-3 pl-0`}>
+                    <div className={`h-[280px] pr-3 py-3 bg-white rounded-lg`}>
+                        <ResponsiveContainer>
+                            <BarChart width={530} height={250} data={userMonths}>
+                                <CartesianGrid strokeDasharray="3 3"/>
+                                <XAxis dataKey="name"/>
+                                <YAxis allowDecimals={false}/>
+                                <Tooltip/>
+                                <Legend/>
+                                <Bar dataKey="Ứng viên mới" fill="#8884d8"/>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
-                    <div className={`mt-10`}>
-                        <Menu
-                            theme="dark"
-                            style={{backgroundColor: '#222e3c'}}
-                            defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['sub1']}
-                            items={menuItems}
-                        />
-                    </div>
+
                 </div>
-                <div className={`ml-[240px]  w-[calc(100vw-240px)]`}>
-                    <div className={`w-full px-[60px] py-10`}>
-                        <div>
-                            <p className={`w-fit font-bold text-[26px] pl-3`}>JobFinder <span
-                                className={`font-normal text-[26px]`}>Dashboard</span></p>
-                        </div>
-                        <div className={`flex w-full`}>
-                            <UserStatisticCard statistic={userStatistic?.newMonthUsers}
-                                               name={'Ứng viên mới trong tháng'}
-                                               icon={<GrUserNew size={20} color={'#3B7DDD'}/>}
-                                               previousStatistics={userStatistic?.lastMonthUsers}/>
-                            <UserStatisticCard statistic={userStatistic?.totalUsers}
-                                               name={'Tổng số ứng viên'}
-                                               bottom={"toàn hệ thống"}
-                                               icon={<FaUsers size={20} color={'#3B7DDD'}/>}
-                            />
-                            <UserStatisticCard statistic={userStatistic?.newCompanyUsers}
-                                               name={'Nhà tuyển dụng mới trong tháng'}
-                                               previousStatistics={userStatistic?.lastCompanyUsers}
-                                               icon={<PiBuildingApartmentBold size={20} color={'#3B7DDD'}/>}
-                            />
-                            <UserStatisticCard statistic={userStatistic?.totalCompanyUsers}
-                                               name={'Nhà tuyển dụng '}
-                                               bottom={"toàn hệ thống"}
-                                               icon={<PiBuildingApartmentFill size={20} color={'#3B7DDD'}/>}
-                            />
-
-                        </div>
-                        <div className={`flex w-full p-3 `}>
-                            <div className={`w-1/2 py-3 px-3 pl-0`}>
-                                <div className={`h-[280px] pr-3 py-3 bg-white rounded-lg`}>
-                                    <ResponsiveContainer>
-                                        <BarChart width={530} height={250} data={userMonths}>
-                                            <CartesianGrid strokeDasharray="3 3"/>
-                                            <XAxis dataKey="name"/>
-                                            <YAxis allowDecimals={false}/>
-                                            <Tooltip/>
-                                            <Legend/>
-                                            <Bar dataKey="Ứng viên mới" fill="#8884d8"/>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-
-                            </div>
-                            <div className={`w-1/2 py-3 px-3 pr-0`}>
-                                <div className={`h-[280px] py-3 pr-3 bg-white rounded-lg`}>
-                                    <ResponsiveContainer>
-                                        <BarChart width={530} height={250} data={companyMonths}>
-                                            <CartesianGrid strokeDasharray="3 3" opacity={0.5}/>
-                                            <XAxis dataKey="name"/>
-                                            <YAxis allowDecimals={false}/>
-                                            <Tooltip/>
-                                            <Legend/>
-                                            <Bar dataKey="Nhà tuyển dụng mới" fill="#83a6ed"/>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-
-                            </div>
-                        </div>
-                        <div className={`flex w-full p-3`}>
-                            <div className={`h-[450px] w-full py-3 flex flex-col gap-0  rounded-lg bg-white`}>
-                                <div className={`w-full ml-10 pb-5 flex gap-3`}>
-                                    <Select
-                                        onChange={handleOnSelectViewType}
-                                        className={`w-24`} defaultValue={"month"}
-                                        options={[{value: "month", label: "Tháng"}, {
-                                            value: "day",
-                                            label: "Ngày"
-                                        }]}/>
-                                    <div
-                                        className={`${viewJobBy == 'month' ? 'opacity-0 w-0 h-0' : 'opacity-100'} transition-opacity duration-300`}>
-                                        <DatePicker onChange={onMonthChange}
-                                                    defaultValue={dayjs()}
-                                                    style={{width: `${viewJobBy == 'month' ? '0px' : '120px'}`}}
-                                                    disabled={viewJobBy == 'month'} format={'MM-YYYY'}
-                                                    disabledDate={disabledDate} placeholder={'Chọn tháng'}
-                                                    picker="month"/>
-                                    </div>
-                                </div>
-                                <ResponsiveContainer height={350}>
-                                    <ComposedChart width={730} height={250} data={jobMonths}
-                                                   margin={{top: 5, right: 30, left: 20, bottom: 10}}>
-                                        <CartesianGrid strokeDasharray="3 3" opacity={0.5}/>
-                                        <XAxis dataKey="name"
-                                               label={{value: `${viewJobBy=='month'? 'Tháng': 'Ngày'}`, position: 'insideBottomRight', offset: -6}}/>
-                                        <YAxis allowDecimals={false}
-                                               label={{value: 'Bài đăng', angle: -90, position: 'insideLeft'}}/>
-                                        <Tooltip/>
-                                        <defs>
-                                            <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-                                                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
-                                            </linearGradient>
-                                        </defs>
-                                        <Area
-                                            type="monotone"
-                                            dataKey="Bài đăng"
-                                            stroke="#82ca9d"
-                                            fillOpacity={1}
-                                            fill="url(#colorPv)"
-                                        />
-                                        <Line type="monotone" dataKey="Bài đăng"
-                                              strokeWidth={4} stroke="#82ca9d"/>
-                                    </ComposedChart>
-
-                                </ResponsiveContainer>
-                                <div className={`w-full flex justify-center  items-center`}>
-                                    <div className="recharts-legend-item legend-item-0">
-                                        <svg className="recharts-surface inline-block mr-3" width="14" height="14"
-                                             viewBox="0 0 32 32">
-                                            <title></title>
-                                            <desc></desc>
-                                            <path stroke-width="4" fill="none" stroke="#82ca9d" d="M0,16h10.666666666666666
-                                                A5.333333333333333,5.333333333333333,0,1,1,21.333333333333332,16
-                                                H32M21.333333333333332,16
-                                                A5.333333333333333,5.333333333333333,0,1,1,10.666666666666666,16"
-                                                  className="recharts-legend-icon"></path>
-                                        </svg>
-                                        <span className="recharts-legend-item-text text-[#82ca9d]">Bài đăng</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className={`flex w-full p-3`}>
-                            <div className={`h-fit w-[calc(50%-30px)] py-3 pr-3`}>
-                                <div className={` flex flex-col gap-0  rounded-lg bg-white`}>
-                                    <Chart
-                                        chartType="PieChart"
-                                        data={jobByFields}
-                                        options={options}
-                                        width={"100%"}
-                                        height={"350px"}
-                                    />
-                                    <div>
-                                        <div className={`w-full flex justify-center`}>
-                                            <p className={`w-fit text-text_color opacity-70`}>{month}-{year}</p>
-                                        </div>
-                                        <div className={`flex items-center gap-4 justify-center my-4`}>
-                                            <div onClick={handleMonthPrevious}
-                                                 className={`aspect-square group w-8 rounded-full flex items-center cursor-pointer hover:bg-green_default justify-center p-1 border border-green_default `}>
-                                                <GrPrevious className={`group-hover:text-white text-green_default`}/>
-                                            </div>
-                                            <div onClick={handleMonthNext}
-                                                 className={`aspect-square group w-8 rounded-full flex items-center cursor-pointer hover:bg-green_default justify-center p-1 border border-green_default `}>
-                                                <GrNext className={`group-hover:text-white text-green_default`}/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={`flex-1 w-1/2 h-[462px] py-3 pl-3`}>
-                                <div
-                                    className={` flex flex-col overflow-y-auto overflow-x-auto h-[440px] gap-0  rounded-lg bg-white`}>
-                                    <Table<JobByCompanyMonths>
-                                        sticky={true}
-                                        style={{height: '90%'}}
-                                        pagination={false}
-                                        columns={columns}
-                                        bordered={true}
-                                        dataSource={jobByCompanyMonths}/>
-                                    <div className={`w-full flex justify-center`}>
-                                        <p>Bài đăng của nhà tuyển dụng</p>
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
+                <div className={`w-1/2 py-3 px-3 pr-0`}>
+                    <div className={`h-[280px] py-3 pr-3 bg-white rounded-lg`}>
+                        <ResponsiveContainer>
+                            <BarChart width={530} height={250} data={companyMonths}>
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.5}/>
+                                <XAxis dataKey="name"/>
+                                <YAxis allowDecimals={false}/>
+                                <Tooltip/>
+                                <Legend/>
+                                <Bar dataKey="Nhà tuyển dụng mới" fill="#83a6ed"/>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
-                </div>
-                <div className={`ml-[240px]  w-[calc(100vw-240px)]`}>
-
 
                 </div>
             </div>
-        </div>
-    );
-};
+            <div className={`flex w-full p-3`}>
+                <div className={`h-[450px] w-full py-3 flex flex-col gap-0  rounded-lg bg-white`}>
+                    <div className={`w-full ml-10 pb-5 flex gap-3`}>
+                        <Select
+                            onChange={handleOnSelectViewType}
+                            className={`w-24`} defaultValue={"month"}
+                            options={[{value: "month", label: "Tháng"}, {
+                                value: "day",
+                                label: "Ngày"
+                            }]}/>
+                        <div
+                            className={`${viewJobBy == 'month' ? 'opacity-0 w-0 h-0' : 'opacity-100'} transition-opacity duration-300`}>
+                            <DatePicker onChange={onMonthChange}
+                                        defaultValue={dayjs()}
+                                        style={{width: `${viewJobBy == 'month' ? '0px' : '120px'}`}}
+                                        disabled={viewJobBy == 'month'} format={'MM-YYYY'}
+                                        disabledDate={disabledDate} placeholder={'Chọn tháng'}
+                                        picker="month"/>
+                        </div>
+                    </div>
+                    <ResponsiveContainer height={350}>
+                        <ComposedChart width={730} height={250} data={jobMonths}
+                                       margin={{top: 5, right: 30, left: 20, bottom: 10}}>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.5}/>
+                            <XAxis dataKey="name"
+                                   label={{
+                                       value: `${viewJobBy == 'month' ? 'Tháng' : 'Ngày'}`,
+                                       position: 'insideBottomRight',
+                                       offset: -6
+                                   }}/>
+                            <YAxis allowDecimals={false}
+                                   label={{value: 'Bài đăng', angle: -90, position: 'insideLeft'}}/>
+                            <Tooltip/>
+                            <defs>
+                                <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <Area
+                                type="monotone"
+                                dataKey="Bài đăng"
+                                stroke="#82ca9d"
+                                fillOpacity={1}
+                                fill="url(#colorPv)"
+                            />
+                            <Line type="monotone" dataKey="Bài đăng"
+                                  strokeWidth={4} stroke="#82ca9d"/>
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                    <div className={`w-full flex justify-center  items-center`}>
+                        <div className="recharts-legend-item legend-item-0">
+                            <svg className="recharts-surface inline-block mr-3" width="14" height="14"
+                                 viewBox="0 0 32 32">
+                                <title></title>
+                                <desc></desc>
+                                <path stroke-width="4" fill="none" stroke="#82ca9d" d="M0,16h10.666666666666666
+                                                A5.333333333333333,5.333333333333333,0,1,1,21.333333333333332,16
+                                                H32M21.333333333333332,16
+                                                A5.333333333333333,5.333333333333333,0,1,1,10.666666666666666,16"
+                                      className="recharts-legend-icon"></path>
+                            </svg>
+                            <span className="recharts-legend-item-text text-[#82ca9d]">Bài đăng</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={`flex w-full p-3`}>
+                <div className={`h-fit w-[calc(50%-30px)] py-3 pr-3`}>
+                    <div className={` flex flex-col gap-0  rounded-lg bg-white`}>
+                        <Chart
+                            chartType="PieChart"
+                            data={jobByFields}
+                            options={options}
+                            width={"100%"}
+                            height={"350px"}
+                        />
+                        <div>
+                            <div className={`w-full flex justify-center`}>
+                                <p className={`w-fit text-text_color opacity-70`}>{month}-{year}</p>
+                            </div>
+                            <div className={`flex items-center gap-4 justify-center my-4`}>
+                                <div onClick={handleMonthPrevious}
+                                     className={`aspect-square group w-8 rounded-full flex items-center cursor-pointer hover:bg-green_default justify-center p-1 border border-green_default `}>
+                                    <GrPrevious className={`group-hover:text-white text-green_default`}/>
+                                </div>
+                                <div onClick={handleMonthNext}
+                                     className={`aspect-square group w-8 rounded-full flex items-center cursor-pointer hover:bg-green_default justify-center p-1 border border-green_default `}>
+                                    <GrNext className={`group-hover:text-white text-green_default`}/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className={`flex-1 w-1/2 h-[462px] py-3 pl-3`}>
+                    <div
+                        className={` flex flex-col overflow-y-auto overflow-x-auto h-[440px] gap-0  rounded-lg bg-white`}>
+                        <Table<JobByCompanyMonths>
+                            sticky={true}
+                            style={{height: '90%'}}
+                            pagination={false}
+                            columns={columns}
+                            bordered={true}
+                            dataSource={jobByCompanyMonths}/>
+                        <div className={`w-full flex justify-center`}>
+                            <p>Bài đăng của nhà tuyển dụng</p>
+                        </div>
 
-export default Admin;
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    )
+}
+
+
 type UserStatisticsProps = {
     name: string;
     icon: any,
@@ -627,7 +634,7 @@ const UserStatisticCard: React.FC<UserStatisticsProps> = (item) => {
     )
 }
 
-const AdminMessage = () => {
+export const AdminMessage = () => {
     const [typingMessage, setTypingMessage] = useState<string>('')
     const [loginUser, setLoginUser] = useState<UserResponse | null>(null)
     const [currentUserId, setCurrentUserId] = useState<string>('')
@@ -637,7 +644,6 @@ const AdminMessage = () => {
     const [allQuickMessages, setAllQuickMessages] = useState<QuickMessage[]>([])
     const [currentConversationId, setCurrentConversationId] = useState<number>()
     const navigate = useNavigate()
-    const {receiverId, setReceiverId} = useMessageReceiverState()
 
 
     const onPrivateMessage = (payload: ChatMessage) => {
@@ -667,10 +673,9 @@ const AdminMessage = () => {
     const getAllConversation = async (userId: string) => {
         try {
             const conversations: Conversation[] = await getAllConversations(userId)
-            console.log(conversations)
             let quickMessagePromises: Promise<QuickMessage>[] = []
             const refineQuickMessages = async (value: Conversation, participantId: string) => {
-                const participant: Participant = await getParticipant(participantId)
+                const participant: Participant = await getParticipantById(participantId)
                 const quickMessage: QuickMessage = {
                     id: value.id,
                     avatar: participant.avatar,
@@ -683,18 +688,10 @@ const AdminMessage = () => {
                 }
                 return quickMessage
             }
-            if (userId.startsWith("u_")) {
-                quickMessagePromises = conversations.map(async (value) => {
-                    const participantId = value.senderId
-                    return refineQuickMessages(value, participantId)
-                })
-            }
-            if (userId.startsWith("company_")) {
-                quickMessagePromises = conversations.map(async (value) => {
-                    const participantId = value.receiverId
-                    return refineQuickMessages(value, participantId)
-                })
-            }
+            quickMessagePromises = conversations.map(async (value) => {
+                const participantId = value.senderId
+                return refineQuickMessages(value, participantId)
+            })
 
             const quickMessages = await Promise.all(quickMessagePromises)
 
@@ -761,20 +758,13 @@ const AdminMessage = () => {
             }
         }
 
-        let rawUser = JSON.parse(localStorage.getItem('user'))
-        if (!rawUser) {
-            rawUser = JSON.parse(localStorage.getItem('company'))
-            if (receiverId) {
-                handleGetConversationByUserIds(rawUser.id, receiverId)
-            }
-        }
+        const rawUser = JSON.parse(localStorage.getItem('user'))
         if (rawUser) {
             getLogInUser(rawUser.id)
         } else {
             navigate('/login', {replace: true})
         }
 
-        return setReceiverId(undefined)
 
     }, [])
 
@@ -872,26 +862,6 @@ const AdminMessage = () => {
         }
     }
 
-    const handleGetConversationByUserIds = async (senderId: string, receiverId: string) => {
-        try {
-            const conversation: Conversation = await searchConversationByUserIds(senderId, receiverId)
-            if (conversation) {
-                setCurrentConversationId(conversation.id)
-                getMessageByConversationId(conversation.id)
-            } else {
-                setCurrentConversationId(undefined)
-            }
-
-        } catch (err) {
-            toast.error(err)
-            setCurrentConversationId(undefined)
-        }
-        const participant: Participant = await getParticipant(receiverId)
-        setCurrentRecipient(participant)
-
-    }
-
-
     return (
         <div className={`overflow-hidden `}>
             <div className={`flex text-[16px] overflow-hidden`}>
@@ -899,34 +869,7 @@ const AdminMessage = () => {
                 <div
                     className={`w-[25%] px-3 min-w-[300px] h-screen flex flex-col relative min-h-screen  z-10 bg-white border-r border-r-gray-400 border-gray  overflow-hidden `}
                 >
-                    <div className={`rounded-lg bg-green-50 border p-3 mb-2`}>
-                        <div
-                            className={`w-full flex justify-start bg-green_nga px-2 py-2 rounded-lg gap-4 items-center`}>
-                            <a className={`flex justify-start gap-4 items-center`}
-                               href={homePage}>
-                                <img className={`w-8 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
-                                <p className={`font-bold text-[24px] text-white font-inter`}>{AppInfo.appName}</p>
-                            </a>
-
-                        </div>
-                        {/*current user*/}
-                        <div
-                            className={` rounded  bg-inherit pl-2 `}>
-                            <div className={`flex gap-4 pt-4 pl-0 `}>
-                                <div className={`flex gap-4 rounded-full cursor-pointer`}>
-                                    <img
-                                        className={`w-[48px] rounded-full aspect-square object-cover`}
-                                        src={loginUser?.avatar}
-                                        alt={'avatar'}
-                                    />
-                                    <div className={`flex items-center justify-start truncate`}>
-                                        <p className={`font-bold text-[18px]`}>{loginUser ? loginUser.name : ''}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={`overflow-y-scroll bg-white py-2`}>
+                    <div className={`overflow-y-auto bg-white py-2`}>
                         {/*item*/}
                         {allQuickMessages.map((value, index) => (
                             <div
@@ -973,18 +916,6 @@ const AdminMessage = () => {
                                 src={currentRecipient.avatar}
                             />
                             <p className={`font-bold`}>{currentRecipient.name}</p>
-                            <div className={`flex-1 flex justify-end`}>
-                                {client && (
-                                    <VideoCall
-                                        senderName={loginUser ? loginUser.name : ''}
-                                        senderAvatar={loginUser ? loginUser.avatar : ''}
-                                        userName={currentRecipient.name}
-                                        client={client}
-                                        userId={currentUserId}
-                                        targetUserId={currentRecipient && currentRecipient.id}
-                                    />
-                                )}
-                            </div>
                         </div>
                         {/*content*/}
                         <div className={`flex-1 overflow-hidden relative h-full w-full`}>
@@ -1082,3 +1013,4 @@ const AdminMessage = () => {
         </div>
     )
 }
+

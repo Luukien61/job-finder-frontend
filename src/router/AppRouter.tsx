@@ -17,12 +17,17 @@ import EmployerLogin from "@/page/employer/EmployerLogin.tsx";
 import EmployerHome, {HomeContent} from "@/page/employer/EmployerHome.tsx";
 import AddJob from "@/page/employer/AddJob.tsx";
 import JobSearch from "@/page/JobSearch.tsx";
-import Admin from "@/page/Admin.tsx";
+import Admin, {AdminDashboard, AdminMessage} from "@/page/admin/Admin.tsx";
+import {AdminReport} from "@/page/admin/AdminReport.tsx";
 
 const AppRouter = () => {
     return (
         <Routes>
-            <Route path="/admin" element={<Admin/>}/>
+            <Route path="/admin" element={<Admin/>}>
+                <Route index={true} element={<AdminDashboard/>}/>
+                <Route path={'messages'} element={<AdminMessage/>}/>
+                <Route path={'reports'} element={<AdminReport/>}/>
+            </Route>
             <Route path="/" element={<App/>}>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path={'/job/detail/:id'} element={<JobDetail/>}/>

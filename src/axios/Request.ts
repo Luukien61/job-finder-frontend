@@ -70,6 +70,10 @@ export const getParticipant = async (id: string) => {
     return await instance.get(`/participant/${id}`).then((response) => response.data)
 }
 
+export const getParticipantById = async (id: string) => {
+    return await instance.get(`/message/participant/${id}`).then((response) => response.data)
+}
+
 export const getMessagesByConversationId = async (id: number) => {
     return await instance.get(`/message/${id}`).then((response) => response.data)
 }
@@ -255,5 +259,31 @@ export const getJobByCompaniesInMonth = async (month: number, year: number) => {
 }
 
 export const getDailyJobs = async (month: number, year: number) => {
-    return await instance.get(`${ADMIN_PATH}/job/quantity/day`, {params: {month,year}}).then((response: any) => response.data)
+    return await instance.get(`${ADMIN_PATH}/job/quantity/day`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
+}
+export const getReportedJobs = async () => {
+    return await instance.get(`${ADMIN_PATH}/job/reported`).then((response: any) => response.data)
+}
+
+export const getReportDetails = async (jobId: number) => {
+    return await instance.get(`${ADMIN_PATH}/${jobId}/reason`).then((response: any) => response.data)
+}
+
+export const banCompany = async (companyId: string, body) => {
+    return await instance.put(`${ADMIN_PATH}/ban/${companyId}`, body).then((response: any) => response.data)
+}
+const NOTIFICATION = '/notification'
+export const updateNotificationStatus = async (id: number, status: string) => {
+    return await instance.post(`${NOTIFICATION}/${id}/status/update/${status}`).then((response: any) => response.data)
+}
+export const getAllNotifications = async (userId: string) => {
+    return await instance.get(`${NOTIFICATION}/${userId}/all`).then((response: any) => response.data)
+}
+export const countAllNotificationDeliveried = async (userId: string) => {
+    return await instance.get(`${NOTIFICATION}/${userId}/delivery`).then((response: any) => response.data)
 }

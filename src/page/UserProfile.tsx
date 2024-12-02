@@ -161,7 +161,7 @@ const UserProfile = () => {
                              className={`w-full flex h-8 justify-center cursor-pointer `}>
                             <AiFillCloud size={32} fill={`${itemChoose == 1 ? 'white' : 'black'}`}/>
                         </div>
-                        <div onClick={() => handleItemSidebarClick(2, '')}
+                        <div onClick={() => handleItemSidebarClick(2, 'applied')}
                              className={`w-full flex h-8 justify-center cursor-pointer `}>
                             <AiFillSafetyCertificate size={32} fill={`${itemChoose == 2 ? 'white' : 'black'}`}/>
                         </div>
