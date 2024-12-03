@@ -4,20 +4,23 @@ import {connectWebSocket, subscribeToTopic} from "@/service/WebSocketService.ts"
 import {Dropdown, MenuProps, Modal} from "antd";
 import {countAllNotificationDeliveried, getAllNotifications, updateNotificationStatus} from "@/axios/Request.ts";
 import {IoMdCloseCircle} from "react-icons/io";
+import {delay} from "@/page/GoogleCode.tsx";
 interface BanProps {
-    id: string;
+    id: number;
     title: string;
     reason: string;
     message: string;
+    userId: string
 }
 
 interface Notification {
-    id: string;
+    id: number;
     title: string;
     reason: string;
     message: string;
     createdAt: Date,
-    status: string
+    status: string,
+    userId: string
 }
 const EmployerHeader = () => {
     const [currentEmployerId, setCurrentEmployerId] = useState<string | null>(null);
@@ -38,7 +41,7 @@ const EmployerHeader = () => {
     const openDetailNotification = (data:BanProps)=>{
         setIsViewDetail(true);
         setCurrentBanNotification(data)
-        updateNotificationState(parseInt(data.id),"read")
+        updateNotificationState(data.id,"read")
     }
     const fetchAllNotifications = async () => {
         try{
@@ -63,15 +66,13 @@ const EmployerHeader = () => {
         }
     }
 
-    const onReceiveNotification = useCallback((data: BanProps)=>{
-        updateNotificationState(parseInt(data.id), "delivered")
-
+    const onReceiveNotification = useCallback(async (data: BanProps)=>{
+        setUnreadNotification(1)
     },[])
 
     const getCountNotificationCountUnread = async (id) => {
         const count :number = await countAllNotificationDeliveried(id);
         setUnreadNotification(count);
-        console.log(count);
     }
     const onCloseDetails=()=>{
         setIsViewDetail(false);

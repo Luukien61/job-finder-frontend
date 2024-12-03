@@ -400,11 +400,11 @@ export const AdminDashboard = () => {
             </div>
             <div className={`flex w-full`}>
                 <UserStatisticCard statistic={userStatistic?.newMonthUsers}
-                                   name={'Ứng viên mới trong tháng'}
+                                   name={'Người dùng mới trong tháng'}
                                    icon={<GrUserNew size={20} color={'#3B7DDD'}/>}
                                    previousStatistics={userStatistic?.lastMonthUsers}/>
                 <UserStatisticCard statistic={userStatistic?.totalUsers}
-                                   name={'Tổng số ứng viên'}
+                                   name={'Tổng số người dùng'}
                                    bottom={"toàn hệ thống"}
                                    icon={<FaUsers size={20} color={'#3B7DDD'}/>}
                 />

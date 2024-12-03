@@ -4,7 +4,6 @@ import {banCompany, getJobDetailById, getReportDetails, getReportedJobs} from "@
 import {IoCloseCircleSharp} from "react-icons/io5";
 import {JobDetailProps} from "@/info/ApplicationType.ts";
 import {toast} from "react-toastify";
-import {MdKeyboardDoubleArrowRight} from "react-icons/md";
 import {convertDate} from "@/service/ApplicationService.ts";
 import {IoMdCloseCircle} from "react-icons/io";
 import TextArea from "antd/es/input/TextArea";

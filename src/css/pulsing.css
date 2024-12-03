@@ -1,0 +1,97 @@
+div {
+    position: relative;
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    margin: 50px;
+    border: 2px solid white;
+}
+div:before,
+div:after, span {
+    position: absolute;
+    content: '';
+    height: 100%;
+    width: 100%;
+    top: 0%;
+    left: 0%;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #287ec6;
+    animation: glow-grow 2s ease-out infinite;
+}
+div:after {
+    animation-delay: .66s;
+}
+span{
+    animation-delay: 1.33s;
+}
+@keyframes glow-grow {
+    0% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+body {
+    background: black;
+}
+
+/*
+other*/
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: lightyellow;
+    height: 100vh;
+    margin: 0;
+}
+#container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.sphere {
+    display: flex;
+    background: lightblue;
+    border-radius: 300px;
+    height: 100px;
+    width: 100px;
+}
+#container::after {
+    display: flex;
+    background: lightpink;
+    border-radius: 300px;
+    height: 250px;
+    width: 250px;
+    animation: pulsate 2.5s ease-out;
+    animation-iteration-count: infinite;
+    opacity: 0.0;
+    content: "";
+    z-index: -1;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+@keyframes pulsate {
+    0% {
+        transform: scale(0.1, 0.1);
+        opacity: 0.0;
+    }
+    50% {
+        opacity: 1.0;
+    }
+    100% {
+        transform: scale(1.2, 1.2);
+        opacity: 0.0;
+    }
+}

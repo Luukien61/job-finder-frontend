@@ -7,6 +7,16 @@ export default {
     ],
     theme: {
         extend: {
+            keyframes: {
+                pulsate: {
+                    '0%': { transform: 'scale(0.1)', opacity: '0' },
+                    '50%': { opacity: '1' },
+                    '100%': { transform: 'scale(1.2)', opacity: '0' },
+                },
+            },
+            animation: {
+                pulsate: 'pulsate 2.5s ease-out infinite',
+            },
             clipPath: { 'polygon-shape': 'polygon(0 0, 0 100%, 100% 50%)', },
             colors: {
 			    dark : "#0e4a2c",

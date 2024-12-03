@@ -287,3 +287,15 @@ export const getAllNotifications = async (userId: string) => {
 export const countAllNotificationDeliveried = async (userId: string) => {
     return await instance.get(`${NOTIFICATION}/${userId}/delivery`).then((response: any) => response.data)
 }
+export const getCompanyStatistics = async (companyId: string, month : number, year :number) => {
+    return await instance.get(`/api/companies/${companyId}/statistics`, {
+        params: {
+            month,
+            year
+        }
+    }).then((response: any) => response.data)
+}
+
+export const getCompanyJobStatistics = async (companyId:string) => {
+    return await instance.get(`/api/companies/${companyId}/job/statistics`).then((response: any) => response.data)
+}

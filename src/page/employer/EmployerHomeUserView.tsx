@@ -1,281 +1,651 @@
-import React, {useEffect, useState} from 'react';
-import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
-import {AiOutlineGlobal} from "react-icons/ai";
-import {PiCopySimple, PiPhoneLight} from "react-icons/pi";
-import ExpandableCard from "@/component/ExpandableCard.tsx";
-import {MdDelete, MdLocationPin} from "react-icons/md";
-import LocationMap from "@/component/employer/LocationMap.tsx";
-import {IoMdMap} from "react-icons/io";
-import Footer from "@/component/Footer.tsx";
-import {Input, Pagination} from "antd";
-import {Outlet} from "react-router-dom";
-import {getCompanyInfo} from "@/axios/Request.ts";
-import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
-import {CustomModal} from "@/page/UserProfile.tsx";
-import FlexStickyLayout from "@/component/AllPagesPDFViewer.tsx";
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import {LuLayoutDashboard} from "react-icons/lu";
+import {FaBookOpen} from "react-icons/fa";
+import {Menu} from "antd";
+import {AiFillMessage} from "react-icons/ai";
+import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {
+    ConversationRequest,
+    createConversation,
+    getAllConversations,
+    getCompanyStatistics,
+    getCurrentParticipant,
+    getMessagesByConversationId,
+    getParticipant,
+    getParticipantById
+} from "@/axios/Request.ts";
+import {delay, UserResponse} from "@/page/GoogleCode.tsx";
+import {
+    ChatMessage,
+    connectWebSocket,
+    Conversation,
+    Participant,
+    sendMessage,
+    subscribeToTopic
+} from "@/service/WebSocketService.ts";
+import {Outlet, useNavigate} from "react-router-dom";
+import {toast, ToastContainer} from "react-toastify";
+import {imageUpload} from "@/service/Upload.ts";
+import {CiImageOn} from "react-icons/ci";
+import {VscSend} from "react-icons/vsc";
+import {QuickMessage} from "@/page/Message.tsx";
+import {BsFileEarmarkPersonFill} from "react-icons/bs";
+import {MdPersonPin} from "react-icons/md";
+import {HiNewspaper} from "react-icons/hi";
+import {SiPaperlessngx} from "react-icons/si";
+import PulsatingSphere from "@/component/PulsatingSphere.tsx";
 
-const EmployerHomeUserView = () => {
 
+const EmployerHomeAdmin = () => {
+    const navigate = useNavigate();
+    const menuItems = [
+        {
+            key: '',
+            icon: <LuLayoutDashboard size={16} color={'white'}/>,
+            label: 'Trang chủ',
+        },
+        {
+            key: 'jobs',
+            icon: <FaBookOpen size={16} fill={'white'}/>,
+            label: 'Bài đăng',
+        },
+        {
+            key: 'messages',
+            icon: <AiFillMessage size={16} fill={'white'}/>,
+            label: 'Tin nhắn',
+        },
+    ]
+    const handleMenuItemChange = (item: any) => {
+        navigate(`${item.key}`)
+    }
     return (
         <div>
-            <EmployerHeader/>
-            <div className={`w-full flex justify-center`}>
-                <div className={`custom-container`}>
+            <div className={` flex`}>
+                <div className={`h-fit text-white fixed min-h-screen py-4 px-4 w-[240px] overflow-hidden bg-[#222e3c]`}>
+                    <div className={`mt-4`}>
+                        <div className={`flex ml-3 justify-start`}>
+                            <p className={`font-bold text-[24px]`}>JobFinder</p>
+                        </div>
+                        <div
+                            className={` rounded  bg-inherit pl-2 `}>
+                            <div className={`flex gap-4 pt-4 pl-0 `}>
+                                <div className={`flex gap-4 flex-col rounded-full cursor-pointer`}>
+                                    <img
+                                        className={`w-[48px] rounded-full aspect-square object-cover`}
+                                        src={"https://res.cloudinary.com/dmi3xizxq/image/upload/v1732423764/yp4elkx2acqdx5e4xjci.jpg"}
+                                        alt={'avatar'}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className={`mt-10`}>
+                        <Menu
+                            onSelect={handleMenuItemChange}
+                            theme="dark"
+                            style={{backgroundColor: '#222e3c'}}
+                            defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['sub1']}
+                            items={menuItems}
+                        />
+                    </div>
+                </div>
+                <div className={`ml-[240px] overflow-x-hidden w-[calc(100vw-240px)]`}>
                     <Outlet/>
                 </div>
+
             </div>
-            <Footer/>
         </div>
     );
 };
 
+export default EmployerHomeAdmin;
 
-export const HomeContent = () => {
-    const [currentCompanyId, setCurrentCompanyId] = useState<string>('');
-    const [currentCompany, setCurrentCompany] = useState<any>();
-    const handleGetCompanyInfo = async (id: string) => {
-        const response: CompanyInfo = await getCompanyInfo(id);
-        setCurrentCompany(response);
-    }
-    useEffect(() => {
-        const companyId = JSON.parse(localStorage.getItem("company")).id;
-        setCurrentCompanyId(companyId);
-        handleGetCompanyInfo(companyId);
-    }, [])
-    const handleCopy = async () => {
+interface MonthlyJobs {
+    year: number;
+    month: number;
+    jobCount: number;
+}
+
+interface AdminProps {
+    newApplicants: number;
+    newJobs: number;
+    applicants: number;
+    monthlyJobs: MonthlyJobs[]
+}
+
+type BarProps = {
+    "name": string,
+    "Bài đăng": number,
+}
+
+export const EmployerDashboard = () => {
+    const [currentCompanyId, setCurrentCompanyId] = useState<string | null>(null);
+    const [companyStatistics, setCompanyStatistics] = useState<AdminProps>()
+    const [monthlyJobs, setMonthlyJobs] = useState<BarProps[]>()
+
+    const date = new Date();
+    const currentMonth = date.getMonth() + 1;
+    const currentYear = date.getFullYear();
+    const fetchCompanyStatistics = async (id: string, month: number, year: number) => {
         try {
-            await navigator.clipboard.writeText(window.location.href);
-        } catch (err) {
-            console.error("Failed to copy: ", err);
+            const result: AdminProps = await getCompanyStatistics(id, month, year)
+            if (result) {
+                setCompanyStatistics(result)
+                const sorted = result.monthlyJobs.sort((a, b) => {
+                    if (a.year !== b.year) {
+                        return a.year - b.year;
+                    }
+                    return a.month - b.month;
+                })
+                const monthlyJobs: BarProps[] = sorted.map(item => {
+                    return {
+                        'name': 'T' + item.month,
+                        "Bài đăng": item.jobCount
+                    }
+                })
+                setMonthlyJobs(monthlyJobs)
 
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
+
+    useEffect(() => {
+        const company = JSON.parse(localStorage.getItem("company"));
+        if (company && company.id) {
+            fetchCompanyStatistics(company.id, currentMonth, currentYear);
+            setCurrentCompanyId(company.id)
+        }
+    }, []);
+
     return (
-        <div className={`flex flex-col mt-10`}>
-            {/*banner*/}
-            <div className={`w-full rounded-lg overflow-hidden min-h-[358px] bg-gradient-to-green`}>
-                <div className={`h-[224px] overflow-hidden`}>
-                    <img
-                        alt={currentCompany?.name}
-                        className={`h-full object-cover object-center w-full`}
-                        src={currentCompany?.wallpaper}/>
-
-                </div>
-                <div className={`relative`}>
-                    <div
-                        className={`items-center justify-center left-10 overflow-hidden absolute -top-14 aspect-square bg-white border rounded-full flex h-[180px]`}>
-                        <img
-                            alt={currentCompany?.name}
-                            src={currentCompany?.logo}
-                            className={`h-[80%] object-cover aspect-square`}/>
-
-                    </div>
-
-                </div>
-                <div className={`items-center flex gap-8 my-6 pl-[252px] pr-10 relative`}>
-                    <div className={`flex flex-1 flex-col`}>
-                        <div>
-                            <p className={`text-white line-clamp-2 font-bold leading-7 mb-4 text-[24px]`}>
-                                {currentCompany?.name}
-                            </p>
-                        </div>
-                        <div className={`flex gap-10`}>
-                            <div className={`flex gap-2 items-center `}>
-                                <AiOutlineGlobal size={20} fill={"#fff"}/>
-                                <p className={`text-white`}>{currentCompany?.website}</p>
-                            </div>
-
-                            <div className={`flex gap-2 items-center `}>
-                                <PiPhoneLight size={20} fill={"#fff"}/>
-                                <p className={`text-white`}>{currentCompany?.phone}</p>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </div>
+        <div className={`w-full px-[60px] py-10`}>
+            <div>
+                <p className={`w-fit font-bold text-[26px] pl-3`}> <span
+                    className={`font-normal text-[26px]`}>Dashboard</span></p>
             </div>
-            <div className={`flex w-full mb-10  relative mt-10 overflow-y-visible `}>
-                {/*left side*/}
-                <div className={`w-2/3 pr-5 flex flex-col gap-6`}>
-                    {/*description*/}
-                    <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
-                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Giới thiệu công ty
-                        </h2>
-                        <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
-                            {
-                                currentCompany && currentCompany.description ? (
-                                    <ExpandableCard children={
-                                        <pre>{currentCompany.description}</pre>
-                                    }/>
-                                ): (
-                                    <div className={`flex flex-col gap-4 pb-4 justify-center items-center`}>
-                                        <img src={'/public/no-avatar.png'} alt={""}/>
-                                        <p className={`font-bold `}>Chưa có mô tả</p>
-                                    </div>
-                                )
-                            }
-
-                        </div>
-                    </div>
-                    <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
-                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Tuyển dụng
-                        </h2>
-                        <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
-                            {
-                                Array.from(Array(10).keys()).map((item, index) => (
-                                    <div
-                                        className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
-                                        {/*company logo*/}
-                                        <div
-                                            className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
-                                            <a className={` block overflow-hidden bg-white`}
-                                               target={"_blank"}
-                                               href={''}>
-                                                <img
-                                                    src="https://cdn-new.topcv.vn/unsafe/150x/https://static.topcv.vn/company_logos/cong-ty-co-phan-thiet-bi-va-cong-nghe-leanway-1f012ccf747554bd0c2468ff4a032a6c-661dd470c6d24.jpg"
-                                                    className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
-                                                    alt="CÔNG TY CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ LEANWAY"
-                                                    title="The company's logo"/>
-                                            </a>
-                                        </div>
-                                        {/*card body*/}
-                                        <div className={`flex-1`}>
-                                            <div className={`flex flex-col h-full`}>
-                                                <div className={`mb-auto`}>
-                                                    <div className={`flex `}>
-                                                        <div
-                                                            className={`flex flex-col w-3/4 max-w-[490px] gap-2`}>
-                                                            <h3>
-                                                                <a
-                                                                    target="_blank"
-                                                                    href="https://www.topcv.vn/viec-lam/nhan-vien-ke-toan-thu-nhap-7-9-trieu-thanh-tri-ha-noi/1508427.html?ta_source=SuggestSimilarJob_LinkDetail&amp;jr_i=dense-hertz%3A%3A1730538183569-25caaf%3A%3Af1144ce3ac3c47fdae7d2597270d3c1a%3A%3A1%3A%3A0.9500">
-                                                                    <p className={`font-[600] hover:text-green_default text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
-                                                                        Nhân Viên Kế Toán, Thu Nhập 7 - 9
-                                                                        Triệu
-                                                                        (Thanh
-                                                                        Trì - Hà Nội) </p>
-                                                                </a>
-                                                            </h3>
-                                                            <div className={`w-full`}>
-                                                                <a target="_blank">
-                                                                    <p className={`break-words text-[14px] hover:underline truncate`}>CÔNG
-                                                                        TY
-                                                                        CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ
-                                                                        LEANWAY </p>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                        <div className={`w-1/4 flex justify-end pr-2`}>
-                                                            <p className={`text-green_default font-bold`}>7-9
-                                                                triệu</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    className={`mt-auto flex items-end justify-between py-2`}>
-                                                    <div className={`flex gap-4`}>
-                                                        <div
-                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                            <p className={`text-black text-[14px] truncate `}>Hà
-                                                                Nội</p>
-                                                        </div>
-                                                        <div
-                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                            <p className={`text-black text-[14px] truncate `}>Kinh
-                                                                nghiệm: 3 năm</p>
-                                                        </div>
-                                                        <div
-                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                            <p className={`text-black text-[14px] truncate `}>Hạn:
-                                                                29/12/2024</p>
-                                                        </div>
-                                                    </div>
-                                                    {/*<div*/}
-                                                    {/*    className={`bg-white p-1 rounded-full hover:bg-green-300 `}>*/}
-                                                    {/*    <FaRegHeart color={"green"}/>*/}
-                                                    {/*</div>*/}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                ))
-                            }
-                        </div>
-                        <div className={`flex justify-center py-3`}>
-                            <Pagination
-                                pageSize={20}
-                                showSizeChanger={false}
-                                defaultCurrent={6}
-                                total={500}/>
-
-                        </div>
+            <div className={`flex w-full`}>
+                <CompanyStatisticCard
+                    style={'text-green_default'}
+                    animate={true}
+                    statistic={companyStatistics?.newApplicants}
+                    name={'Ứng viên đang chờ trong tháng'}
+                    icon={<BsFileEarmarkPersonFill size={20} color={'#3B7DDD'}/>}
+                />
+                <CompanyStatisticCard
+                    statistic={companyStatistics?.applicants}
+                    name={'Ứng viên trong tháng'}
+                    icon={<MdPersonPin size={20} color={'#3B7DDD'}/>}
+                />
+                <CompanyStatisticCard
+                    statistic={companyStatistics?.newJobs}
+                    name={'Bài đăng trong tháng'}
+                    icon={<HiNewspaper size={20} color={'#3B7DDD'}/>}
+                />
+                <CompanyStatisticCard
+                    style={'text-[#dc3545]'}
+                    statistic={15 - companyStatistics?.newJobs}
+                    name={'Bài đăng còn lại trong tháng'}
+                    icon={<SiPaperlessngx size={20} color={'#3B7DDD'}/>}
+                />
+            </div>
+            <div className={`flex w-full p-3 `}>
+                <div className={`w-full py-3 px-3 pl-0`}>
+                    <div className={`h-[400px] pr-3 py-3 bg-white rounded-lg`}>
+                        <ResponsiveContainer>
+                            <BarChart data={monthlyJobs} width={530} height={250}>
+                                <CartesianGrid strokeDasharray="3 3"/>
+                                <XAxis dataKey="name" label={{
+                                    value: `Tháng`,
+                                    position: 'insideBottomRight',
+                                    offset: -6
+                                }}/>
+                                <YAxis allowDecimals={false}/>
+                                <Tooltip/>
+                                <Legend/>
+                                <Bar dataKey="Bài đăng" fill="#8884d8"/>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
-                {/*right side*/}
-                <div className={`pl-5 w-1/3 flex flex-col gap-6 h-fit sticky top-24`}>
-                    <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
-                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Thông tin liên hệ
-                        </h2>
-                        <div className={` w-full flex flex-col gap-4 bg-white min-h-[100px] px-5 py-4`}>
-                            <div className={`flex flex-col gap-2`}>
-                                <div className={`flex gap-3`}>
-                                    <MdLocationPin size={24} fill={"#00b14f"}/>
-                                    <p>Địa chỉ công ty</p>
-                                </div>
-                                <p className={`opacity-70 ml-2`}>{currentCompany?.address}</p>
-                            </div>
-                            <div className={`flex gap-3`}>
-                                <IoMdMap size={24} fill={"#00b14f"}/>
-                                <p>Xem bản đồ</p>
-                            </div>
-                            <LocationMap
-                                location={currentCompany?.address}
-                            />
-
-                        </div>
-                    </div>
-                    <div className={`rounded-lg bg-white overflow-hidden border-green_default `}>
-                        <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
-                            Chia sẻ với bạn bè
-                        </h2>
-                        <div className={` w-full flex flex-col gap-4 bg-white min-h-[100px] px-5 py-4`}>
-                            <p>Sao chép đường dẫn</p>
-                            <Input
-                                suffix={<PiCopySimple size={20} onClick={handleCopy} className={`cursor-pointer`}
-                                                      fill={"#00b14f"}/>}
-                                contentEditable={false}
-                                value={window.location.href}
-                                variant={'filled'}
-                                readOnly={true}
-                            />
-                            <div className={`mt-3 flex flex-col gap-3`}>
-                                <p>Chia sẻ qua mạng xã hội</p>
-                                <div className={`flex gap-4`}>
-                                    <img
-                                        className={`rounded-full cursor-pointer border w-8 p-1 aspect-square object-cover`}
-                                        alt=""
-                                        src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/facebook.png"/>
-                                    <img className={`rounded-full cursor-pointer border w-8 p-1 aspect-square`}
-                                         alt="" data-ll-status="loaded"
-                                         src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/twitter.png"/>
-                                    <img
-                                        className={`rounded-full cursor-pointer border w-8 p-1 aspect-square object-cover`}
-                                        alt="" data-ll-status="loaded"
-                                        src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/share/linked.png"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     )
 }
 
-export default EmployerHomeUserView;
+
+type CompanyStatisticsProps = {
+    name: string;
+    icon: any,
+    statistic: number,
+    previousStatistics?: number,
+    bottom?: any,
+    style?: any,
+    animate?: boolean
+}
+
+
+const CompanyStatisticCard: React.FC<CompanyStatisticsProps> = (item) => {
+    return (
+        <div className={`p-3 w-1/4`}>
+            <div className={`rounded-lg bg-white   border-green-600 border overflow-hidden p-6 h-[170px]`}>
+                <div className={`flex items-start`}>
+                    <div className={`w-full mt-0 overflow-visible`}>
+                        {
+                            item.animate ? (
+                                <div className={`mb-3`}>
+                                    <PulsatingSphere>
+                                        <p className={`text-[35px] ${item.style}  aspect-square font-[400] leading-8  `}>{item.statistic?.toLocaleString('vi-VN')}</p>
+                                    </PulsatingSphere>
+                                </div>
+                            ) : (
+                                <p className={`text-[35px] mt-2 font-[400] leading-8 ${item.style}  ml-1 mb-5 `}>{item.statistic?.toLocaleString('vi-VN')}</p>
+                            )
+                        }
+                    </div>
+                    <div className={`flex-1 flex justify-end`}>
+                        <div
+                            className={`p-3 rounded-full bg-[#d3e2f7] flex items-center justify-center`}>
+                            {item.icon}
+                        </div>
+
+                    </div>
+                </div>
+
+                <p className={`text-[#939ba2] ${item.style} uppercase font-semibold line-clamp-2 w-[170px]`}>{item.name}</p>
+                {
+
+                    <div className={`flex w-full gap-2 pt-[3px]`}>
+                        <p className={`text-[#939ba2]`}>{item.bottom}</p>
+                    </div>
+
+                }
+            </div>
+        </div>
+    )
+}
+
+
+
+export const AdminMessage = () => {
+    const [typingMessage, setTypingMessage] = useState<string>('')
+    const [loginUser, setLoginUser] = useState<UserResponse | null>(null)
+    const [currentUserId, setCurrentUserId] = useState<string>('')
+    const [currentRecipient, setCurrentRecipient] = useState<Participant>()
+    const [privateChats, setPrivateChats] = useState<ChatMessage[]>([])
+    const bottomRef = useRef<HTMLDivElement>(null)
+    const [allQuickMessages, setAllQuickMessages] = useState<QuickMessage[]>([])
+    const [currentConversationId, setCurrentConversationId] = useState<number>()
+    const navigate = useNavigate()
+
+
+    const onPrivateMessage = (payload: ChatMessage) => {
+        updateAllQuickMessage(payload)
+        setPrivateChats((prevChats) => {
+            const isDup = prevChats.some((item) => item.id === payload.id)
+
+            if (!isDup && prevChats[0] && payload.conversationId === prevChats[0].conversationId) {
+                const newChats = [...prevChats, payload]
+                handleScroll()
+                return newChats
+            }
+            return prevChats
+        })
+    }
+
+    const handleScroll = () => {
+        if (bottomRef.current) {
+            bottomRef.current?.scrollIntoView({behavior: 'instant', block: 'end', inline: 'nearest'})
+            window.scrollBy({
+                top: 50, // Điều chỉnh số pixel cách bottom
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    const getAllConversation = async (userId: string) => {
+        try {
+            const conversations: Conversation[] = await getAllConversations(userId)
+            let quickMessagePromises: Promise<QuickMessage>[] = []
+            const refineQuickMessages = async (value: Conversation, participantId: string) => {
+                const participant: Participant = await getParticipantById(participantId)
+                const quickMessage: QuickMessage = {
+                    id: value.id,
+                    avatar: participant.avatar,
+                    name: participant.name,
+                    text: value.lastMessage,
+                    recipientId: participantId,
+                    conversationId: value.id,
+                    time: value.modifiedAt,
+                    type: value.type
+                }
+                return quickMessage
+            }
+            quickMessagePromises = conversations.map(async (value) => {
+                const participantId = value.senderId
+                return refineQuickMessages(value, participantId)
+            })
+
+            const quickMessages = await Promise.all(quickMessagePromises)
+
+            quickMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+            setAllQuickMessages(quickMessages)
+        } catch (e: any) {
+            toast.error(e.response.data)
+        }
+    }
+
+    const updateAllQuickMessage = (payload: ChatMessage) => {
+        setAllQuickMessages((prevState) => {
+            // Tạo một bản sao mới của prevState bằng cách map qua từng phần tử
+            const updatedMessages = prevState.map((message) => {
+                if (message.conversationId === payload.conversationId) {
+                    // Trả về một object mới với các thuộc tính đã được cập nhật
+                    return {
+                        ...message,
+                        text: payload.content,
+                        time: payload.timestamp,
+                        type: payload.type
+                    };
+                }
+                // Trả về phần tử ban đầu nếu không có thay đổi
+                return message;
+            });
+
+
+            // Sắp xếp lại mảng và trả về mảng mới
+            return updatedMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        });
+
+    }
+
+    const getMessageByConversationId = async (conversationId: number) => {
+        try {
+            let messages: ChatMessage[] = await getMessagesByConversationId(conversationId)
+            if (messages.length > 0) {
+                messages = messages.reverse()
+                messages = messages.filter(
+                    (element, index, self) => index === self.findIndex((e) => e.id === element.id)
+                )
+            }
+            setPrivateChats(messages)
+        } catch (e: any) {
+            toast.error(e.response.data)
+        }
+    }
+
+
+    useEffect(() => {
+
+        const getLogInUser = async (userId: string) => {
+            try {
+                const user: UserResponse = await getCurrentParticipant(userId)
+                setLoginUser(user)
+                setCurrentUserId(user.id)
+                getAllConversation(user.id)
+                connectWebSocket(() => {
+                    subscribeToTopic(`/user/${user.id}/private`, onPrivateMessage)
+                })
+            } catch (e: any) {
+                toast.error(e.response.data)
+            }
+        }
+
+        // const rawUser = JSON.parse(localStorage.getItem('user'))
+        // if (rawUser) {
+        //     getLogInUser(rawUser.id)
+        // } else {
+        //     navigate('/login', {replace: true})
+        // }
+
+
+    }, [])
+
+    const handleClickQuickMessage = async (conversationId: number, participantId: string) => {
+        const participant: Participant = await getParticipant(participantId)
+        setCurrentRecipient(participant)
+        setCurrentConversationId(conversationId)
+
+        if (!currentRecipient || currentRecipient.id != participantId) {
+            await getMessageByConversationId(conversationId)
+        }
+        await delay(20)
+        handleScroll()
+    }
+
+    useEffect(() => {
+        handleScroll()
+    }, [privateChats.length])
+
+    const sendMessages = async (message: string | null) => {
+        let type: string = 'image'
+        if (message == null) {
+            message = typingMessage
+            type = 'text'
+        }
+
+        if (message.trim() !== '' && currentRecipient && loginUser) {
+            let conversationId = currentConversationId
+            let isConverExist = true
+            if (!currentConversationId) {
+                const request: ConversationRequest = {
+                    message: message,
+                    type: type,
+                    recipientId: currentRecipient.id,
+                    senderId: currentUserId,
+                    createdAt: new Date()
+                }
+                const createdConversation = await createNewConversation(request)
+                conversationId = createdConversation.id
+                isConverExist = false
+            }
+            const messageItem: ChatMessage = {
+                id: new Date().getTime().toString(),
+                content: message,
+                timestamp: new Date(),
+                recipientId: currentRecipient.id,
+                senderId: loginUser.id,
+                conversationId: conversationId,
+                type: type
+            }
+            console.log(messageItem)
+            sendMessage('/app/private-message', messageItem)
+            setTypingMessage('')
+            setPrivateChats((prevState) => [...prevState, messageItem])
+            handleScroll()
+            updateAllQuickMessage(messageItem)
+            if (!isConverExist) getAllConversation(currentUserId)
+        }
+    }
+
+    const createNewConversation = async (request: ConversationRequest) => {
+        try {
+            const createdConversation = await createConversation(request)
+            setCurrentConversationId(createdConversation.id)
+            return createdConversation
+        } catch (e: any) {
+            toast.error(e.response.data)
+        }
+    }
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files
+        if (files) {
+            Array.from(files).forEach((file) => {
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                    imageUpload({image: reader.result as string}).then((r) => {
+                        if (r) {
+                            sendMessages(r)
+                        }
+                    })
+                }
+                reader.readAsDataURL(file)
+            })
+        }
+    }
+
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter') {
+            if (e.shiftKey) {
+                return
+            }
+            e.preventDefault()
+            sendMessages(null)
+        }
+    }
+
+    return (
+        <div className={`overflow-hidden `}>
+            <div className={`flex text-[16px] overflow-hidden`}>
+                {/*nav*/}
+                <div
+                    className={`w-[25%] px-3 min-w-[300px] h-screen flex flex-col relative min-h-screen  z-10 bg-white border-r border-r-gray-400 border-gray  overflow-hidden `}
+                >
+                    <div className={`overflow-y-auto bg-white py-2`}>
+                        {/*item*/}
+                        {allQuickMessages.map((value, index) => (
+                            <div
+                                key={index}
+                                onClick={() => handleClickQuickMessage(value.conversationId, value.recipientId)}
+                                className={`px-2 mt-1 hover:bg-gray-100 border-t cursor-pointer rounded py-3  flex gap-x-2 ${currentRecipient && currentRecipient.id == value.recipientId ? 'bg-[#E5EFFF]' : 'bg-gray-50'}`}
+                            >
+                                <div className={` flex items-center gap-x-3 w-[90%]`}>
+                                    <img
+                                        alt={'user'}
+                                        className={`h-[48px] aspect-square object-cover rounded-[100%]`}
+                                        src={value.avatar}
+                                    />
+                                    <div className={`h-full w-full max-w-full overflow-hidden`}>
+                                        <div className={`flex`}>
+                                            <p className={`truncate max-w-full text-[#081C36]`}>{value.name}</p>
+                                            <p className={`flex-1 text-gray-600 flex justify-end items-start`}>
+                                                {new Date(value.time).getHours().toString().padStart(2, '0') +
+                                                    ':' +
+                                                    new Date(value.time).getMinutes().toString().padStart(2, '0')}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className={`truncate max-w-[90%] text-gray-500`}>
+                                                {value.type == 'image' ? '[Hình ảnh]' : value.text}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {currentRecipient ? (
+                    // content
+                    <div className={`flex-1 bg-[#EEF0F1] flex flex-col`}>
+                        {/*header*/}
+                        <div
+                            className={`bg-white border-b  transition-transform duration-300 px-3 py-2 flex gap-x-2 items-start`}
+                        >
+                            <img
+                                alt={'user'}
+                                className={`h-[48px] aspect-square object-cover rounded-[100%]`}
+                                src={currentRecipient.avatar}
+                            />
+                            <p className={`font-bold`}>{currentRecipient.name}</p>
+                        </div>
+                        {/*content*/}
+                        <div className={`flex-1 overflow-hidden relative h-full w-full`}>
+                            <div className={`absolute inset-0 overflow-y-scroll overflow-x-hidden ml-3 pr-3`}>
+                                <div className={`min-h-[100%] flex pb-[28px] flex-col  justify-end`}>
+                                    <div className={`min-h-full flex pb-[48px] gap-y-4 flex-col justify-end `}>
+                                        {/*message card*/}
+                                        {privateChats.length > 0 &&
+                                            privateChats.map((value, index) => (
+                                                <div
+                                                    key={index}
+                                                    className={`m-x-[16px] w-full flex ${value.senderId != loginUser?.id ? 'justify-start' : 'justify-end'}`}
+                                                >
+                                                    <div
+                                                        className={`w-fit min-w-[80px]  max-w-[50%]  drop-shadow relative block p-[12px] rounded-[8px] ${value.senderId != currentUserId ? 'bg-white' : 'bg-chat_me'}`}
+                                                    >
+                                                        {value.type == 'text' ? (
+                                                            <pre className={`break-words  py-1 font-sans text-wrap`}>
+                                                                {value.content}
+                                                            </pre>
+                                                        ) : (
+                                                            <div>
+                                                                <img
+                                                                    className={`object-contain rounded`}
+                                                                    src={value.content}
+                                                                    alt={value.content}
+                                                                />
+                                                            </div>
+                                                        )}
+
+                                                        <p className={`text-[#476285] text-[12px]`}>
+                                                            {new Date(value.timestamp).getHours().toString().padStart(2, '0') +
+                                                                ':' +
+                                                                new Date(value.timestamp).getMinutes().toString().padStart(2, '0')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                    <div className={`h-[14px] break-words `} ref={bottomRef}></div>
+                                </div>
+                            </div>
+                        </div>
+                        {/*type*/}
+                        <div className={`flex flex-col bg-white px-3`}>
+                            <div className={`flex items-center justify-start py-1 border-b w-full`}>
+                                <label
+                                    className="flex flex-col items-center justify-start w-fit h-full  rounded-lg cursor-pointer  ">
+                                    <CiImageOn size={26}/>
+                                    <input
+                                        disabled={!currentRecipient}
+                                        onChange={handleImageChange}
+                                        id="dropzone-file"
+                                        type="file"
+                                        accept={'image/*'}
+                                        multiple={true}
+                                        className="hidden outline-none"
+                                    />
+                                </label>
+                            </div>
+
+                            <div className={`bg-white  flex py-2 items-center gap-x-3`}>
+              <textarea
+                  disabled={!currentRecipient}
+                  onKeyDown={handleKeyDown}
+                  value={typingMessage}
+                  onChange={(e) => setTypingMessage(e.target.value)}
+                  spellCheck={false}
+                  placeholder={'Nhập tin nhắn...'}
+                  className={`w-full px-3 py-2 outline-none resize-none flex-1 self-center !h-[50px]`}
+              />
+                                <div
+                                    onClick={() => sendMessages(null)}
+                                    className={`${currentRecipient ? 'cursor-pointer hover:text-green-500' : 'disabled'}`}
+                                >
+                                    <VscSend size={28}/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+
+                    </div>
+                )}
+
+                <ToastContainer
+                    position="top-center"
+                    autoClose={1000}
+                    hideProgressBar={true}
+                    newestOnTop={true}
+                    closeOnClick
+                />
+            </div>
+        </div>
+    )
+}
+
