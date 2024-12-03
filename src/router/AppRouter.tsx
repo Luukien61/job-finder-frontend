@@ -19,7 +19,7 @@ import AddJob from "@/page/employer/AddJob.tsx";
 import JobSearch from "@/page/JobSearch.tsx";
 import Admin, {AdminDashboard, AdminMessage} from "@/page/admin/Admin.tsx";
 import {AdminReport} from "@/page/admin/AdminReport.tsx";
-import EmployerHomeAdmin, {EmployerDashboard} from "@/page/employer/EmployerHomeUserView.tsx";
+import EmployerHomeAdmin, {EmployerDashboard, EmployerMessage} from "@/page/employer/EmployerHomeUserView.tsx";
 import {EmployerJobs} from "@/page/employer/EmployerJobs.tsx";
 
 const AppRouter = () => {
@@ -50,6 +50,7 @@ const AppRouter = () => {
                 <Route path={'admin'} element={<EmployerHomeAdmin/>}>
                     <Route index={true} element={<EmployerDashboard/>}/>
                     <Route path={'jobs'} element={<EmployerJobs/>}/>
+                    <Route path={'messages'} element={<EmployerMessage/>}/>
                 </Route>
                 <Route path={''} element={<EmployerHome/>}>
                     <Route index={true} element={<HomeContent/>}/>

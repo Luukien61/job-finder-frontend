@@ -37,7 +37,6 @@ export const EmployerJobs = () => {
     const [isViewJobSide, setIsViewJobSide] = useState<boolean>(false);
     const [currentCompanyId, setCurrentCompanyId] = useState<string | null>(null);
     const elementRef = useRef<HTMLDivElement | null>(null);
-    const [width, setWidth] = useState<number>(0);
     const [currentJob, setCurrentJob] = useState<JobDetailProps>();
     const [applicants, setApplicants] = useState<JobApplication[]>([]);
     const priorityMap = {
@@ -157,30 +156,6 @@ export const EmployerJobs = () => {
     }
 
 
-    const openSuccessNotification = (message: string) => {
-        const key = `open${Date.now()}`;
-        api.success({
-            message: 'Thành công',
-            description: message,
-            key,
-            showProgress: true,
-            onClose: () => {
-            },
-        });
-    };
-
-    const openErrorNotification = (message: string) => {
-        const key = `open${Date.now()}`;
-        api.error({
-            message: 'Opp!',
-            description: message,
-            key,
-            showProgress: true,
-            onClose: () => {
-            },
-        });
-    };
-
     const handelJobCardClick = async (jobId: number) => {
         setIsViewJobSide(true);
         try {
@@ -197,6 +172,7 @@ export const EmployerJobs = () => {
                 }
             }
 
+            // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
         } catch (e) {
             toast.error("Co loi xay ra")
         }
@@ -273,6 +249,7 @@ export const EmployerJobs = () => {
             fetchJobStatistics(company.id)
             setCurrentCompanyId(company.id)
         }
+
     }, [])
     return (
         <>
@@ -302,26 +279,28 @@ export const EmployerJobs = () => {
                             </div>
 
                             <div className={`overflow-hidden`}>
-                                <div className={`flex flex-col py-4 px-4 overflow-y-auto h-[calc(100vh-50px)] relative`}>
+                                <div  className={`flex flex-col py-4 px-4 overflow-y-auto h-[calc(100vh-110px)] relative`}>
                                     <h3>
-                                        <p className={`font-[600] sticky top-0 hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
+                                        <p className={`font-[600] hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
                                             {currentJob?.title}
                                         </p>
                                     </h3>
-                                    <ExpandableCard
-                                        children={<div className={`pt-4`}>
-                                            <p className={`font-semibold`}>Yêu cầu ứng viên</p>
-                                            <pre>
+                                    <div ref={elementRef}>
+                                        <ExpandableCard
+                                            children={<div className={`pt-4`}>
+                                                <p className={`font-semibold`}>Yêu cầu ứng viên</p>
+                                                <pre>
                                                 {currentJob?.requirements}
                                             </pre>
-                                            <a href={`/job/detail/${currentJob?.jobId}`}
-                                               className={`text-green_default italic hover:underline cursor-pointer`}>
-                                                Xem chi tiết công việc
-                                            </a>
-                                        </div>}
-                                        high={60}
-                                    />
-                                    <div className={`h-[65%] overflow-y-auto`}>
+                                                <a href={`/job/detail/${currentJob?.jobId}`}
+                                                   className={`text-green_default italic hover:underline cursor-pointer`}>
+                                                    Xem chi tiết công việc
+                                                </a>
+                                            </div>}
+                                            high={60}
+                                        />
+                                    </div>
+                                    <div style={{scrollbarWidth: 'none'}} className={`h-[70%]  `}>
                                         <h2 className="border-l-[6px] mb-4 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
                                             Ứng viên
                                         </h2>

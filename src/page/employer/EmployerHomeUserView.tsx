@@ -269,7 +269,7 @@ const CompanyStatisticCard: React.FC<CompanyStatisticsProps> = (item) => {
 
 
 
-export const AdminMessage = () => {
+export const EmployerMessage = () => {
     const [typingMessage, setTypingMessage] = useState<string>('')
     const [loginUser, setLoginUser] = useState<UserResponse | null>(null)
     const [currentUserId, setCurrentUserId] = useState<string>('')
