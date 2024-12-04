@@ -8,15 +8,15 @@ interface Props {
     onChange: React.Dispatch<React.SetStateAction<string>>,
     placeholder: string,
     minHigh?: number,
+    defaultValue?: string,
 }
 
-const AutoBulletTextArea : React.FC<Props> = ({placeholder, value,onChange, style='', minHigh=100}) => {
+const AutoBulletTextArea : React.FC<Props> = ({placeholder, value,onChange, style='', minHigh=100, defaultValue}) => {
     const textAreaRef = useRef(null);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-
             const cursorPosition = e.target.selectionStart;
             const textBeforeCursor = value.substring(0, cursorPosition);
             const textAfterCursor = value.substring(cursorPosition);
@@ -87,6 +87,7 @@ const AutoBulletTextArea : React.FC<Props> = ({placeholder, value,onChange, styl
 
     return (
         <TextArea
+            defaultValue={defaultValue}
             onKeyDown={handleKeyDown}
             ref={textAreaRef}
             style={{height: 300, minHeight: minHigh}} className={`text-16 p-4 ${style}`}

@@ -29,6 +29,8 @@ import {delay, UserResponse} from "@/page/GoogleCode.tsx";
 import {homePage} from "@/url/Url.ts";
 import {AppInfo} from "@/info/AppInfo.ts";
 import {useMessageReceiverState} from "@/zustand/AppState.ts";
+import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
+import {Spin, Watermark} from "antd";
 
 
 export type QuickMessage = {
@@ -37,7 +39,7 @@ export type QuickMessage = {
     avatar: string
     text: string
     name: string
-    time: Date|string
+    time: Date | string
     conversationId: number
     type: string
 }
@@ -52,8 +54,17 @@ const Message = () => {
     const [allQuickMessages, setAllQuickMessages] = useState<QuickMessage[]>([])
     const [currentConversationId, setCurrentConversationId] = useState<number>()
     const navigate = useNavigate()
-    const {receiverId,setReceiverId} = useMessageReceiverState()
-
+    const {receiverId, setReceiverId} = useMessageReceiverState()
+    const [isBanned, setIsBanned] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const checkCompanyStatus = async (id) => {
+        try {
+            const isBanned: boolean = await checkIsCompanyBanned(id);
+            setIsBanned(isBanned);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     const onPrivateMessage = (payload: ChatMessage) => {
         updateAllQuickMessage(payload)
@@ -70,7 +81,7 @@ const Message = () => {
     }
 
     const handleScroll = () => {
-        if(bottomRef.current){
+        if (bottomRef.current) {
             bottomRef.current?.scrollIntoView({behavior: 'instant', block: 'end', inline: 'nearest'})
             window.scrollBy({
                 top: 50, // Điều chỉnh số pixel cách bottom
@@ -171,6 +182,8 @@ const Message = () => {
                 connectWebSocket(() => {
                     subscribeToTopic(`/user/${user.id}/private`, onPrivateMessage)
                 })
+                await delay(1000)
+                setIsLoading(false)
             } catch (e: any) {
                 toast.error(e.response.data)
             }
@@ -179,6 +192,7 @@ const Message = () => {
         let rawUser = JSON.parse(localStorage.getItem('user'))
         if (!rawUser) {
             rawUser = JSON.parse(localStorage.getItem('company'))
+            if (rawUser) checkCompanyStatus(rawUser.id)
             if (receiverId) {
                 handleGetConversationByUserIds(rawUser.id, receiverId)
             }
@@ -210,49 +224,50 @@ const Message = () => {
     }, [privateChats.length])
 
     const sendMessages = async (message: string | null) => {
-        let type: string = 'image'
-        if (message == null) {
-            message = typingMessage
-            type = 'text'
-        }
+        if (!isBanned) {
+            let type: string = 'image'
+            if (message == null) {
+                message = typingMessage
+                type = 'text'
+            }
 
-        if (message.trim() !== '' && currentRecipient && loginUser) {
-            let conversationId = currentConversationId
-            let isConverExist = true
-            if (!currentConversationId) {
-                const request: ConversationRequest = {
-                    message: message,
-                    type: type,
-                    recipientId: currentRecipient.id,
-                    senderId: currentUserId,
-                    createdAt: new Date()
+            if (message.trim() !== '' && currentRecipient && loginUser) {
+                let conversationId = currentConversationId
+                let isConverExist = true
+                if (!currentConversationId) {
+                    const request: ConversationRequest = {
+                        message: message,
+                        type: type,
+                        recipientId: currentRecipient.id,
+                        senderId: currentUserId,
+                        createdAt: new Date()
+                    }
+                    const createdConversation = await createNewConversation(request)
+                    conversationId = createdConversation.id
+                    isConverExist = false
                 }
-                const createdConversation = await createNewConversation(request)
-                conversationId=createdConversation.id
-                isConverExist = false
+                const messageItem: ChatMessage = {
+                    id: new Date().getTime().toString(),
+                    content: message,
+                    timestamp: new Date(),
+                    recipientId: currentRecipient.id,
+                    senderId: loginUser.id,
+                    conversationId: conversationId,
+                    type: type
+                }
+                sendMessage('/app/private-message', messageItem)
+                setTypingMessage('')
+                setPrivateChats((prevState) => [...prevState, messageItem])
+                handleScroll()
+                updateAllQuickMessage(messageItem)
+                if (!isConverExist) getAllConversation(currentUserId)
             }
-            const messageItem: ChatMessage = {
-                id: new Date().getTime().toString(),
-                content: message,
-                timestamp: new Date(),
-                recipientId: currentRecipient.id,
-                senderId: loginUser.id,
-                conversationId: conversationId,
-                type: type
-            }
-            console.log(messageItem)
-            sendMessage('/app/private-message', messageItem)
-            setTypingMessage('')
-            setPrivateChats((prevState) => [...prevState, messageItem])
-            handleScroll()
-            updateAllQuickMessage(messageItem)
-            if (!isConverExist) getAllConversation(currentUserId)
         }
     }
 
     const createNewConversation = async (request: ConversationRequest) => {
         try {
-            const createdConversation =  await createConversation(request)
+            const createdConversation = await createConversation(request)
             setCurrentConversationId(createdConversation.id)
             return createdConversation
         } catch (e: any) {
@@ -293,8 +308,9 @@ const Message = () => {
             if (conversation) {
                 setCurrentConversationId(conversation.id)
                 getMessageByConversationId(conversation.id)
+            } else {
+                setCurrentConversationId(undefined)
             }
-            else {setCurrentConversationId(undefined)}
 
         } catch (err) {
             toast.error(err)
@@ -329,12 +345,12 @@ const Message = () => {
                             <div className={`flex gap-4 pt-4 pl-0 `}>
                                 <div className={`flex gap-4 rounded-full cursor-pointer`}>
                                     <img
-                                        className={`w-[48px] rounded-full aspect-square object-cover`}
+                                        className={`w-[48px] h-[48px] rounded-full aspect-square object-cover`}
                                         src={loginUser?.avatar}
                                         alt={'avatar'}
                                     />
-                                    <div className={`flex items-center justify-start truncate`}>
-                                        <p className={`font-bold text-[18px]`}>{loginUser ? loginUser.name : ''}</p>
+                                    <div className={`flex items-center overflow-hidden justify-start`}>
+                                        <p className={`font-bold text-[18px] line-clamp-2`}>{loginUser ? loginUser.name : ''}</p>
                                     </div>
                                 </div>
                             </div>
@@ -388,7 +404,7 @@ const Message = () => {
                             />
                             <p className={`font-bold`}>{currentRecipient.name}</p>
                             <div className={`flex-1 flex justify-end`}>
-                                {client&&(
+                                {client && !isBanned && (
                                     <VideoCall
                                         senderName={loginUser ? loginUser.name : ''}
                                         senderAvatar={loginUser ? loginUser.avatar : ''}
@@ -449,7 +465,7 @@ const Message = () => {
                                     className="flex flex-col items-center justify-start w-fit h-full  rounded-lg cursor-pointer  ">
                                     <CiImageOn size={26}/>
                                     <input
-                                        disabled={!currentRecipient}
+                                        disabled={!currentRecipient || isBanned}
                                         onChange={handleImageChange}
                                         id="dropzone-file"
                                         type="file"
@@ -462,7 +478,7 @@ const Message = () => {
 
                             <div className={`bg-white  flex py-2 items-center gap-x-3`}>
               <textarea
-                  disabled={!currentRecipient}
+                  disabled={!currentRecipient || isBanned}
                   onKeyDown={handleKeyDown}
                   value={typingMessage}
                   onChange={(e) => setTypingMessage(e.target.value)}
@@ -480,8 +496,15 @@ const Message = () => {
                         </div>
                     </div>
                 ) : (
-                    <div>
-
+                    <div className={`flex-1`}>
+                        <Watermark
+                            content={['JobFinder connector', 'Happy Working']}
+                            height={40}
+                            width={150}
+                            image={'public/logo.png'}
+                        >
+                            <div className={`h-screen`} />
+                        </Watermark>
                     </div>
                 )}
 
@@ -493,6 +516,9 @@ const Message = () => {
                     closeOnClick
                 />
             </div>
+            {
+                isLoading && <Spin size={"large"} fullscreen={true}/>
+            }
         </div>
     )
 }

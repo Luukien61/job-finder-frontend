@@ -1,130 +1,93 @@
-import React, { useState } from 'react';
-import type { CascaderProps } from 'antd';
-import {
-    AutoComplete,
-    Button,
-    Cascader,
-    Checkbox,
-    Col,
-    Form,
-    Input,
-    InputNumber,
-    Row,
-    Select,
-} from 'antd';
-import AutoAddDashTextarea from "@/component/AutoAddDashTextarea.tsx";
+import React, {useState} from 'react';
+import {PlusOutlined} from '@ant-design/icons';
+import {Image, Upload, message, Button} from 'antd';
+import type {GetProp, UploadFile, UploadProps} from 'antd';
 
-const { Option } = Select;
+type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
-interface DataNodeType {
-    value: string;
-    label: string;
-    children?: DataNodeType[];
-}
-
-const residences: CascaderProps<DataNodeType>['options'] = [
-    {
-        value: 'zhejiang',
-        label: 'Zhejiang',
-        children: [
-            {
-                value: 'hangzhou',
-                label: 'Hangzhou',
-                children: [
-                    {
-                        value: 'xihu',
-                        label: 'West Lake',
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        value: 'jiangsu',
-        label: 'Jiangsu',
-        children: [
-            {
-                value: 'nanjing',
-                label: 'Nanjing',
-                children: [
-                    {
-                        value: 'zhonghuamen',
-                        label: 'Zhong Hua Men',
-                    },
-                ],
-            },
-        ],
-    },
-];
-
-const formItemLayout = {
-    labelCol: {
-        xs: { span: 24 },
-        sm: { span: 8 },
-    },
-    wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 },
-    },
-};
-
-const tailFormItemLayout = {
-    wrapperCol: {
-        xs: {
-            span: 24,
-            offset: 0,
-        },
-        sm: {
-            span: 16,
-            offset: 8,
-        },
-    },
-};
+const getBase64 = (file: FileType): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+    });
 
 const App: React.FC = () => {
-    const [form] = Form.useForm();
-
-    const onFinish = (values: any) => {
-        console.log('Received values of form: ', values);
-    };
-
-    const prefixSelector = (
-        <Form.Item name="prefix" noStyle>
-            <Select style={{ width: 70 }}>
-                <Option value="86">+86</Option>
-                <Option value="87">+87</Option>
-            </Select>
-        </Form.Item>
-    );
-
-    const suffixSelector = (
-        <Form.Item name="suffix" noStyle>
-            <Select style={{ width: 70 }}>
-                <Option value="USD">$</Option>
-                <Option value="CNY">¥</Option>
-            </Select>
-        </Form.Item>
-    );
-
-    const [autoCompleteResult, setAutoCompleteResult] = useState<string[]>([]);
-
-    const onWebsiteChange = (value: string) => {
-        if (!value) {
-            setAutoCompleteResult([]);
-        } else {
-            setAutoCompleteResult(['.com', '.org', '.net'].map((domain) => `${value}${domain}`));
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
+    const [fileList, setFileList] = useState<UploadFile[]>([
+        {
+            uid: '0',
+            name: 'image.png',
+            status: 'done',
+            url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
         }
+    ]);
+
+    const props: UploadProps = {
+        beforeUpload: (file) => {
+            setFileList([...fileList, file]);
+
+            return false;
+        },
+        fileList,
     };
 
-    const websiteOptions = autoCompleteResult.map((website) => ({
-        label: website,
-        value: website,
-    }));
+    const handlePreview = async (file: UploadFile) => {
+        if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originFileObj as FileType);
+        }
 
+        setPreviewImage(file.url || (file.preview as string));
+        setPreviewOpen(true);
+    };
+
+    const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
+        setFileList(newFileList);
+    }
+    const handleUpload = () => {
+        const file = fileList[0]
+    };
+
+    const uploadButton = (
+        <button style={{border: 0, background: 'none'}} type="button">
+            <PlusOutlined/>
+            <div style={{marginTop: 8}}>Tải lên</div>
+        </button>
+    );
     return (
-        <div>
-            <AutoAddDashTextarea/>
-        </div>
+        <>
+            <Upload {...props}
+                    listType="picture-circle"
+                    fileList={fileList}
+                    onPreview={handlePreview}
+                    onChange={handleChange}
+                    style={{width: 250}}
+            >
+                {fileList.length >= 1 ? null : uploadButton}
+            </Upload>
+            <Button
+                type="primary"
+                onClick={handleUpload}
+                disabled={fileList.length === 0}
+
+                style={{marginTop: 16}}
+            >
+                Upload
+            </Button>
+            {previewImage && (
+                <Image
+                    wrapperStyle={{display: 'none'}}
+                    preview={{
+                        visible: previewOpen,
+                        onVisibleChange: (visible) => setPreviewOpen(visible),
+                        afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                    }}
+                    src={previewImage}
+                />
+            )}
+        </>
     );
 };
 

@@ -136,11 +136,16 @@ export const employerLogin = async (request: any) => {
 export const addJob = async (companyId, request: any) => {
     return await instance.post(`/job/${companyId}`, request).then((response: any) => response.data)
 }
+export const updateJob = async (jobId: string, request: any) => {
+    return await instance.post(`/job/update`, request).then((response: any) => response.data)
+}
 
 export const getCompanyInfo = async (id: string) => {
     return await instance.get(`${companyBackendPath}/${id}`).then((response: any) => response.data)
 }
-
+export const isCompanyBanned = async (id: string) => {
+    return await instance.get(`${companyBackendPath}/${id}/status`).then((response: any) => response.data)
+}
 export const getJobDetailById = async (id: string | number) => {
     return await instance.get(`/job/${id}`).then((response: any) => response.data)
 }

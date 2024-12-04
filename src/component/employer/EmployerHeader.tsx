@@ -2,9 +2,19 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {IoNotifications} from "react-icons/io5";
 import {connectWebSocket, subscribeToTopic} from "@/service/WebSocketService.ts";
 import {Dropdown, MenuProps, Modal} from "antd";
-import {countAllNotificationDeliveried, getAllNotifications, updateNotificationStatus} from "@/axios/Request.ts";
+import {
+    countAllNotificationDeliveried,
+    getAllNotifications,
+    getCompanyInfo,
+    updateNotificationStatus
+} from "@/axios/Request.ts";
 import {IoMdCloseCircle} from "react-icons/io";
-import {delay} from "@/page/GoogleCode.tsx";
+import {AiFillMessage} from "react-icons/ai";
+import {useNavigate} from "react-router-dom";
+import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
+import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
+import {useIsCompanyBannedState} from "@/zustand/AppState.ts";
+
 interface BanProps {
     id: number;
     title: string;
@@ -22,12 +32,37 @@ interface Notification {
     status: string,
     userId: string
 }
-const EmployerHeader = () => {
+export const EmployerHeader = () => {
     const [currentEmployerId, setCurrentEmployerId] = useState<string | null>(null);
     const [unreadNotification, setUnreadNotification] = useState<number>();
     const [items, setItems] = useState<MenuProps['items']>([]);
     const [isViewDetail, setIsViewDetail] = useState(false);
     const [currentBanNotification, setCurrentBanNotification] = useState< BanProps>();
+    const navigate = useNavigate();
+    const [companyInfo, setCompanyInfo] = useState<CompanyInfo>();
+    const [currentNav, setCurrentNav] = useState<string>();
+    const getNavLocation =()=>{
+        const paths = location.pathname.split("/");
+        let current = paths[paths.length - 1];
+        if(current == 'employer'){
+            current =''
+        }
+        setCurrentNav(current);
+    }
+    const {setIsCompanyBanned}=useIsCompanyBannedState()
+    const [isBanned, setIsBanned] = useState<boolean>(false);
+    const checkCompanyStatus = async (id) => {
+        try {
+            const isBanned: boolean = await checkIsCompanyBanned(id);
+            setIsBanned(isBanned);
+            setIsCompanyBanned(isBanned);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    useEffect(() => {
+        getNavLocation()
+    }, [location]);
 
     const updateNotificationState=async (id:number, status: string)=>{
         try{
@@ -77,6 +112,14 @@ const EmployerHeader = () => {
     const onCloseDetails=()=>{
         setIsViewDetail(false);
     }
+    const fetchCompanyInfo=async (id)=>{
+        try{
+            const info : CompanyInfo= await getCompanyInfo(id)
+            setCompanyInfo(info)
+        }catch(error){
+            console.log(error);
+        }
+    }
 
     useEffect(() => {
         const employer = JSON.parse(localStorage.getItem("company"));
@@ -87,9 +130,23 @@ const EmployerHeader = () => {
                 subscribeToTopic(`/user/${id}/notifications`, onReceiveNotification)
             })
             getCountNotificationCountUnread(id)
+            fetchCompanyInfo(id)
+            checkCompanyStatus(id)
         }
 
     }, []);
+    const handleMenuItemChange = (item: any) => {
+        navigate(`${item}`)
+        setCurrentNav(item)
+    }
+    const openLocation=(location: string, isBlank: boolean)=>{
+        if(isBlank){
+            window.open(location, '_blank')
+        }else {
+            window.location.href=location
+        }
+
+    }
 
     return (
         <div
@@ -111,23 +168,43 @@ const EmployerHeader = () => {
                         {/*<p className="text-black font-semibold">{AppInfo.appName}</p>*/}
                     </a>
                 </div>
-                <div className={`flex-1 flex *:text-[18px] justify-start gap-10   items-center`}>
-                    <img className={`h-[70px] `} src={'/public/img_1.png'} alt={'logo'} />
+                <div
+                    className={`flex-1 flex  *:font-[600] *:text-16 *:cursor-pointer ml-6 justify-start gap-10   items-center`}>
+                    <p onClick={() => handleMenuItemChange('')}
+                       className={`hover:underline ${currentNav == '' && 'text-green_default underline'}`}>Trang chủ</p>
+                    <p onClick={() => handleMenuItemChange('jobs')}
+                       className={`hover:underline  ${currentNav == 'jobs' && 'text-green_default underline'}`}>Bài
+                        đăng</p>
                 </div>
+
+
                 <Dropdown
-                    overlayStyle={{width:'400px'}}
-                    menu={{ items}}
+                    overlayStyle={{width: '400px'}}
+                    menu={{items}}
                     placement="bottomLeft"
-                    arrow={{ pointAtCenter: true }}
+                    arrow={{pointAtCenter: true}}
                     trigger={['click']}>
                     <div onClick={fetchAllNotifications}
-                        className={`cursor-pointer relative h-fit rounded-full aspect-square flex items-center justify-center w-10 bg-[#E5F7ED]`}>
+                         className={`cursor-pointer relative h-fit rounded-full aspect-square flex items-center justify-center w-10 bg-[#E5F7ED]`}>
                         <IoNotifications size={24} fill={"#00B14F"}/>
                         {unreadNotification > 0 && <div
                             className={`w-3 absolute top-[20%] right-[20%] rounded-full aspect-square bg-red-500`}/>}
                     </div>
                 </Dropdown>
-
+                <div className={`flex gap-3 ml-3`}>
+                    <div
+                        onClick={()=>openLocation(`/message/${companyInfo?.id}`,true)}
+                        className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
+                        <button className={`disabled:opacity-50`} disabled={isBanned}>
+                            <AiFillMessage size={24} fill={"#00B14F"}/>
+                        </button>
+                    </div>
+                    <div onClick={()=>openLocation('/employer/profile',false)}
+                         className={`w-9 cursor-pointer  bg-white  aspect-square rounded-full overflow-y-hidden`}>
+                        <img src={companyInfo?.logo} alt={`avatar`}
+                             className="object-cover aspect-square"/>
+                    </div>
+                </div>
             </div>
 
             <Modal

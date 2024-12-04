@@ -1,8 +1,4 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
-import {LuLayoutDashboard} from "react-icons/lu";
-import {FaBookOpen} from "react-icons/fa";
-import {Menu} from "antd";
-import {AiFillMessage} from "react-icons/ai";
 import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {
     ConversationRequest,
@@ -30,67 +26,19 @@ import {CiImageOn} from "react-icons/ci";
 import {VscSend} from "react-icons/vsc";
 import {QuickMessage} from "@/page/Message.tsx";
 import {BsFileEarmarkPersonFill} from "react-icons/bs";
-import {MdPersonPin} from "react-icons/md";
+import {MdKeyboardDoubleArrowRight, MdPersonPin} from "react-icons/md";
 import {HiNewspaper} from "react-icons/hi";
 import {SiPaperlessngx} from "react-icons/si";
 import PulsatingSphere from "@/component/PulsatingSphere.tsx";
+import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
 
 
 const EmployerHomeAdmin = () => {
-    const navigate = useNavigate();
-    const menuItems = [
-        {
-            key: '',
-            icon: <LuLayoutDashboard size={16} color={'white'}/>,
-            label: 'Trang chủ',
-        },
-        {
-            key: 'jobs',
-            icon: <FaBookOpen size={16} fill={'white'}/>,
-            label: 'Bài đăng',
-        },
-        {
-            key: 'messages',
-            icon: <AiFillMessage size={16} fill={'white'}/>,
-            label: 'Tin nhắn',
-        },
-    ]
-    const handleMenuItemChange = (item: any) => {
-        navigate(`${item.key}`)
-    }
     return (
-        <div>
-            <div className={` flex`}>
-                <div className={`h-fit text-white fixed min-h-screen py-4 px-4 w-[240px] overflow-hidden bg-[#222e3c]`}>
-                    <div className={`mt-4`}>
-                        <div className={`flex ml-3 justify-start`}>
-                            <p className={`font-bold text-[24px]`}>JobFinder</p>
-                        </div>
-                        <div
-                            className={` rounded  bg-inherit pl-2 `}>
-                            <div className={`flex gap-4 pt-4 pl-0 `}>
-                                <div className={`flex gap-4 flex-col rounded-full cursor-pointer`}>
-                                    <img
-                                        className={`w-[48px] rounded-full aspect-square object-cover`}
-                                        src={"https://res.cloudinary.com/dmi3xizxq/image/upload/v1732423764/yp4elkx2acqdx5e4xjci.jpg"}
-                                        alt={'avatar'}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={`mt-10`}>
-                        <Menu
-                            onSelect={handleMenuItemChange}
-                            theme="dark"
-                            style={{backgroundColor: '#222e3c'}}
-                            defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['sub1']}
-                            items={menuItems}
-                        />
-                    </div>
-                </div>
-                <div className={`ml-[240px] overflow-x-hidden w-[calc(100vw-240px)]`}>
+        <div className={`relative`}>
+            <EmployerHeader/>
+            <div className={`w-full flex justify-center`}>
+                <div className={`w-[1250px]`}>
                     <Outlet/>
                 </div>
 
@@ -123,7 +71,6 @@ export const EmployerDashboard = () => {
     const [currentCompanyId, setCurrentCompanyId] = useState<string | null>(null);
     const [companyStatistics, setCompanyStatistics] = useState<AdminProps>()
     const [monthlyJobs, setMonthlyJobs] = useState<BarProps[]>()
-
     const date = new Date();
     const currentMonth = date.getMonth() + 1;
     const currentYear = date.getFullYear();
@@ -152,6 +99,10 @@ export const EmployerDashboard = () => {
         }
     }
 
+    const navigateTo = (id: string) => {
+        window.location.href=`/employer/${id}`;
+    }
+
     useEffect(() => {
         const company = JSON.parse(localStorage.getItem("company"));
         if (company && company.id) {
@@ -161,7 +112,7 @@ export const EmployerDashboard = () => {
     }, []);
 
     return (
-        <div className={`w-full px-[60px] py-10`}>
+        <div className={`px-[60px] py-10 `}>
             <div>
                 <p className={`w-fit font-bold text-[26px] pl-3`}> <span
                     className={`font-normal text-[26px]`}>Dashboard</span></p>
@@ -169,7 +120,18 @@ export const EmployerDashboard = () => {
             <div className={`flex w-full`}>
                 <CompanyStatisticCard
                     style={'text-green_default'}
-                    animate={true}
+                    animate={false}
+                    bottom={
+                        <PulsatingSphere color={'bg-[#DCEEE9]'}
+                                         style={'right-1 w-9 bottom-[80%]'}>
+                            <div className={`absolute right-2 bottom-[100%]`}>
+                                <MdKeyboardDoubleArrowRight
+                                    onClick={()=>navigateTo("jobs")}
+                                    className={`cursor-pointer`}
+                                    size={28}
+                                    fill={"#00b14f"}/></div>
+                        </PulsatingSphere>
+                    }
                     statistic={companyStatistics?.newApplicants}
                     name={'Ứng viên đang chờ trong tháng'}
                     icon={<BsFileEarmarkPersonFill size={20} color={'#3B7DDD'}/>}
@@ -193,7 +155,7 @@ export const EmployerDashboard = () => {
             </div>
             <div className={`flex w-full p-3 `}>
                 <div className={`w-full py-3 px-3 pl-0`}>
-                    <div className={`h-[400px] pr-3 py-3 bg-white rounded-lg`}>
+                    <div className={`h-[300px] pr-3 py-3 bg-white rounded-lg`}>
                         <ResponsiveContainer>
                             <BarChart data={monthlyJobs} width={530} height={250}>
                                 <CartesianGrid strokeDasharray="3 3"/>
@@ -230,20 +192,10 @@ type CompanyStatisticsProps = {
 const CompanyStatisticCard: React.FC<CompanyStatisticsProps> = (item) => {
     return (
         <div className={`p-3 w-1/4`}>
-            <div className={`rounded-lg bg-white   border-green-600 border overflow-hidden p-6 h-[170px]`}>
+            <div className={`rounded-lg bg-white relative   border-green-600 border overflow-hidden p-6 h-[170px]`}>
                 <div className={`flex items-start`}>
                     <div className={`w-full mt-0 overflow-visible`}>
-                        {
-                            item.animate ? (
-                                <div className={`mb-3`}>
-                                    <PulsatingSphere>
-                                        <p className={`text-[35px] ${item.style}  aspect-square font-[400] leading-8  `}>{item.statistic?.toLocaleString('vi-VN')}</p>
-                                    </PulsatingSphere>
-                                </div>
-                            ) : (
-                                <p className={`text-[35px] mt-2 font-[400] leading-8 ${item.style}  ml-1 mb-5 `}>{item.statistic?.toLocaleString('vi-VN')}</p>
-                            )
-                        }
+                        <p className={`text-[35px] mt-2 font-[400] leading-8 ${item.style}  ml-1 mb-5 `}>{item.statistic?.toLocaleString('vi-VN')}</p>
                     </div>
                     <div className={`flex-1 flex justify-end`}>
                         <div
@@ -255,18 +207,11 @@ const CompanyStatisticCard: React.FC<CompanyStatisticsProps> = (item) => {
                 </div>
 
                 <p className={`text-[#939ba2] ${item.style} uppercase font-semibold line-clamp-2 w-[170px]`}>{item.name}</p>
-                {
-
-                    <div className={`flex w-full gap-2 pt-[3px]`}>
-                        <p className={`text-[#939ba2]`}>{item.bottom}</p>
-                    </div>
-
-                }
+                {item.bottom}
             </div>
         </div>
     )
 }
-
 
 
 export const EmployerMessage = () => {

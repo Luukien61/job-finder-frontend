@@ -1,16 +1,27 @@
 import React, {useEffect, useRef, useState} from "react";
 import {JobApplication, JobDetailProps} from "@/info/ApplicationType.ts";
 import {
-    acceptApplication,
+    acceptApplication, canPostJob,
     getApplicationsByJobId,
     getCompanyJobStatistics,
     getJobDetailById,
     getUserBasicInfo, rejectApplication
 } from "@/axios/Request.ts";
-import {Avatar, List, notification, Table, TableColumnsType, Tag, Tooltip} from "antd";
+import {
+    Avatar, Button,
+    Input, type InputRef,
+    List,
+    notification,
+    Space,
+    Table,
+    TableColumnsType,
+    type TableColumnType,
+    Tag,
+    Tooltip
+} from "antd";
 import {toast} from "react-toastify";
 import {format} from "date-fns";
-import {IoCloseCircleSharp, IoMail} from "react-icons/io5";
+import {IoAddCircleSharp, IoCloseCircleSharp, IoMail} from "react-icons/io5";
 import ExpandableCard from "@/component/ExpandableCard.tsx";
 import {CustomModal, UserDto} from "@/page/UserProfile.tsx";
 import {FaPhoneAlt} from "react-icons/fa";
@@ -20,6 +31,13 @@ import {SiImessage} from "react-icons/si";
 import {ImMail} from "react-icons/im";
 import FlexStickyLayout from "@/component/AllPagesPDFViewer.tsx";
 import {useMessageReceiverState} from "@/zustand/AppState.ts";
+import PulsatingSphere from "@/component/PulsatingSphere.tsx";
+import {useNavigate} from "react-router-dom";
+import {BiSolidEdit} from "react-icons/bi";
+import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
+import type {FilterDropdownProps} from "antd/es/table/interface";
+import {SearchOutlined} from "@ant-design/icons";
+import Highlighter from 'react-highlight-words';
 
 interface JobDetailStatistic {
     id: number;
@@ -31,7 +49,7 @@ interface JobDetailStatistic {
     pending: number
     accepted: number
 }
-
+type DataIndex = keyof JobDetailStatistic;
 
 export const EmployerJobs = () => {
     const [isViewJobSide, setIsViewJobSide] = useState<boolean>(false);
@@ -44,6 +62,112 @@ export const EmployerJobs = () => {
         'ACCEPTED': 1,
         'REJECTED': 2
     };
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const searchInput = useRef<InputRef>(null);
+    const handleSearch = (
+        selectedKeys: string[],
+        confirm: FilterDropdownProps['confirm'],
+        dataIndex: DataIndex,
+    ) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+
+    const handleReset = (clearFilters: () => void) => {
+        clearFilters();
+        setSearchText('');
+    };
+
+    const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<JobDetailStatistic> => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    ref={searchInput}
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+                    style={{ marginBottom: 8, display: 'block' }}
+                />
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Tìm
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            if(clearFilters){
+                                handleReset(clearFilters)
+                            }
+                            setSearchText('');
+                            setSearchedColumn(dataIndex);
+                        }}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Xóa
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            confirm({ closeDropdown: true });
+                            setSearchText((selectedKeys as string[])[0]);
+                            setSearchedColumn(dataIndex);
+                        }}
+                    >
+                        Lọc
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            confirm({ closeDropdown: true });
+                            setSearchText((selectedKeys as string[])[0]);
+                            setSearchedColumn(dataIndex);
+                            close();
+                        }}
+                    >
+                        Đóng
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered: boolean) => (
+            <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex]
+                .toString()
+                .toLowerCase()
+                .includes((value as string).toLowerCase()),
+        filterDropdownProps: {
+            onOpenChange(open) {
+                if (open) {
+                    setTimeout(() => searchInput.current?.select(), 100);
+                }
+            },
+        },
+        render: (text) =>
+            searchedColumn === dataIndex ? (
+                <Highlighter
+                    highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={text ? text.toString() : ''}
+                />
+            ) : (
+                text
+            ),
+    });
+
 
     const columns: TableColumnsType<JobDetailStatistic> = [
         {
@@ -54,6 +178,8 @@ export const EmployerJobs = () => {
                 showTitle: false,
             },
             width: isViewJobSide ? '200px' : '500px',
+
+            ...getColumnSearchProps('title'),
             render: (title, record) => (
                 <Tooltip placement="topLeft" title={title}>
                     <a onClick={() => handelJobCardClick(record.id)}>{title}</a>
@@ -142,6 +268,16 @@ export const EmployerJobs = () => {
     const [applicationState, setApplicationSate] = useState<string>();
     const [currentAppId, setCurrentAppId] = useState<number>();
     const {setReceiverId} = useMessageReceiverState()
+    const navigate = useNavigate();
+    const [isBanned, setIsBanned] = useState<boolean>(false);
+    const checkCompanyStatus = async (id) => {
+        try {
+            const isBanned: boolean = await checkIsCompanyBanned(id);
+            setIsBanned(isBanned);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
 
     const fetchJobStatistics = async (companyId: string) => {
@@ -248,15 +384,73 @@ export const EmployerJobs = () => {
         if (company && company.id) {
             fetchJobStatistics(company.id)
             setCurrentCompanyId(company.id)
+            checkCompanyStatus(company.id)
         }
 
     }, [])
+    const handleOpenAddJob = async () => {
+        try {
+            const canPost: boolean = await canPostJob(currentCompanyId)
+            if (canPost) {
+                window.location.href = `/employer/new`
+            } else {
+                openNotification("Bạn đã vượt quá số bài đăng hàng tháng.")
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    const openNotification = (message: string) => {
+        const key = `open${Date.now()}`;
+        api.error({
+            message: 'Opp!',
+            description: message,
+            key,
+            showProgress: true,
+            onClose: () => {
+            },
+        });
+    };
     return (
-        <>
+        <div className={`h-[calc(100vh - 250px)] overflow-y-hidden`}>
             {contextHolder}
-            <div className={`flex p-6 overflow-hidden h-screen`}>
+            {
+                !isViewJobSide && (
+                    <div className={`mr-6 mt-2`}>
+                        <div className={`bg-transparent w-fit  absolute bottom-10 right-16 rounded-lg`}>
+                            {
+                                isBanned ? (
+                                    <Tooltip placement={'top'} title={'Tài khoản bị vô hiệu hóa'}>
+                                        <IoAddCircleSharp
+                                            className={`opacity-70`}
+                                            size={36} fill={"#00b14f"}/>
+                                    </Tooltip>
+                                    ) : (
+                                    <PulsatingSphere
+                                        color={'bg-[#BAF6E4FF]'}
+                                        style={'-left-[2px]'}
+                                    >
+                                        <Tooltip
+                                            title={"Thêm mới"}
+                                            placement={"top"}>
+                                            <button
+                                                onClick={handleOpenAddJob}>
+                                                <IoAddCircleSharp
+                                                    className={`cursor-pointer`}
+                                                    size={36} fill={"#00b14f"}/>
+                                            </button>
+                                        </Tooltip>
+                                    </PulsatingSphere>
+                                )
+                            }
+                        </div>
+                    </div>
+                )
+            }
+            <div className={`flex p-6 overflow-hidden h-fit`}>
                 <div
-                    className={` flex flex-col ${isViewJobSide ? 'w-[calc(50%+80px)]' : 'w-full'} transition-all duration-500 overflow-y-auto overflow-x-auto h-[calc(100vh-50px)] min-h-[500px] gap-0  rounded-lg bg-white`}>
+                    style={{scrollbarWidth: 'none'}}
+                    className={` flex flex-col ${isViewJobSide ? 'w-[calc(60%+0px)]' : 'w-full'} transition-all duration-500 overflow-y-auto overflow-x-auto h-[calc(100vh-150px)] min-h-[500px] gap-0  rounded-lg bg-white`}>
                     <Table<JobDetailStatistic>
                         sticky={true}
                         columns={columns}
@@ -268,8 +462,9 @@ export const EmployerJobs = () => {
                 <div
                     className={`${isViewJobSide ? 'flex-1 pl-4' : 'w-0'} transition-all duration-500`}>
                     <div
-                        className={`w-full ${isViewJobSide && 'p-6'} relative  rounded-lg  overflow-y-hidden bg-white min-h-[500px] h-[calc(100vh-50px)]`}>
-                        <div className={`flex w-full flex-col bg-white justify-end bg-inherit mb-1`}>
+                        className={`w-full ${isViewJobSide && 'p-6'} relative  rounded-lg  overflow-y-hidden bg-white min-h-[500px] h-[calc(100vh-150px)]`}>
+                        <div
+                            className={`flex w-full flex-col bg-white justify-end bg-inherit mb-1`}>
                             <div className={`w-full flex justify-end `}>
                                 <div onClick={onExitView}
                                      className={`bg-inherit cursor-pointer right-1`}>
@@ -279,12 +474,26 @@ export const EmployerJobs = () => {
                             </div>
 
                             <div className={`overflow-hidden`}>
-                                <div  className={`flex flex-col py-4 px-4 overflow-y-auto h-[calc(100vh-110px)] relative`}>
-                                    <h3>
-                                        <p className={`font-[600] hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
-                                            {currentJob?.title}
-                                        </p>
-                                    </h3>
+                                <div style={{scrollbarWidth: 'none'}}
+                                     className={`flex flex-col py-4 px-4 overflow-y-auto h-[calc(100vh-110px)] relative`}>
+                                    <div className={`w-full flex gap-3 items-start`}>
+                                        <h3 className={`w-80%`}>
+                                            <p className={`font-[600] hover:text-green_default  text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
+                                                {currentJob?.title}
+                                            </p>
+                                        </h3>
+                                        <div className={`flex flex-1 justify-end`}>
+                                            {
+                                                !isBanned &&
+                                                <Tooltip placement={'bottom'} title={'Chỉnh sửa'}>
+                                                    <BiSolidEdit
+                                                        onClick={() => navigate(`${currentJob?.jobId}/edit`)}
+                                                        className={`cursor-pointer hover:scale-110 duration-300 transition-transform`}
+                                                        size={22} fill={"#00B14F"}/>
+                                                </Tooltip>
+                                            }
+                                        </div>
+                                    </div>
                                     <div ref={elementRef}>
                                         <ExpandableCard
                                             children={<div className={`pt-4`}>
@@ -305,14 +514,14 @@ export const EmployerJobs = () => {
                                             Ứng viên
                                         </h2>
                                         <div style={{scrollbarWidth: 'none'}}
-                                             className={`h-[90%] overflow-y-auto rounded-lg `}>
+                                             className={`h-[70%] overflow-y-auto rounded-lg `}>
                                             <List
                                                 itemLayout="horizontal"
                                                 dataSource={applicants}
                                                 renderItem={(item) => (
                                                     <List.Item
                                                         className={`cursor-pointer`}
-                                                        onClick={() => handleApplicantClick(item.userId, item.cvUrl, item.state, item.id)}
+                                                        onClick={isBanned ? undefined : () => handleApplicantClick(item.userId, item.cvUrl, item.state, item.id)}
                                                     >
                                                         <List.Item.Meta
                                                             className={`border border-solid min-h-20 py-2 px-2 rounded-lg  ${item.state == 'PENDING' ? 'bg-gray-50 border-gray-600' : (item.state == 'ACCEPTED' ? ' bg-green-50 border-green_default' : ' bg-red-50 border-red-600')}`}
@@ -393,7 +602,7 @@ export const EmployerJobs = () => {
                                                                     fill={"#00b14f"}/>
                                                     </div>
                                                     <div className={`flex-1 overflow-x-hidden`}>
-                                                    <p className={`max-w-[100%-110px] opacity-70 truncate`}>{applicant?.phone}</p>
+                                                        <p className={`max-w-[100%-110px] opacity-70 truncate`}>{applicant?.phone}</p>
 
                                                     </div>
                                                 </div>
@@ -457,6 +666,6 @@ export const EmployerJobs = () => {
                     )
                 }
             </div>
-        </>
+        </div>
     )
 }

@@ -301,3 +301,9 @@ input{
 }
 
 
+.ant-upload-wrapper.ant-upload-picture-circle-wrapper .ant-upload-list.ant-upload-list-picture-circle .ant-upload-list-item-container {
+    display: inline-block;
+    width: 180px;
+    height: 180px;
+    vertical-align: top;
+}

@@ -20,11 +20,8 @@ import {BiSolidCity} from "react-icons/bi";
 import {CustomModal} from "@/page/UserProfile.tsx";
 import {LuQrCode} from "react-icons/lu";
 
-type ProvinceProps = { value: string, label: string, code: number }
-export type MailTemplate = {
-    to: string,
-    useCase: string,
-}
+export type ProvinceProps = { value: string, label: string, code: number }
+
 
 const EmployerSignup = () => {
     const [email, setEmail] = useState('');

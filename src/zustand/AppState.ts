@@ -2,6 +2,7 @@ import {create} from 'zustand'
 import {UserDto} from "@/page/UserProfile.tsx";
 import {UserSignupResponse} from "@/page/SignUp.tsx";
 import {createJSONStorage, persist} from 'zustand/middleware'
+import {isCompanyBanned} from "@/axios/Request.ts";
 
 interface BearState {
     bears: number
@@ -90,4 +91,16 @@ export const useMessageReceiverState = create<MessageReceiverProps>()(
             name: 'receiverId'
         },
     )
+)
+
+type IsCompanyBannedState = {
+    isCompanyBanned: boolean,
+    setIsCompanyBanned: (status: boolean) => void,
+}
+
+export const useIsCompanyBannedState = create<IsCompanyBannedState>(
+    (set) => ({
+        isCompanyBanned: false,
+        setIsCompanyBanned: (status: boolean) => {set({isCompanyBanned: status})}
+    })
 )

@@ -459,7 +459,8 @@ export const CustomInput = (
         addBefore='',
         prefix=null,
         isBoldLabel = false,
-        labelStyle =''
+        labelStyle ='',
+        defaultValue='',
     }
 ) => {
     return (
@@ -469,6 +470,7 @@ export const CustomInput = (
                 <p className={`ml-1 ${labelStyle} ${isBoldLabel && 'font-semibold'}`}>{label}</p>
             </div>
             <Input
+                defaultValue={defaultValue}
                 addonBefore={addBefore}
                 prefix={prefix}
                 type={type}

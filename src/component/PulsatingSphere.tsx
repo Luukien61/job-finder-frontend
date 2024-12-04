@@ -1,6 +1,6 @@
 import React from "react";
 
-const PulsatingSphere = ({children}) => {
+const PulsatingSphere = ({children, color, style}) => {
     return (
         <div className="relative flex items-center justify-start">
             {/* Sphere */}
@@ -9,7 +9,7 @@ const PulsatingSphere = ({children}) => {
             </div>
             {/* Pulsating Effect */}
             <div
-                className="absolute w-14 -left-[10px] aspect-square  bg-[#DCEEE9] rounded-full animate-pulsate opacity-0"></div>
+                className={`absolute w-14 ${style} aspect-square  ${color} rounded-full animate-pulsate opacity-0`}></div>
         </div>
     );
 };

@@ -21,6 +21,8 @@ import Admin, {AdminDashboard, AdminMessage} from "@/page/admin/Admin.tsx";
 import {AdminReport} from "@/page/admin/AdminReport.tsx";
 import EmployerHomeAdmin, {EmployerDashboard, EmployerMessage} from "@/page/employer/EmployerHomeUserView.tsx";
 import {EmployerJobs} from "@/page/employer/EmployerJobs.tsx";
+import UpdateJob from "@/page/employer/UpdateJob.tsx";
+import EmployerProfile from "@/page/employer/EmployerProfile.tsx";
 
 const AppRouter = () => {
     return (
@@ -47,14 +49,13 @@ const AppRouter = () => {
             <Route path={'/test'} element={<Test/>}/>
             <Route path={'/profile/complete'} element={<CompleteProfile/>}/>
             <Route path={'/employer'} element={<Employer/>}>
-                <Route path={'admin'} element={<EmployerHomeAdmin/>}>
+                <Route path={''} element={<EmployerHomeAdmin/>}>
                     <Route index={true} element={<EmployerDashboard/>}/>
                     <Route path={'jobs'} element={<EmployerJobs/>}/>
                     <Route path={'messages'} element={<EmployerMessage/>}/>
-                </Route>
-                <Route path={''} element={<EmployerHome/>}>
-                    <Route index={true} element={<HomeContent/>}/>
-                    <Route path={'job/new'} element={<AddJob/>}/>
+                    <Route path={'new'} element={<AddJob/>}/>
+                    <Route path={'jobs/:id/edit'} element={<UpdateJob/>}/>
+                    <Route path={'profile'} element={<EmployerProfile/>}/>
                 </Route>
                 <Route path={'entry'} element={<EmployerEntry/>}>
                     <Route path={'signup'} element={<EmployerSignup/>}/>

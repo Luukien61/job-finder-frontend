@@ -1,5 +1,5 @@
 import {toast} from "react-toastify";
-import {isSavedJob, saveJob, unSaveJob} from "@/axios/Request.ts";
+import {isCompanyBanned, isSavedJob, saveJob, unSaveJob} from "@/axios/Request.ts";
 import {SelectProps} from "@/page/JobDetail.tsx";
 import {format} from "date-fns";
 import {SearchProps} from "@/info/ApplicationType.ts";
@@ -81,4 +81,14 @@ export const getLast12Months=() =>{
     }
 
     return months.reverse();
+}
+
+export const checkIsCompanyBanned=async (id):Promise<boolean>=>{
+    try{
+        return await isCompanyBanned(id);
+
+    }catch(err){
+        console.log(err)
+    }
+
 }
