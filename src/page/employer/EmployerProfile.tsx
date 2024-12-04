@@ -10,13 +10,14 @@ import {ProvinceProps} from "@/page/employer/EmployerSignup.tsx";
 import TextArea from "antd/es/input/TextArea";
 import {IoPersonCircleSharp} from "react-icons/io5";
 import {RiLockPasswordFill} from "react-icons/ri";
-import {getCompanyInfo} from "@/axios/Request.ts";
+import {getCompanyInfo, updateCompanyInfo} from "@/axios/Request.ts";
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {PlusOutlined} from '@ant-design/icons';
 import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
 import {MdCancel} from "react-icons/md";
 import imageUpload from "@/axios/ImageUpload.ts";
 import {delay} from "@/page/GoogleCode.tsx";
+import {toast} from "react-toastify";
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
@@ -131,10 +132,27 @@ const EmployerProfile = () => {
     }
 
     const updateInfo = async () => {
-
+        let url = currentCompany?.logo;
         if (fileList && fileList.length == 1) {
-            console.log("abc")
+            const thumbUrl = fileList[0].thumbUrl
+            if(thumbUrl){
+                url = await imageUpload({image: thumbUrl});
+            }
         }
+        let fullAddress = province
+        if (district) {
+            fullAddress = district + ', ' + province
+        }
+        const request ={
+            name: companyName,
+            phone: phone,
+            website: website,
+            logo: url,
+            description: description,
+            address: fullAddress,
+        }
+        await updateCompanyInfo(currentCompanyId, request);
+        window.location.reload();
     }
 
 
@@ -162,7 +180,7 @@ const EmployerProfile = () => {
         <div className={`flex justify-center`}>
 
             {
-                isLoading ? <Spin fullscreen={true} size={"large"} tip="Đang tải"></Spin>
+                isLoading ? <Spin style={{color: 'green'}} fullscreen={true} size={"large"} tip="Đang tải"></Spin>
                     : (
                         <div className={`bg-white rounded-lg my-6 py-10 px-6 w-[1170px]`}>
                             <div className={`flex items-start  pr-6 w-full gap-6 justify-start`}>
@@ -241,6 +259,8 @@ const EmployerProfile = () => {
                                 </div>
                             </div>
                             <Form
+                                onFinish={updateInfo}
+                                name={'info'}
                                 scrollToFirstError={true}
                             >
                                 <div className={`flex flex-col pr-6 w-full gap-6 justify-start`}>
@@ -252,7 +272,7 @@ const EmployerProfile = () => {
 
                                             <div className={`w-full  justify-start`}>
                                                 <Form.Item
-                                                    name='title'
+                                                    name='name'
                                                     rules={[
                                                         {
                                                             validator: (_) =>
@@ -275,7 +295,7 @@ const EmployerProfile = () => {
                                                 </Form.Item>
                                             </div>
                                         </div>
-                                        <div className={`flex items-center w-full`}>
+                                        <div className={`flex items-start w-full`}>
                                             <div className={`flex flex-col w-1/2 pr-6 justify-start`}>
                                                 <CustomInput
                                                     allowClear={true}
@@ -288,17 +308,30 @@ const EmployerProfile = () => {
                                                     onChange={(e) => setWebsite(e.target.value)}/>
                                             </div>
                                             <div className={`flex flex-col w-1/2 justify-start`}>
-                                                <CustomInput
-                                                    prefix={<HiPhone className={`mr-2`} size={24}
-                                                                     fill={"#00b14f"}/>}
-                                                    type={'text'}
-                                                    allowClear={true}
-                                                    value={phone}
-                                                    label={"Số điện thoại"}
-                                                    isBoldLabel={true}
-                                                    disable={!isEdit || isBanned}
-                                                    width={'w-full text-16'}
-                                                    onChange={(e) => setPhone(e.target.value)}/>
+                                                <Form.Item
+                                                    style={{marginBottom: '0px'}}
+                                                    name='phone'
+                                                    rules={[
+                                                        {
+                                                            validator: (_) =>
+                                                                phone ? Promise.resolve() : Promise.reject(new Error('Số điện thoại không thể bỏ trống'))
+
+                                                        },
+                                                    ]}
+                                                >
+                                                    <CustomInput
+                                                        prefix={<HiPhone className={`mr-2`} size={24}
+                                                                         fill={"#00b14f"}/>}
+                                                        type={'text'}
+                                                        allowClear={true}
+                                                        value={phone}
+                                                        defaultValue={phone}
+                                                        label={"Số điện thoại"}
+                                                        isBoldLabel={true}
+                                                        disable={!isEdit || isBanned}
+                                                        width={'w-full text-16'}
+                                                        onChange={(e) => setPhone(e.target.value)}/>
+                                                </Form.Item>
                                             </div>
                                         </div>
                                         <div className={`flex w-full`}>
@@ -342,6 +375,9 @@ const EmployerProfile = () => {
                                     <TextArea
                                         disabled={!isEdit || isBanned}
                                         spellCheck={false}
+                                        value={description}
+                                        defaultValue={description}
+                                        onChange={(e) => setDescription(e.target.value)}
                                         size={"large"}
                                         placeholder={"Mô tả công ty/tổ chức của bạn là một cách để thu hút ứng viên..."}
                                         style={{height: 200}}
@@ -350,13 +386,16 @@ const EmployerProfile = () => {
                                 {
                                     isEdit && (
                                         <div className={`w-full flex justify-end gap-6 mt-6 px-6 `}>
-                                            <button className={`font-semibold`}>
+                                            <button type={'button'} className={`font-semibold`}>
                                                 Hủy
                                             </button>
-                                            <button
-                                                className={`w-fit px-2 hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>
-                                                Xác nhận
-                                            </button>
+                                            <Form.Item style={{ marginBottom: '0px' }}>
+                                                <button
+                                                    type="submit"
+                                                    className={`w-fit px-2 hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>
+                                                    Xác nhận
+                                                </button>
+                                            </Form.Item>
                                         </div>
                                     )
                                 }
