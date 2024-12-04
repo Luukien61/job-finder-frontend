@@ -144,9 +144,7 @@ const CompleteProfile = () => {
             if (userId == null) {
                 const user: UserSignupResponse = JSON.parse(localStorage.getItem('user'));
                 if (user) {
-                    console.log(user)
                     user_id = user.id;
-                    console.log(user_id)
                 } else {
                     navigate('/login');
                 }
@@ -458,6 +456,7 @@ export const CustomInput = (
         type = 'text',
         addBefore='',
         prefix=null,
+        autoComplete = '',
         isBoldLabel = false,
         labelStyle ='',
         defaultValue='',
@@ -470,6 +469,7 @@ export const CustomInput = (
                 <p className={`ml-1 ${labelStyle} ${isBoldLabel && 'font-semibold'}`}>{label}</p>
             </div>
             <Input
+                autoComplete={autoComplete}
                 defaultValue={defaultValue}
                 addonBefore={addBefore}
                 prefix={prefix}

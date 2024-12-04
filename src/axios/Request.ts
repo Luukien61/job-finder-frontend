@@ -146,6 +146,10 @@ export const getCompanyInfo = async (id: string) => {
 export const isCompanyBanned = async (id: string) => {
     return await instance.get(`${companyBackendPath}/${id}/status`).then((response: any) => response.data)
 }
+
+export const updateCompanyInfo = async (companyId: string, request: any) => {
+    return await instance.put(`${companyBackendPath}/${companyId}`, request).then((response: any) => response.data)
+}
 export const getJobDetailById = async (id: string | number) => {
     return await instance.get(`/job/${id}`).then((response: any) => response.data)
 }
