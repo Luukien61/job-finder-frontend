@@ -34,7 +34,7 @@ const EmployerProfile = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [retypePass, setRetypePass] = useState('');
-    const [currentCompany, setCurrentCompany] = useState<any>();
+    const [currentCompany, setCurrentCompany] = useState<CompanyInfo>();
     const [currentCompanyId, setCurrentCompanyId] = useState<string>('');
     const [phone, setPhone] = useState('');
     const [website, setWebsite] = useState('');
@@ -80,26 +80,7 @@ const EmployerProfile = () => {
     const handleGetCompanyInfo = async (id: string) => {
         const response: CompanyInfo = await getCompanyInfo(id);
         setCurrentCompany(response);
-        setFileList([{
-            uid: '0',
-            name: 'logo.png',
-            status: 'done',
-            url: response.logo,
-        }])
-        setCompanyName(response.name);
-        setWebsite(response.website);
-        setPhone(response.phone);
-        const locations = response.address.split(',');
-        const provinceName = locations[1].trim()
-        setProvince(provinceName);
-        setDistrict(locations[0].trim());
-        const province = fullProvinces.find(p => p.name === provinceName);
-        const district = province.districts.map(value => (
-            {value: value.name, label: value.name}
-        ))
-        setDistrictsName(district)
-        setDescription(response.description);
-        setEmail(response.email);
+        resetInfo(response);
         await delay(600)
         setIsLoading(false);
     }
@@ -130,12 +111,39 @@ const EmployerProfile = () => {
     const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
         setFileList(newFileList);
     }
+    const handleCancelEditProfile = () => {
+        resetInfo(currentCompany)
+        setIsEdit(false);
+    }
 
+    const resetInfo = (response: CompanyInfo) => {
+        setFileList([{
+            uid: '0',
+            name: 'logo.png',
+            status: 'done',
+            url: response.logo,
+        }])
+        setCompanyName(response.name);
+        setWebsite(response.website);
+        setPhone(response.phone);
+        const locations = response.address.split(',');
+        const provinceName = locations[1].trim()
+        setProvince(provinceName);
+        setDistrict(locations[0].trim());
+        const province = fullProvinces.find(p => p.name === provinceName);
+        const district = province.districts.map(value => (
+            {value: value.name, label: value.name}
+        ))
+        setDistrictsName(district)
+        setDescription(response.description);
+        setEmail(response.email);
+    }
     const updateInfo = async () => {
+        setIsLoading(true)
         let url = currentCompany?.logo;
         if (fileList && fileList.length == 1) {
             const thumbUrl = fileList[0].thumbUrl
-            if(thumbUrl){
+            if (thumbUrl) {
                 url = await imageUpload({image: thumbUrl});
             }
         }
@@ -143,7 +151,7 @@ const EmployerProfile = () => {
         if (district) {
             fullAddress = district + ', ' + province
         }
-        const request ={
+        const request = {
             name: companyName,
             phone: phone,
             website: website,
@@ -285,11 +293,11 @@ const EmployerProfile = () => {
                                                         prefix={<GoOrganization className={`mr-2`} size={24}
                                                                                 fill={"#00b14f"}/>}
                                                         allowClear={true}
+                                                        showPlainText={!isEdit}
                                                         value={companyName}
                                                         defaultValue={companyName}
                                                         label={"Tên tổ chức"}
                                                         isBoldLabel={true}
-                                                        disable={!isEdit || isBanned}
                                                         width={'w-full text-16'}
                                                         onChange={(e) => setCompanyName(e.target.value)}/>
                                                 </Form.Item>
@@ -301,9 +309,10 @@ const EmployerProfile = () => {
                                                     allowClear={true}
                                                     addBefore={'https://'}
                                                     value={website}
+                                                    defaultValue={website}
                                                     label={"Website"}
+                                                    showPlainText={!isEdit}
                                                     isBoldLabel={true}
-                                                    disable={!isEdit || isBanned}
                                                     width={'w-full text-16 '}
                                                     onChange={(e) => setWebsite(e.target.value)}/>
                                             </div>
@@ -326,9 +335,9 @@ const EmployerProfile = () => {
                                                         allowClear={true}
                                                         value={phone}
                                                         defaultValue={phone}
+                                                        showPlainText={!isEdit}
                                                         label={"Số điện thoại"}
                                                         isBoldLabel={true}
-                                                        disable={!isEdit || isBanned}
                                                         width={'w-full text-16'}
                                                         onChange={(e) => setPhone(e.target.value)}/>
                                                 </Form.Item>
@@ -337,31 +346,41 @@ const EmployerProfile = () => {
                                         <div className={`flex w-full`}>
                                             <div className={`w-1/2 pr-6 justify-start`}>
                                                 <p className={`ml-1 mb-1 font-semibold`}>Tỉnh thành phố</p>
-                                                <Select
-                                                    placeholder={'Tỉnh thành phố'}
-                                                    prefix={<BiSolidCity className={`mr-2`} size={24}
-                                                                         fill={"#00b14f"}/>}
-                                                    className={`h-[42px] w-full `}
-                                                    optionFilterProp="label"
-                                                    options={provincesName}
-                                                    disabled={!isEdit || isBanned}
-                                                    value={province}
-                                                    onChange={(value, option) => getDistrictsByProvinceCode(value, option)}
-                                                />
+                                                {
+                                                    !isEdit ? (
+                                                        <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold `}>{province}</p>
+                                                    ) : (
+                                                        <Select
+                                                            placeholder={'Tỉnh thành phố'}
+                                                            prefix={<BiSolidCity className={`mr-2`} size={24}
+                                                                                 fill={"#00b14f"}/>}
+                                                            className={`h-[42px] w-full `}
+                                                            optionFilterProp="label"
+                                                            options={provincesName}
+                                                            value={province}
+                                                            onChange={(value, option) => getDistrictsByProvinceCode(value, option)}
+                                                        />
+                                                    )
+                                                }
                                             </div>
                                             <div className={`w-1/2  justify-start`}>
                                                 <p className={`ml-1 mb-1 font-semibold`}>Quận huyện</p>
-                                                <Select
-                                                    placeholder={'Quận huyện'}
-                                                    prefix={<BiSolidCity className={`mr-2`} size={24}
-                                                                         fill={"#00b14f"}/>}
-                                                    className={`h-[42px] w-full `}
-                                                    value={district}
-                                                    disabled={!isEdit || isBanned}
-                                                    optionFilterProp="label"
-                                                    onChange={onDistrictSelected}
-                                                    options={districtsName}
-                                                />
+                                                {
+                                                    !isEdit ? (
+                                                        <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold `}>{district}</p>
+                                                    ) : (
+                                                        <Select
+                                                            placeholder={'Quận huyện'}
+                                                            prefix={<BiSolidCity className={`mr-2`} size={24}
+                                                                                 fill={"#00b14f"}/>}
+                                                            className={`h-[42px] w-full `}
+                                                            value={district}
+                                                            optionFilterProp="label"
+                                                            onChange={onDistrictSelected}
+                                                            options={districtsName}
+                                                        />
+                                                    )
+                                                }
                                             </div>
                                         </div>
 
@@ -372,24 +391,34 @@ const EmployerProfile = () => {
                                     <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
                                         Mô tả
                                     </h2>
-                                    <TextArea
-                                        disabled={!isEdit || isBanned}
-                                        spellCheck={false}
-                                        value={description}
-                                        defaultValue={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        size={"large"}
-                                        placeholder={"Mô tả công ty/tổ chức của bạn là một cách để thu hút ứng viên..."}
-                                        style={{height: 200}}
-                                    />
+                                    {
+                                        isEdit ? (
+                                            <TextArea
+                                                disabled={!isEdit || isBanned}
+                                                spellCheck={false}
+                                                value={description}
+                                                defaultValue={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                                size={"large"}
+                                                placeholder={"Mô tả công ty/tổ chức của bạn là một cách để thu hút ứng viên..."}
+                                                style={{height: 200}}
+                                            />
+                                        ) : (
+                                            <div className={`px-2 py-2 rounded-lg border border-green_default`}>
+                                                <pre className={`min-h-20`}>{description}</pre>
+                                            </div>
+                                        )
+                                    }
                                 </div>
                                 {
                                     isEdit && (
                                         <div className={`w-full flex justify-end gap-6 mt-6 px-6 `}>
-                                            <button type={'button'} className={`font-semibold`}>
+                                            <button onClick={handleCancelEditProfile}
+                                                    type={'button'}
+                                                    className={`font-semibold`}>
                                                 Hủy
                                             </button>
-                                            <Form.Item style={{ marginBottom: '0px' }}>
+                                            <Form.Item style={{marginBottom: '0px'}}>
                                                 <button
                                                     type="submit"
                                                     className={`w-fit px-2 hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>
@@ -473,7 +502,9 @@ const EmployerProfile = () => {
                                                     width={'w-1/2 text-16'}
                                                     onChange={(e) => setPassword(e.target.value)}/>
                                                 <div className={`w-1/2 flex gap-6  justify-end mt-6`}>
-                                                    <button className={`font-semibold`}>
+                                                    <button
+
+                                                        className={`font-semibold`}>
                                                         Hủy
                                                     </button>
                                                     <button
@@ -491,8 +522,7 @@ const EmployerProfile = () => {
                     )
             }
         </div>
-    )
-        ;
+    );
 };
 
 export default EmployerProfile;

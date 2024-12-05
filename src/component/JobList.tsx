@@ -137,11 +137,13 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
                  className={`border-green-500 bg-highlight_default shadow cursor-pointer group hover:bg-[#F2FBF6] bg-gray-50/5 border hover:border-green-500 hover:border rounded-xl`}>
                 <div className={`w-full h-full flex flex-col  items-start gap-x-[10px] p-[12px]`}>
                     <div className={`w-full justify-start flex gap-3 box-border border-b  h-full`}>
-                        <div
-                            className={`bg-white overflow-hidden  transition-transform m-auto w-[96px] aspect-square flex items-center border border-[#dfdfdf] rounded-xl`}>
-                            <img
-                                className={`aspect-square w-[80px] group-hover:scale-110 duration-300 object-contain`}
-                                src={job.logo} alt=""/>
+                        <div className={`h-full flex items-center`}>
+                            <div
+                                className={`bg-white overflow-hidden  transition-transform m-auto w-[96px] aspect-square flex items-center border border-[#dfdfdf] rounded-xl`}>
+                                <img
+                                    className={`aspect-square w-[80px] group-hover:scale-110 duration-300 object-contain`}
+                                    src={job.logo} alt=""/>
+                            </div>
                         </div>
                         <div className={`border-b w-[calc(100%-96px)] border-[#dfdfdf] pb-1 overflow-hidden`}>
                             <div className={`flex flex-col gap-y-1 overflow-hidden`}>

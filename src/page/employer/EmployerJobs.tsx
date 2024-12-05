@@ -8,7 +8,7 @@ import {
     getUserBasicInfo, rejectApplication
 } from "@/axios/Request.ts";
 import {
-    Avatar, Button,
+    Avatar, Badge, Button,
     Input, type InputRef,
     List,
     notification,
@@ -49,6 +49,7 @@ interface JobDetailStatistic {
     pending: number
     accepted: number
 }
+
 type DataIndex = keyof JobDetailStatistic;
 
 export const EmployerJobs = () => {
@@ -81,36 +82,36 @@ export const EmployerJobs = () => {
     };
 
     const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<JobDetailStatistic> => ({
-        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters, close}) => (
+            <div style={{padding: 8}} onKeyDown={(e) => e.stopPropagation()}>
                 <Input
                     ref={searchInput}
                     placeholder={`Search ${dataIndex}`}
                     value={selectedKeys[0]}
                     onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
                     onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
-                    style={{ marginBottom: 8, display: 'block' }}
+                    style={{marginBottom: 8, display: 'block'}}
                 />
                 <Space>
                     <Button
                         type="primary"
                         onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
-                        icon={<SearchOutlined />}
+                        icon={<SearchOutlined/>}
                         size="small"
-                        style={{ width: 90 }}
+                        style={{width: 90}}
                     >
                         Tìm
                     </Button>
                     <Button
                         onClick={() => {
-                            if(clearFilters){
+                            if (clearFilters) {
                                 handleReset(clearFilters)
                             }
                             setSearchText('');
                             setSearchedColumn(dataIndex);
                         }}
                         size="small"
-                        style={{ width: 90 }}
+                        style={{width: 90}}
                     >
                         Xóa
                     </Button>
@@ -118,7 +119,7 @@ export const EmployerJobs = () => {
                         type="link"
                         size="small"
                         onClick={() => {
-                            confirm({ closeDropdown: true });
+                            confirm({closeDropdown: true});
                             setSearchText((selectedKeys as string[])[0]);
                             setSearchedColumn(dataIndex);
                         }}
@@ -129,7 +130,7 @@ export const EmployerJobs = () => {
                         type="link"
                         size="small"
                         onClick={() => {
-                            confirm({ closeDropdown: true });
+                            confirm({closeDropdown: true});
                             setSearchText((selectedKeys as string[])[0]);
                             setSearchedColumn(dataIndex);
                             close();
@@ -141,7 +142,7 @@ export const EmployerJobs = () => {
             </div>
         ),
         filterIcon: (filtered: boolean) => (
-            <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+            <SearchOutlined style={{color: filtered ? '#1677ff' : undefined}}/>
         ),
         onFilter: (value, record) =>
             record[dataIndex]
@@ -158,7 +159,7 @@ export const EmployerJobs = () => {
         render: (text) =>
             searchedColumn === dataIndex ? (
                 <Highlighter
-                    highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                    highlightStyle={{backgroundColor: '#ffc069', padding: 0}}
                     searchWords={[searchText]}
                     autoEscape
                     textToHighlight={text ? text.toString() : ''}
@@ -209,7 +210,8 @@ export const EmployerJobs = () => {
             hidden: isViewJobSide,
             width: 150,
             render: (date) => (
-                <p>{format(date, "dd/MM/yyyy")}</p>
+                <Badge status={(new Date(date).getTime() - new Date().getTime()) > 0 ? 'success' : 'error'}
+                       text={format(date, "dd/MM/yyyy")}/>
             ),
             sorter: (a, b) => new Date(b.expireDate).getTime() - new Date(a.expireDate).getTime(),
 
@@ -247,7 +249,6 @@ export const EmployerJobs = () => {
                 </Tag>
             )
         },
-
         {
             title: 'Chấp nhận',
             dataIndex: 'accepted',
@@ -284,6 +285,9 @@ export const EmployerJobs = () => {
         try {
             const result: JobDetailStatistic[] = await getCompanyJobStatistics(companyId)
             if (result) {
+                result.sort((a, b) =>
+                    new Date(b.expireDate).getTime() - new Date(a.expireDate).getTime()
+                )
                 setDetailStatisticJob(result)
             }
         } catch (e: any) {
@@ -425,7 +429,7 @@ export const EmployerJobs = () => {
                                             className={`opacity-70`}
                                             size={36} fill={"#00b14f"}/>
                                     </Tooltip>
-                                    ) : (
+                                ) : (
                                     <PulsatingSphere
                                         color={'bg-[#BAF6E4FF]'}
                                         style={'-left-[2px]'}

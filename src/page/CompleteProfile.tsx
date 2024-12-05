@@ -447,6 +447,7 @@ export const CompleteInfo: React.FC<CompleteProfileProps> = (item) => {
 export const CustomInput = (
     {
         labelIcon=null,
+        showPlainText=false,
         label,
         value,
         onChange,
@@ -468,18 +469,24 @@ export const CustomInput = (
                 {labelIcon}
                 <p className={`ml-1 ${labelStyle} ${isBoldLabel && 'font-semibold'}`}>{label}</p>
             </div>
-            <Input
-                autoComplete={autoComplete}
-                defaultValue={defaultValue}
-                addonBefore={addBefore}
-                prefix={prefix}
-                type={type}
-                allowClear={allowClear}
-                disabled={disable}
-                value={value}
-                onChange={onChange}
-                spellCheck={false}
-                className={`p-2 outline-none  rounded border mt-2 ${width}`}/>
+            {
+                showPlainText ? (
+                    <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold ${labelStyle}`}>{defaultValue}</p>
+                    ) : (
+                    <Input
+                        autoComplete={autoComplete}
+                        defaultValue={defaultValue}
+                        addonBefore={addBefore}
+                        prefix={prefix}
+                        type={type}
+                        allowClear={allowClear}
+                        disabled={disable}
+                        value={value}
+                        onChange={onChange}
+                        spellCheck={false}
+                        className={`p-2 outline-none  rounded border mt-2 ${width}`}/>
+                )
+            }
         </>
     )
 }
