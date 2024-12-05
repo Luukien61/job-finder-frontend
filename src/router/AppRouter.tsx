@@ -19,7 +19,7 @@ import AddJob from "@/page/employer/AddJob.tsx";
 import JobSearch from "@/page/JobSearch.tsx";
 import Admin, {AdminDashboard, AdminMessage} from "@/page/admin/Admin.tsx";
 import {AdminReport} from "@/page/admin/AdminReport.tsx";
-import EmployerHomeAdmin, {EmployerDashboard, EmployerMessage} from "@/page/employer/EmployerHomeUserView.tsx";
+import EmployerHomeAdmin, {EmployerDashboard, EmployerMessage} from "@/page/employer/EmployerHomeAdmin.tsx";
 import {EmployerJobs} from "@/page/employer/EmployerJobs.tsx";
 import UpdateJob from "@/page/employer/UpdateJob.tsx";
 import EmployerProfile from "@/page/employer/EmployerProfile.tsx";
@@ -36,6 +36,7 @@ const AppRouter = () => {
                 <Route path="/" element={<HomePage/>}/>
                 <Route path={'/job/detail/:id'} element={<JobDetail/>}/>
                 <Route path={'/search'} element={<JobSearch/>}/>
+                <Route path={'/company/:id'} element={<EmployerHome/>}/>
             </Route>
             <Route path={'/login'} element={<LogIn/>}/>
             <Route path={"/login/oauth2/code/google"} element={<GoogleCode/>}/>
@@ -48,6 +49,7 @@ const AppRouter = () => {
             </Route>
             <Route path={'/test'} element={<Test/>}/>
             <Route path={'/profile/complete'} element={<CompleteProfile/>}/>
+
             <Route path={'/employer'} element={<Employer/>}>
                 <Route path={''} element={<EmployerHomeAdmin/>}>
                     <Route index={true} element={<EmployerDashboard/>}/>

@@ -13,13 +13,19 @@ export interface JobApplication {
     "createdDate": Date
 }
 
-export interface EmployerJobCard {
+export interface JobCardResponse {
     "jobId": number,
     "title": string,
     "expireDate": Date,
     "state": "PENDING" | "DONE",
     "logo": string,
-    "applications": JobApplication[]
+    "province": string,
+    companyName: string,
+    companyId: string,
+    experience: number,
+    minSalary: number,
+    maxSalary: number,
+    createdAt: Date,
 }
 
 export interface PageableResponse<T> {

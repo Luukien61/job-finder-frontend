@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Image, Upload, message, Button} from 'antd';
 import type {GetProp, UploadFile, UploadProps} from 'antd';
+import {customHeaders} from "@/axios/Request.ts";
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
@@ -50,6 +51,14 @@ const App: React.FC = () => {
         const file = fileList[0]
     };
 
+    const handleClick =async ()=>{
+        try{
+            await customHeaders()
+        }catch (e){
+            console.log(e)
+        }
+    }
+
     const uploadButton = (
         <button style={{border: 0, background: 'none'}} type="button">
             <PlusOutlined/>
@@ -69,7 +78,7 @@ const App: React.FC = () => {
             </Upload>
             <Button
                 type="primary"
-                onClick={handleUpload}
+                onClick={handleClick}
                 disabled={fileList.length === 0}
 
                 style={{marginTop: 16}}

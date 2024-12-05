@@ -13,14 +13,14 @@ import {
     applyJob,
     createReport,
     getCompanyInfo,
-    getJobDetailById,
+    getJobDetailById, getJobDetailByIdWithHistory,
     getUserDto,
     isAppliedJob,
     loginUser
 } from "@/axios/Request.ts";
 import {format} from 'date-fns';
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
-import {Checkbox, Form, FormProps, Input, Modal, Select, Spin, Tooltip} from "antd";
+import {Checkbox, Form, FormProps, Input, Modal, Select, Spin, Tag, Tooltip} from "antd";
 import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {UserResponse} from "@/page/GoogleCode.tsx";
@@ -65,6 +65,7 @@ const JobDetail = () => {
     const [loginPassword, setLoginPassword] = useState<string>("");
     const {TextArea} = Input;
     const [modalTypeRequestOpen, setModalTypeRequestOpen] = useState<string>('');
+    const user = JSON.parse(localStorage.getItem('user'));
 
     const handleModalClicks = useCallback((event: React.MouseEvent) => {
         event.stopPropagation()
@@ -72,9 +73,17 @@ const JobDetail = () => {
     const handleCloseModel = useCallback(() => {
         setOpenModal(false);
     }, [])
-    const handleGetJobById = async (id: string | number) => {
+    const handleGetJobById = async (id: string | number, userId: string | null) => {
+        let headers=null
+        if(userId){
+            headers = {
+                headers: {
+                    "X-custom-userId": userId
+                }
+            }
+        }
         try {
-            const jobDetail: JobDetailProps = await getJobDetailById(id)
+            const jobDetail: JobDetailProps = await getJobDetailByIdWithHistory(id,headers)
             if (jobDetail) {
                 setJob(jobDetail)
             } else {
@@ -112,8 +121,12 @@ const JobDetail = () => {
     }, [job]);
 
     useEffect(() => {
-        handleGetJobById(id)
-        const user = JSON.parse(localStorage.getItem("user"));
+        const user = JSON.parse(localStorage.getItem('user'));
+        let userId =null
+        if(user && user.id){
+            userId = user.id;
+        }
+        handleGetJobById(id,userId)
         if (user) {
             setCurrentUser(user)
             setIsLogin(true)
@@ -1213,7 +1226,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                                             {job.title}</p>
                                     </a>
                                 </h3>
-                                <div className={`w-fit`}>
+                                <div className={`w-fit max-w-full overflow-hidden`}>
                                     <a  href={`/company/${job.companyId}`}
                                        target="_blank">
                                         <p className={`break-words max-w-full w-fit  text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
@@ -1227,20 +1240,24 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                     </div>
                     <div
                         className={`mt-auto flex items-end justify-between py-2`}>
-                        <div className={`flex gap-4 overflow-hidden`}>
+                        <div className={`flex gap-1 overflow-hidden`}>
                             <div
-                                className={`rounded-[5px] overflow-x-hidden max-w-[33%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                <p className={`text-black text-[14px] truncate `}>{job.province}</p>
+                                className={`rounded-[5px] overflow-x-hidden max-w-[45%]  flex items-center justify-center`}>
+                                {/*<p className={`text-black text-[14px] truncate `}>{job.province}</p>*/}
+                                <Tag color={'geekblue'} className={`text-14`}>{job.province}</Tag>
                             </div>
                             <div
-                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                <p className={`text-black text-[14px] truncate `}>{`Kinh
-                                    nghiệm: ${job.experience} năm`}</p>
+                                className={`rounded-[5px] flex items-center justify-center`}>
+                                <Tooltip placement={'top'} title={`Kinh nghiệm: ${job.experience} năm`}>
+                                    <Tag color={'geekblue'} className={`text-14`}>{`${job.experience} năm`}</Tag>
+                                </Tooltip>
                             </div>
                             <div
-                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                <p className={`text-black text-[14px] truncate `}>Hạn: <span
-                                    className={`text-[14px] truncate font-semibold`}>{formattedDate}</span></p>
+                                className={`rounded-[5px]  flex items-center justify-center`}>
+                                <Tooltip placement={'top'} title={`Hạn: ${formattedDate}`}>
+                                    <Tag className={`text-14`} color={'red'}><span
+                                        className={`text-[14px] truncate`}>{formattedDate}</span></Tag>
+                                </Tooltip>
                             </div>
                         </div>
                         {/*<div*/}

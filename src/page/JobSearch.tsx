@@ -4,14 +4,14 @@ import {Pagination, Select} from "antd";
 import {experienceFilter, provinces_2, salaryFilters, sortFilter} from "@/info/AppInfo.ts";
 import {CiFilter} from "react-icons/ci";
 import {LiaSortAlphaDownSolid} from "react-icons/lia";
-import {JobWidthCard} from "@/page/JobDetail.tsx";
+import {JobWidthCard, JobWidthCardProps} from "@/page/JobDetail.tsx";
 import {BsFillQuestionCircleFill} from "react-icons/bs";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
 import Autoplay from "embla-carousel-autoplay";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import {note, WarningNote} from "@/page/UserProfile.tsx";
 import {
-    DefaultPageSize,
+    DefaultPageSize, DefaultRecommendationPageSize,
     JobDetailProps,
     JobSearchResult,
     PageableResponse,
@@ -20,9 +20,10 @@ import {
 import {MdKeyboardDoubleArrowRight} from "react-icons/md";
 import {IoCloseCircleSharp} from "react-icons/io5";
 import {useLocation, useNavigate} from "react-router-dom";
-import {getJobDetailById, searchJobs} from "@/axios/Request.ts";
+import {getJobDetailById, getNewJobs, getRecommendedJob, searchJobs} from "@/axios/Request.ts";
 import {convertDate, createSearchParams} from "@/service/ApplicationService.ts";
 import {toast} from "react-toastify";
+import {FaBrain} from "react-icons/fa";
 
 const JobSearch = () => {
 
@@ -30,6 +31,8 @@ const JobSearch = () => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const [job, setJob] = useState<JobDetailProps>()
+    const [recommendJobs, setRecommendJobs] = useState([]);
+    const [headerName, setHeaderName] = useState<string>("Gợi ý từ Finder AI");
 
     const [keyword, setKeyword] = useState<string | null>(queryParams.get('keyword'));
     const [locationParam, setLocationParam] = useState<string | null>(queryParams.get('location'));
@@ -44,12 +47,22 @@ const JobSearch = () => {
     const [pageableResult, setPageableResult] = useState<PageableResponse<JobSearchResult>>()
     const navigate = useNavigate();
     const [totalElements, setTotalElements] = useState<number>(undefined)
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+    const user = JSON.parse(localStorage.getItem("user"));
 
 
-    const fetchJobs = async () => {
+    const fetchJobs = async (userId: string | null) => {
         try {
             const searchParams: string = handleCreateParamUrl()
-            const jobSearchResult: PageableResponse<JobSearchResult> = await searchJobs(searchParams);
+            let headers = null
+            if (userId) {
+                headers = {
+                    headers: {
+                        "X-custom-userId": userId
+                    }
+                }
+            }
+            const jobSearchResult: PageableResponse<JobSearchResult> = await searchJobs(searchParams, headers);
             setJobResult(jobSearchResult.content)
             setPageableResult(jobSearchResult)
             setTotalElements(jobSearchResult.totalElements)
@@ -68,8 +81,38 @@ const JobSearch = () => {
         setSize(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
         setSort(queryParams.get('sort') || 'create-date');
         setOrder(queryParams.get('order') || 'desc');
-        fetchJobs();
+        let userId = null
+        if (user && user.id) {
+            userId = user.id;
+        }
+        fetchJobs(userId);
+        fetchRecommendJobs()
     }, [location.search]);
+
+    const fetchRecommendJobs = async () => {
+        if (user && user.id) {
+            const job = await getRecommendedJob({userId: user.id})
+            setRecommendJobs(job)
+            setHeaderName("Gợi ý từ Finder AI")
+        } else {
+            fetchNewJobs(0)
+        }
+    }
+
+    const fetchNewJobs = async (page: number) => {
+        try {
+            setHeaderName("Việc làm mới nhất")
+            const jobs: PageableResponse<JobWidthCardProps> = await getNewJobs(page)
+            if (jobs) {
+                setRecommendJobs(jobs.content)
+                const totalJobs = jobs.totalElements
+                const totalPages = totalJobs / DefaultRecommendationPageSize
+            }
+        } catch (e) {
+            console.log(e)
+        }
+
+    }
 
 
     const handleCreateParamUrl = (): string => {
@@ -103,7 +146,7 @@ const JobSearch = () => {
     }
 
     useEffect(() => {
-        if(jobResult.length==0) {
+        if (jobResult.length == 0) {
             handleExitQuickView()
         }
     }, [jobResult.length]);
@@ -183,7 +226,7 @@ const JobSearch = () => {
             order: string
         }[])
     ) => {
-        if(!Array.isArray(option)) {
+        if (!Array.isArray(option)) {
             setSort(option.sort)
             setOrder(option.order)
         }
@@ -194,13 +237,13 @@ const JobSearch = () => {
         setOrder(undefined)
     }
 
-    const defaultSortValue=()=>{
+    const defaultSortValue = () => {
         return sortFilter.filter(item => {
             return item.value == `${sort}:${order}`
         })
     }
 
-    const deafaultSalaryRange=()=>{
+    const defaultSalaryRange = () => {
         return salaryFilters.filter(item => {
             return item.value == minSalary
         })
@@ -237,7 +280,7 @@ const JobSearch = () => {
                                 <div>
                                     <Select
                                         allowClear={true}
-                                        defaultValue={deafaultSalaryRange}
+                                        defaultValue={defaultSalaryRange}
                                         onClear={clearSalary}
                                         onChange={handleSalaryChange}
                                         style={{width: '160px'}}
@@ -290,93 +333,60 @@ const JobSearch = () => {
                                     <div className={`w-full flex mt-3`}>
                                         {/*left*/}
                                         <div className={`w-[438px] pr-4  flex-shrink-0 relative`}>
-                                            {
-                                                jobResult.map((value, index) => (
-                                                    <div key={index}
-                                                         className={`rounded-[8px] ${value.id == job?.jobId ? 'bg-highlight_default' : 'bg-white'} transition-colors duration-300 group mb-4 outline outline-2 outline-[#acf2cb] group hover:outline-none hover:border relative hover:border-solid hover:border-green_default   w-full cursor-pointer flex items-start gap-[16px] m-auto p-[12px]`}>
-                                                        {/*company logo*/}
-                                                        <div
-                                                            className={`flex items-start w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px]  object-contain p-2 relative `}>
-                                                            <a className={` block overflow-hidden bg-white`}
-                                                               target={"_blank"}
-                                                               href={`/company/${value.companyId}`}>
-                                                                <img
-                                                                    src={value.logo}
-                                                                    className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
-                                                                    alt={value.companyName}
-                                                                    title={value.companyName}/>
-                                                            </a>
-                                                        </div>
-                                                        {/*card body*/}
-                                                        <div className={`w-[calc(100%-120px)] `}>
-                                                            <div className={`flex flex-col h-full`}>
-                                                                <div className={`mb-auto`}>
-                                                                    <div className={`flex `}>
-                                                                        <div
-                                                                            className={`flex flex-col w-full  gap-2`}>
-                                                                            <h3>
-                                                                                <a
-                                                                                    target="_self"
-                                                                                    href={`/job/detail/${value.id}`}>
-                                                                                    <p className={`font-[600] hover:text-green_default text-[16px] line-clamp-2  text-[#212f3f] leading-6 cursor-pointer`}>
-                                                                                        {value.title}
-                                                                                    </p>
-                                                                                </a>
-                                                                            </h3>
-                                                                            <div className={`w-fit`}>
-                                                                                <a href={`/company/${value.companyId}`}
-                                                                                   target="_blank">
-                                                                                    <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>
-                                                                                        {value.companyName}
-                                                                                    </p>
-                                                                                </a>
-                                                                            </div>
-                                                                        </div>
-                                                                        {/*<div className={`w-1/4 flex justify-end pr-2`}>*/}
-                                                                        {/*    <p className={`text-green_default font-bold`}>10 - 15 triệu</p>*/}
-                                                                        {/*</div>*/}
-                                                                    </div>
-                                                                </div>
-                                                                <div className={`w-full flex  pr-2 mt-4 `}>
-                                                                    <p className={`text-green_default font-bold`}>{value.minSalary} - {value.maxSalary} triệu</p>
-                                                                    <div
-                                                                        className={`flex-1 flex justify-end items-center`}>
-                                                                        <div
-                                                                            onClick={(e) => handleQuickViewClick(e, value.id)}
-                                                                            className={`rounded-full flex p-1 border group-hover:opacity-100 opacity-0 transition-opacity duration-300  bg-[#e3faed] items-center  text-[#15bf61]`}>
-                                                                            <p className={`text-[12px]`}>Xem</p>
-                                                                            <MdKeyboardDoubleArrowRight/>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div
-                                                                    className={`mt-auto flex items-end justify-between py-2 w-full`}>
-                                                                    <div
-                                                                        className={`flex gap-4 overflow-hidden w-full`}>
-                                                                        <div
-                                                                            className={`rounded-[5px] overflow-x-hidden max-w-[50%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>{value.location}</p>
-                                                                        </div>
-                                                                        <div
-                                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>{value.experience} năm</p>
-                                                                        </div>
-
-                                                                    </div>
-                                                                    {/*<div*/}
-                                                                    {/*    className={`bg-white p-1 rounded-full hover:bg-green-300 `}>*/}
-                                                                    {/*    <FaRegHeart color={"green"}/>*/}
-                                                                    {/*</div>*/}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{clipPath: "polygon(0 0, 0 100%, 100% 50%)"}}
-                                                             className={`absolute ${value.id == job?.jobId ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 top-1/2 h-4 transform w-[6px] left-full bg-green_default  -translate-y-1/2`}>
-
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            }
+                                            <div>
+                                                {
+                                                    jobResult.map((value, index) => (
+                                                        <SideViewJobCard
+                                                            createDate={value.createDate}
+                                                            onQuickViewClick={handleQuickViewClick}
+                                                            key={index}
+                                                            companyName={value.companyName}
+                                                            logo={value.logo}
+                                                            jobId={value.id}
+                                                            companyId={value.companyId}
+                                                            experience={value.experience}
+                                                            expireDate={value.expiryDate}
+                                                            province={value.location}
+                                                            title={value.title}
+                                                            minSalary={value.minSalary}
+                                                            maxSalary={value.maxSalary}
+                                                            currentJobSelectedId={job?.jobId}
+                                                            index={index}
+                                                            quickView={false}
+                                                            handleQuickViewClick={(e) => handleQuickViewClick(e, value.id)}
+                                                        />
+                                                    ))
+                                                }
+                                            </div>
+                                            <div className={`mt-4 rounded-md bg-white py-4 px-3`}>
+                                                <div className={`flex gap-4 pt-4 items-center mb-6`}>
+                                                    <p className={`font-bold text-[20px] text-green-500`}>{headerName}</p>
+                                                    <FaBrain size={24} fill={"#00b14f"}/>
+                                                </div>
+                                                {
+                                                    recommendJobs.map((value, index) => (
+                                                        <SideViewJobCard
+                                                            createDate={value.createDate}
+                                                            onQuickViewClick={handleQuickViewClick}
+                                                            key={index}
+                                                            companyName={value.companyName}
+                                                            logo={value.logo}
+                                                            jobId={value.jobId}
+                                                            companyId={value.companyId}
+                                                            experience={value.experience}
+                                                            expireDate={value.expireDate}
+                                                            province={value.province}
+                                                            title={value.title}
+                                                            minSalary={value.minSalary}
+                                                            maxSalary={value.maxSalary}
+                                                            currentJobSelectedId={job?.jobId}
+                                                            index={index}
+                                                            quickView={false}
+                                                            handleQuickViewClick={(e) => handleQuickViewClick(e, value.jobId)}
+                                                        />
+                                                    ))
+                                                }
+                                            </div>
                                         </div>
                                         {/*right*/}
                                         <div
@@ -419,7 +429,7 @@ const JobSearch = () => {
                                                 </div>
                                                 <div className={`h-[438px] bg-white overflow-y-auto pr-2 relative`}>
                                                     <div className={`flex flex-col py-4 gap-[20px] h-fit `}>
-                                                    <div className={`flex flex-col gap-[16px] `}>
+                                                        <div className={`flex flex-col gap-[16px] `}>
                                                             {/*description*/}
                                                             <div className={`job_description_item `}>
                                                                 <h3 className={'tracking-normal'}>Mô tả công việc</h3>
@@ -510,7 +520,65 @@ const JobSearch = () => {
                                                     }
                                                 </div>
                                             </div>
+                                            <div className={`py-2 flex flex-col gap-3`}>
+                                                <div className={`flex w-full flex-col bg-white px-6 py-6 rounded-md`}>
+                                                    <div className={`flex gap-4 pt-4 items-center mb-6`}>
+                                                        <p className={`font-bold text-[20px] text-green-500`}>{headerName}</p>
+                                                        <FaBrain size={24} fill={"#00b14f"}/>
+                                                    </div>
+                                                    {
+                                                        recommendJobs.length > 0 ? (
+                                                            <div>
+                                                                <div>
+                                                                    {recommendJobs.map((value, index) => (
+                                                                        <JobWidthCard
+                                                                            createDate={value.createDate}
+                                                                            onQuickViewClick={handleQuickViewClick}
+                                                                            key={index}
+                                                                            companyName={value.companyName}
+                                                                            logo={value.logo}
+                                                                            jobId={value.jobId}
+                                                                            companyId={value.companyId}
+                                                                            experience={value.experience}
+                                                                            expireDate={value.expireDate}
+                                                                            province={value.province}
+                                                                            title={value.title}
+                                                                            minSalary={value.minSalary}
+                                                                            maxSalary={value.maxSalary}
+                                                                            quickView={true}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                                {/*<div*/}
+                                                                {/*    className={`w-full flex justify-center items-center`}>*/}
+                                                                {/*    <Pagination*/}
+                                                                {/*        onChange={onPageNumberChange}*/}
+                                                                {/*        current={page + 1}*/}
+                                                                {/*        pageSize={DefaultPageSize}*/}
+                                                                {/*        showSizeChanger={false}*/}
+                                                                {/*        total={totalElements}/>*/}
+                                                                {/*</div>*/}
+                                                            </div>
+                                                        ) : (
+                                                            <div>
+                                                                <div className={`flex items-center justify-center`}>
+                                                                    <img alt={"No result found"} className={`h-52`}
+                                                                         src={'https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/job-list/none-result.png'}/>
+                                                                </div>
+                                                                <div
+                                                                    className={`w-full flex justify-center items-center`}>
+                                                                    <p className={`opacity-70 text-text_color text-14`}>Chưa
+                                                                        tìm thấy việc làm phù hợp với yêu cầu của
+                                                                        bạn</p>
+
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    }
+                                                </div>
+                                            </div>
                                         </div>
+                                        {/*right side*/}
                                         <div
                                             className={`w-[30%] relative min-h-[1px] py-2 flex items-start overflow-visible pl-2`}>
                                             <div className={`block sticky top-[90px] w-full h-fit`}>
@@ -609,5 +677,99 @@ const JobSearch = () => {
         </div>
     );
 };
+
+type SideCardJobProps = JobWidthCardProps & {
+    index: number;
+    currentJobSelectedId: number;
+    handleQuickViewClick: (e) => void
+}
+
+const SideViewJobCard: React.FC<SideCardJobProps> = (value) => {
+    return (
+        <div key={value.index}
+             className={`rounded-[8px] ${value.jobId == value.currentJobSelectedId ? 'bg-highlight_default' : 'bg-white'} transition-colors duration-300 group mb-4 outline outline-2 outline-[#acf2cb] group hover:outline-none hover:border relative hover:border-solid hover:border-green_default   w-full cursor-pointer flex items-start gap-[16px] m-auto p-[12px]`}>
+            {/*company logo*/}
+            <div
+                className={`flex items-start w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px]  object-contain p-2 relative `}>
+                <a className={` block overflow-hidden bg-white`}
+                   target={"_blank"}
+                   href={`/company/${value.companyId}`}>
+                    <img
+                        src={value.logo}
+                        className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
+                        alt={value.companyName}
+                        title={value.companyName}/>
+                </a>
+            </div>
+            {/*card body*/}
+            <div className={`w-[calc(100%-120px)] `}>
+                <div className={`flex flex-col h-full`}>
+                    <div className={`mb-auto`}>
+                        <div className={`flex `}>
+                            <div
+                                className={`flex flex-col w-full  gap-2`}>
+                                <h3>
+                                    <a
+                                        target="_self"
+                                        href={`/job/detail/${value.jobId}`}>
+                                        <p className={`font-[600] hover:text-green_default text-[16px] line-clamp-2  text-[#212f3f] leading-6 cursor-pointer`}>
+                                            {value.title}
+                                        </p>
+                                    </a>
+                                </h3>
+                                <div className={`w-fit`}>
+                                    <a href={`/company/${value.companyId}`}
+                                       target="_blank">
+                                        <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>
+                                            {value.companyName}
+                                        </p>
+                                    </a>
+                                </div>
+                            </div>
+                            {/*<div className={`w-1/4 flex justify-end pr-2`}>*/}
+                            {/*    <p className={`text-green_default font-bold`}>10 - 15 triệu</p>*/}
+                            {/*</div>*/}
+                        </div>
+                    </div>
+                    <div className={`w-full flex  pr-2 mt-4 `}>
+                        <p className={`text-green_default font-bold`}>{value.minSalary} - {value.maxSalary} triệu</p>
+                        <div
+                            className={`flex-1 flex justify-end items-center`}>
+                            <div
+                                onClick={value.handleQuickViewClick}
+                                className={`rounded-full flex p-1 border group-hover:opacity-100 opacity-0 transition-opacity duration-300  bg-[#e3faed] items-center  text-[#15bf61]`}>
+                                <p className={`text-[12px]`}>Xem</p>
+                                <MdKeyboardDoubleArrowRight/>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        className={`mt-auto flex items-end justify-between py-2 w-full`}>
+                        <div
+                            className={`flex gap-4 overflow-hidden w-full`}>
+                            <div
+                                className={`rounded-[5px] overflow-x-hidden max-w-[50%] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>{value.province}</p>
+                            </div>
+                            <div
+                                className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
+                                <p className={`text-black text-[14px] truncate `}>{value.experience} năm</p>
+                            </div>
+
+                        </div>
+                        {/*<div*/}
+                        {/*    className={`bg-white p-1 rounded-full hover:bg-green-300 `}>*/}
+                        {/*    <FaRegHeart color={"green"}/>*/}
+                        {/*</div>*/}
+                    </div>
+                </div>
+            </div>
+            <div style={{clipPath: "polygon(0 0, 0 100%, 100% 50%)"}}
+                 className={`absolute ${value.jobId == value.currentJobSelectedId ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 top-1/2 h-4 transform w-[6px] left-full bg-green_default  -translate-y-1/2`}>
+
+            </div>
+        </div>
+    )
+}
 
 export default JobSearch;

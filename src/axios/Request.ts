@@ -153,6 +153,11 @@ export const updateCompanyInfo = async (companyId: string, request: any) => {
 export const getJobDetailById = async (id: string | number) => {
     return await instance.get(`/job/${id}`).then((response: any) => response.data)
 }
+
+export const getJobDetailByIdWithHistory = async (id: string | number, headers: any | null) => {
+    return await instance.get(`/job/${id}/valid`, headers).then((response: any) => response.data)
+}
+
 const applicationPath = '/application'
 export const applyJob = async (request: any) => {
     return await instance.post(`${applicationPath}/apply`, request).then((response: any) => response.data)
@@ -205,8 +210,8 @@ export const canPostJob = async (companyId: string) => {
     return await instance.get(`${companyPath}/${companyId}/possibility/job`).then((response: any) => response.data)
 }
 
-export const searchJobs = async (params: string) => {
-    return await instance.get(`/job/search?${params}`).then((response: any) => response.data)
+export const searchJobs = async (params: string, headers: any | null) => {
+    return await instance.get(`/job/search?${params}`, headers).then((response: any) => response.data)
 }
 
 export const getRecommendedJob = async (body: any) => {
@@ -296,7 +301,7 @@ export const getAllNotifications = async (userId: string) => {
 export const countAllNotificationDeliveried = async (userId: string) => {
     return await instance.get(`${NOTIFICATION}/${userId}/delivery`).then((response: any) => response.data)
 }
-export const getCompanyStatistics = async (companyId: string, month : number, year :number) => {
+export const getCompanyStatistics = async (companyId: string, month: number, year: number) => {
     return await instance.get(`/api/companies/${companyId}/statistics`, {
         params: {
             month,
@@ -305,6 +310,14 @@ export const getCompanyStatistics = async (companyId: string, month : number, ye
     }).then((response: any) => response.data)
 }
 
-export const getCompanyJobStatistics = async (companyId:string) => {
+export const getCompanyJobStatistics = async (companyId: string) => {
     return await instance.get(`/api/companies/${companyId}/job/statistics`).then((response: any) => response.data)
+}
+
+export const customHeaders = async (): Promise<void> => {
+    return await instance.get(`job/customHeaders`, {
+        headers: {
+            "X-custom-userId": 'userId'
+        }
+    })
 }

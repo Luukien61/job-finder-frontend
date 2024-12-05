@@ -184,6 +184,10 @@ const EmployerProfile = () => {
     const onDistrictSelected = (value: any) => {
         setDistrict(value)
     }
+    const handleLogout=()=>{
+        localStorage.clear();
+        window.location.href='/employer/entry/login'
+    }
     return (
         <div className={`flex justify-center`}>
 
@@ -517,6 +521,12 @@ const EmployerProfile = () => {
                                         </>
                                     )
                                 }
+                                <div className={`w-full flex`}>
+                                    <button
+                                        className={`w-fit px-2 hover:bg-red-600  rounded bg-red-500 py-2 text-white font-bold`}
+                                        onClick={handleLogout}>Log out
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )

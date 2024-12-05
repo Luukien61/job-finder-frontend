@@ -3,6 +3,7 @@ import {GrNext, GrPrevious} from "react-icons/gr";
 import {getNewJobs, getRecommendedJob} from "@/axios/Request.ts";
 import {JobWidthCardProps} from "@/page/JobDetail.tsx";
 import {DefaultRecommendationPageSize, PageableResponse} from "@/info/ApplicationType.ts";
+import {Tag} from "antd";
 const JobList = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     const [recommendJobs, setRecommendJobs] = useState([]);
@@ -150,19 +151,16 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
                                 <p className={`text-green-500 h-12 font-bold  line-clamp-2`}>{job.title}</p>
                                 <p onClick={(e) => onCompanyClick(e, job.companyId)}
                                    className={`text-gray-500 w-fit hover:underline h-12 line-clamp-2 font-medium`}>{job.companyName}</p>
-                                <p className={`text-green-500 font-bold text-[17px]`}>{job.minSalary} - {job.maxSalary} triệu</p>
+                                <div>
+                                    <Tag className={`text-18`} color={'red'}>{job.minSalary} - {job.maxSalary} triệu</Tag>
+                                </div>
+                                {/*<p className={`text-green-500 font-bold text-[17px]`}></p>*/}
                             </div>
                         </div>
                     </div>
                     <div className={`flex gap-x-1 items-center w-full justify-start my-2 overflow-hidden`}>
-                        <div
-                            className={`rounded-[8px] bg-bg_default py-1 overflow-hidden max-w-1/3 px-2 flex items-center justify-center`}>
-                            <p className={`text-black text-[14px] truncate `}>{job.province}</p>
-                        </div>
-                        <div
-                            className={`rounded-[8px] bg-bg_default py-1 px-2 flex items-center justify-center`}>
-                            <p className={`text-black text-[14px] truncate `}>{"Kinh nghiệm: " + job.experience + " năm"}</p>
-                        </div>
+                        <Tag color={'geekblue'}>{job?.province}</Tag>
+                        <Tag color={'geekblue'}>{"Kinh nghiệm: " + job.experience + " năm"}</Tag>
 
                     </div>
                 </div>
