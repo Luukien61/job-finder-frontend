@@ -23,6 +23,8 @@ import EmployerHomeAdmin, {EmployerDashboard, EmployerMessage} from "@/page/empl
 import {EmployerJobs} from "@/page/employer/EmployerJobs.tsx";
 import UpdateJob from "@/page/employer/UpdateJob.tsx";
 import EmployerProfile from "@/page/employer/EmployerProfile.tsx";
+import Payment from "@/page/payment/Payment.tsx";
+import SuccessPage from "@/page/payment/SuccessPage.tsx";
 
 const AppRouter = () => {
     return (
@@ -49,6 +51,8 @@ const AppRouter = () => {
             </Route>
             <Route path={'/test'} element={<Test/>}/>
             <Route path={'/profile/complete'} element={<CompleteProfile/>}/>
+            <Route path={'/payment'} element={<Payment/>}/>
+            <Route path={'/payment/success'} element={<SuccessPage/>}/>
 
             <Route path={'/employer'} element={<Employer/>}>
                 <Route path={''} element={<EmployerHomeAdmin/>}>
