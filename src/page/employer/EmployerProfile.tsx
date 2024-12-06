@@ -2,22 +2,43 @@ import React, {useEffect, useState} from 'react';
 import {CustomInput} from "@/page/CompleteProfile.tsx";
 import {GoOrganization} from "react-icons/go";
 import {HiPhone} from "react-icons/hi";
-import {GetProp, Spin, UploadFile, UploadProps} from 'antd';
-import {Form, Image, Select, Tooltip, Upload} from "antd";
+import {
+    Button,
+    Form,
+    GetProp,
+    Image,
+    Modal,
+    Popconfirm,
+    Select,
+    Spin,
+    Tooltip,
+    Upload,
+    UploadFile,
+    UploadProps
+} from 'antd';
 import {BiEdit, BiSolidCity} from "react-icons/bi";
-import {fullProvinces} from "@/info/AppInfo.ts";
+import {fullProvinces, portalUrl} from "@/info/AppInfo.ts";
 import {ProvinceProps} from "@/page/employer/EmployerSignup.tsx";
 import TextArea from "antd/es/input/TextArea";
 import {IoPersonCircleSharp} from "react-icons/io5";
 import {RiLockPasswordFill} from "react-icons/ri";
-import {getCompanyInfo, updateCompanyInfo} from "@/axios/Request.ts";
+import {
+    cancelSubscription,
+    getCompanyInfo,
+    getPlanPriority,
+    getPrices,
+    getUpgradeCheckoutUrl,
+    priceCheckOut,
+    updateCompanyInfo
+} from "@/axios/Request.ts";
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {PlusOutlined} from '@ant-design/icons';
 import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
 import {MdCancel} from "react-icons/md";
 import imageUpload from "@/axios/ImageUpload.ts";
 import {delay} from "@/page/GoogleCode.tsx";
-import {toast} from "react-toastify";
+import {useCompanyPlanState} from "@/zustand/AppState.ts";
+import {CompanyPlan, Price, priceless} from "@/info/ApplicationType.ts";
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
@@ -57,6 +78,22 @@ const EmployerProfile = () => {
     const [isBanned, setIsBanned] = useState<boolean>(false);
     const [isEdit, setIsEdit] = useState<boolean>(false);
     const [isEditAccount, setIsEditAccount] = useState<boolean>(false);
+    const {plan} = useCompanyPlanState()
+    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const [isOpenPlan, setIsOpenPlan] = useState<boolean>(false);
+    const [prices, setPrices] = useState<Price[]>([]);
+
+    const fetchPrices = async () => {
+        const response: Price[] = await getPrices();
+        const filter = response.filter((price) => priceless.includes(price.product));
+        const localPrice = await getPlanPriority()
+        const updatePlan = filter.map((item) => ({
+            ...item,
+            priority: localPrice[item.id]
+        }))
+        setPrices(updatePlan);
+    };
+
     const checkCompanyStatus = async (id) => {
         try {
             const isBanned: boolean = await checkIsCompanyBanned(id);
@@ -163,6 +200,11 @@ const EmployerProfile = () => {
         window.location.reload();
     }
 
+    const handleOpenPlan = async () => {
+        await fetchPrices()
+        setIsOpenPlan(true)
+    }
+
 
     const uploadButton = (
         <button style={{border: 0, background: 'none'}} type="button">
@@ -181,12 +223,30 @@ const EmployerProfile = () => {
         setProvincesName(rawProvinces)
     }, []);
 
+    useEffect(() => {
+        if (plan) {
+            setIsLoading(false);
+            setCompanyPlan(plan)
+        }
+    }, [plan]);
+
     const onDistrictSelected = (value: any) => {
         setDistrict(value)
     }
-    const handleLogout=()=>{
+    const handleLogout = () => {
         localStorage.clear();
-        window.location.href='/employer/entry/login'
+        window.location.href = '/employer/entry/login'
+    }
+    const handleViewInvoice = () => {
+        window.open(portalUrl, '_blank');
+    }
+    const handleCancelSubscription=async ()=>{
+        try{
+            await cancelSubscription({companyId: currentCompanyId, priceId: companyPlan?.priceId})
+            window.location.reload();
+        }catch(error){
+            console.log(error);
+        }
     }
     return (
         <div className={`flex justify-center`}>
@@ -256,6 +316,7 @@ const EmployerProfile = () => {
                                                     className={`h-[180px] object-cover aspect-square`}/>
                                             )
                                         }
+
                                         {previewImage && (
                                             <Image
                                                 wrapperStyle={{display: 'none'}}
@@ -268,6 +329,10 @@ const EmployerProfile = () => {
                                             />
                                         )}
                                     </div>
+                                    {
+                                        companyPlan && <span
+                                            className={'job-pro-icon w-fit absolute left-[120px] bottom-[10%]  text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                    }
                                 </div>
                             </div>
                             <Form
@@ -434,7 +499,7 @@ const EmployerProfile = () => {
                                 }
                             </Form>
                             <div
-                                className={`flex flex-col pr-6 w-full gap-6 justify-start mt-10 border-t border-solid border-green_default pt-10`}>
+                                className={`flex flex-col pr-6 w-full justify-start mt-10 border-t border-solid border-green_default pt-10`}>
                                 <div className={`w-full flex gap-4 items-start`}>
                                     <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
                                         Tài khoản
@@ -463,7 +528,13 @@ const EmployerProfile = () => {
                                         )
                                     }
                                 </div>
-                                <div className={`flex flex-col  w-full justify-start`}>
+                                <div className={`flex flex-col w-full justify-start`}>
+                                    {
+                                        companyPlan && <div className={`mb-6 flex flex-col `}>
+                                        <span onClick={handleOpenPlan}
+                                              className={'job-pro-icon w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                        </div>
+                                    }
                                     <CustomInput
                                         prefix={<IoPersonCircleSharp className={`mr-2`} size={24}
                                                                      fill={"#00b14f"}/>}
@@ -477,8 +548,8 @@ const EmployerProfile = () => {
                                 </div>
                                 {
                                     isEditAccount && (
-                                        <>
-                                            <div className={`flex flex-col  w-full justify-start`}>
+                                        <div className={`flex flex-col gap-6 mt-6`}>
+                                            <div className={`flex flex-col w-full justify-start`}>
                                                 <CustomInput
                                                     prefix={<RiLockPasswordFill className={`mr-2`} size={24}
                                                                                 fill={"#00b14f"}/>}
@@ -507,7 +578,7 @@ const EmployerProfile = () => {
                                                     onChange={(e) => setPassword(e.target.value)}/>
                                                 <div className={`w-1/2 flex gap-6  justify-end mt-6`}>
                                                     <button
-
+                                                        onClick={() => setIsEditAccount(false)}
                                                         className={`font-semibold`}>
                                                         Hủy
                                                     </button>
@@ -518,21 +589,199 @@ const EmployerProfile = () => {
 
                                                 </div>
                                             </div>
-                                        </>
+                                        </div>
                                     )
                                 }
-                                <div className={`w-full flex`}>
-                                    <button
-                                        className={`w-fit px-2 hover:bg-red-600  rounded bg-red-500 py-2 text-white font-bold`}
-                                        onClick={handleLogout}>Log out
-                                    </button>
-                                </div>
+                                {
+                                    !isEditAccount && (
+                                        <div className={`w-full flex mt-6`}>
+                                            <button
+                                                className={`w-fit px-2 hover:bg-red-600  rounded bg-red-500 py-2 text-white font-bold`}
+                                                onClick={handleLogout}>Đăng xuất
+                                            </button>
+                                        </div>
+                                    )
+                                }
                             </div>
                         </div>
                     )
             }
+            <Modal
+                onCancel={() => setIsOpenPlan(false)}
+                footer={null}
+                open={isOpenPlan}
+                width={1170}
+            >
+                <div className={`bg-white pt-10 flex flex-col gap-4`}>
+                    <div className={`w-full flex justify-center items-center`}>
+                        <div className={`flex gap-6 items-center`}>
+                            {
+                                prices.length > 0 && prices.map((price, index) => (
+                                    <div key={index}>
+                                        <PriceCard
+                                            priority={price.priority}
+                                            currentPlantPriority={companyPlan?.priority}
+                                            isCurrentPlan={companyPlan?.priceId == price.id}
+                                            {...price}/>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                    <div className={`w-full flex px-10 gap-4 justify-end items-end`}>
+                        <div className={`cursor-pointer`}>
+                            {/*<p className={`text-text_color text-14 font-semibold hover:underline`}>Hủy đăng ký</p>*/}
+
+                            <Popconfirm
+                                onConfirm={handleCancelSubscription}
+                                title="Hủy đăng ký"
+                                description={`Bạn có muốn hủy đăng ký ${companyPlan?.name} company?`}
+                                okText="Tôi muốn hủy"
+                                cancelText="Thoát"
+                            >
+                                <p className={`text-text_color text-14 font-semibold hover:underline`}>Hủy đăng ký</p>
+                            </Popconfirm>
+                        </div>
+                        <div className={`cursor-pointer`}>
+                            <button
+                                onClick={handleViewInvoice}
+                                className={`font-bold bg-[#343A46FF] text-white px-2 hover:bg-[#191A1CFF] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                                Xem lịch sử
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
 
 export default EmployerProfile;
+
+
+const PriceCard = ({product, currency, interval, id, unit_amount, isCurrentPlan, currentPlantPriority, priority}) => {
+    const formatCurrency = (amount, currencyCode) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: currencyCode.toUpperCase()
+        }).format(amount);
+    };
+    const formatPlanName = (amount: number) => {
+        let planName = 'Mini';
+        switch (amount) {
+
+            case 300000:
+                planName = 'Basic'
+                break;
+            case 5000000 :
+                planName = 'Ultimate'
+                break;
+            case 500000 :
+                planName = 'Pro'
+                break;
+        }
+        return planName;
+    }
+    const formatInterval = (interval) => {
+        const intervalMap = {
+            'day': 'ngày',
+            'week': 'tuần',
+            'month': 'tháng',
+            'year': 'năm'
+        };
+        return intervalMap[interval] || interval;
+    };
+
+    const handleCheckout = async (priceId: string) => {
+        try {
+            const response = await priceCheckOut({priceId: priceId});
+            window.location.href = response.url;
+        } catch (error) {
+            console.error("Error creating checkout session:", error);
+        }
+    };
+
+
+    return (
+        <div
+            className={`bg-white border ${currentPlantPriority > priority && 'opacity-50 pointer-events-none'} ${product == 'prod_RLNFfMLbTol7FK' ? 'pt-0 border border-green_default' : 'pt-4'}  cursor-pointer group hover:scale-110 transition-all hover:border-green_default duration-300 hover:border-2 relative shadow-lg rounded-lg p-10 pt-0 w-[310px] max-w-sm mx-auto`}>
+            <div className={`w-full flex justify-center`}>
+                {
+                    product == 'prod_RLNFfMLbTol7FK' && (
+                        <div className={`bg-green-500 rounded-b-xl p-3`}>
+                            <p className={`text-white font-bold`}>Phổ biến nhất</p>
+                        </div>
+                    )
+                }
+                {
+                    isCurrentPlan && (
+                        <div className={`bg-[#343A46FF] absolute top-0 right-0 rounded-bl-xl p-1`}>
+                            <p className={`text-14 text-white font-bold`}>Current</p>
+                        </div>
+                    )
+                }
+
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <h2 className="text-[36px] font-bold text-gray-800">{formatPlanName(unit_amount)}</h2>
+            </div>
+
+            <div className="mb-4">
+                <div className={`flex justify-center`}>
+                    <p className={`text-text_color text-14 opacity-70`}>Chỉ với</p>
+                </div>
+                <div className="text-3xl flex justify-center font-extrabold ">
+                    {formatCurrency(unit_amount, currency)}
+                    <span className={`text-text_color`}>/ {formatInterval(interval)}</span>
+                </div>
+            </div>
+            {
+                product == 'prod_RLdPii9sz0QMtX' && (
+                    <div className="border-t pt-4 mt-4">
+                        <ul className={`list-disc `}>
+                            <li>Giới hạn 30 bài đăng/tháng</li>
+                            <li>Không hiển thị ưu tiên khi tìm kiếm</li>
+                        </ul>
+                    </div>
+                )
+            }
+
+            {
+                product == 'prod_RLNFfMLbTol7FK' && (
+                    <div className="border-t pt-4 mt-4">
+                        <ul className={`list-disc`}>
+                            <li>Không giới hạn số lượng bài đăng</li>
+                            <li>Hiển thị ưu tiên khi tìm kiếm</li>
+                        </ul>
+                    </div>
+                )
+            }
+            {
+                product == 'prod_RLNEo0klDpuWTM' && (
+                    <div className="border-t pt-4 mt-4">
+                        <ul className={`list-disc`}>
+                            <li>Không giới hạn số lượng bài đăng</li>
+                            <li>Hiển thị ưu tiên khi tìm kiếm</li>
+                        </ul>
+                    </div>
+                )
+            }
+            {
+                isCurrentPlan ? (
+                    <button
+                        disabled={isCurrentPlan}
+                        className={`w-full pointer-events-none disabled:opacity-70  ${product == 'prod_RLNFfMLbTol7FK' ? 'bg-[#343A46FF] hover:bg-[#26262a] text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                        Gói hiện tại
+                    </button>
+                ) : (
+                    <button
+                        disabled={isCurrentPlan}
+                        onClick={() => handleCheckout(id)}
+                        className={`w-full disabled:opacity-70  ${product == 'prod_RLNFfMLbTol7FK' ? 'bg-[#343A46FF] hover:bg-[#26262a] hover:scale-105 text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                        Đăng Ký Ngay
+                    </button>
+                )
+            }
+        </div>
+    );
+};

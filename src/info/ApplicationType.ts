@@ -1,5 +1,5 @@
 export const DefaultPageSize = 10;
-export const DefaultRecommendationPageSize=12;
+export const DefaultRecommendationPageSize = 12;
 
 export interface JobApplication {
     "id": number,
@@ -69,7 +69,7 @@ export type JobDetailProps = {
     field: string;
 };
 
-export type SearchProps={
+export type SearchProps = {
     keyword: string,
     location?: string,
     minSalary?: number,
@@ -80,7 +80,7 @@ export type SearchProps={
     sort?: string,
     order?: string,
 }
-export type JobSearchResult={
+export type JobSearchResult = {
     "id": number,
     "title": string,
     "location": string,
@@ -102,3 +102,30 @@ export type UserStatistics = {
     lastCompanyUsers: number;
     totalCompanyUsers: number;
 }
+
+export interface CompanyPlan {
+    id: string,
+    name: string,
+    description: string,
+    price: number,
+    priceId: string,
+    period: string,
+    productId: string,
+    priority: number,
+    limitPost: number,
+}
+
+export interface Price {
+    id: string;
+    product: string;
+    unit_amount: number;
+    currency: string;
+    interval: string;
+    priority?: number;
+}
+
+export const priceless = ['prod_RLdPii9sz0QMtX', 'prod_RLNFfMLbTol7FK', 'prod_RLNEo0klDpuWTM']
+
+export const UltimatePlan = "Ultimate"
+export const ProPlan = "Pro"
+export const BasicPlan = "Basic"

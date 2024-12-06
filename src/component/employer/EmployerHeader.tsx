@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {IoNotifications} from "react-icons/io5";
 import {connectWebSocket, subscribeToTopic} from "@/service/WebSocketService.ts";
-import {Dropdown, MenuProps, Modal} from "antd";
+import {Dropdown, MenuProps, Modal, Tooltip} from "antd";
 import {
     countAllNotificationDeliveried,
     getAllNotifications,
@@ -12,8 +12,9 @@ import {IoMdCloseCircle} from "react-icons/io";
 import {AiFillMessage} from "react-icons/ai";
 import {useNavigate} from "react-router-dom";
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
-import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
-import {useIsCompanyBannedState} from "@/zustand/AppState.ts";
+import {checkIsCompanyBanned, fetchCompanyPlan} from "@/service/ApplicationService.ts";
+import {useCompanyPlanState, useIsCompanyBannedState} from "@/zustand/AppState.ts";
+import {CompanyPlan} from "@/info/ApplicationType.ts";
 
 interface BanProps {
     id: number;
@@ -32,25 +33,28 @@ interface Notification {
     status: string,
     userId: string
 }
+
 export const EmployerHeader = () => {
     const [currentEmployerId, setCurrentEmployerId] = useState<string | null>(null);
     const [unreadNotification, setUnreadNotification] = useState<number>();
     const [items, setItems] = useState<MenuProps['items']>([]);
     const [isViewDetail, setIsViewDetail] = useState(false);
-    const [currentBanNotification, setCurrentBanNotification] = useState< BanProps>();
+    const [currentBanNotification, setCurrentBanNotification] = useState<BanProps>();
     const navigate = useNavigate();
     const [companyInfo, setCompanyInfo] = useState<CompanyInfo>();
     const [currentNav, setCurrentNav] = useState<string>();
-    const getNavLocation =()=>{
+    const getNavLocation = () => {
         const paths = location.pathname.split("/");
         let current = paths[paths.length - 1];
-        if(current == 'employer'){
-            current =''
+        if (current == 'employer') {
+            current = ''
         }
         setCurrentNav(current);
     }
-    const {setIsCompanyBanned}=useIsCompanyBannedState()
+    const {setIsCompanyBanned} = useIsCompanyBannedState()
     const [isBanned, setIsBanned] = useState<boolean>(false);
+    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const {setPlan}=useCompanyPlanState()
     const checkCompanyStatus = async (id) => {
         try {
             const isBanned: boolean = await checkIsCompanyBanned(id);
@@ -64,31 +68,32 @@ export const EmployerHeader = () => {
         getNavLocation()
     }, [location]);
 
-    const updateNotificationState=async (id:number, status: string)=>{
-        try{
+    const updateNotificationState = async (id: number, status: string) => {
+        try {
             await updateNotificationStatus(id, status);
-            const count :number = await countAllNotificationDeliveried(currentEmployerId);
+            const count: number = await countAllNotificationDeliveried(currentEmployerId);
             setUnreadNotification(count);
-        }catch(error){
+        } catch (error) {
             console.log(error);
         }
     }
-    const openDetailNotification = (data:BanProps)=>{
+    const openDetailNotification = (data: BanProps) => {
         setIsViewDetail(true);
         setCurrentBanNotification(data)
-        updateNotificationState(data.id,"read")
+        updateNotificationState(data.id, "read")
     }
     const fetchAllNotifications = async () => {
-        try{
-            let notifications : Notification[]= await getAllNotifications(currentEmployerId);
+        try {
+            let notifications: Notification[] = await getAllNotifications(currentEmployerId);
 
-            if(notifications && notifications.length > 0){
-                notifications=notifications.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                const notificationMenuItem : MenuProps['items'] = notifications.map((item)=>{
+            if (notifications && notifications.length > 0) {
+                notifications = notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                const notificationMenuItem: MenuProps['items'] = notifications.map((item) => {
                     const finalMessage = item.message.replace('${title}', item.title).replace('${reason}', item.reason);
                     return {
                         key: item.id,
-                        label: (<div onClick={()=>openDetailNotification(item)} className={`flex ${item.status!='READ' ? 'bg-gray-200': 'bg-inherit'} justify-center px-1 py-1 border-b`}>
+                        label: (<div onClick={() => openDetailNotification(item)}
+                                     className={`flex ${item.status != 'READ' ? 'bg-gray-200' : 'bg-inherit'} justify-center px-1 py-1 border-b`}>
                                 <p className={`line-clamp-3 text-text_color opacity-80`}>{finalMessage}</p>
                             </div>
                         ),
@@ -96,29 +101,34 @@ export const EmployerHeader = () => {
                 })
                 setItems(notificationMenuItem);
             }
-        }catch(error){
+        } catch (error) {
             console.log(error);
         }
     }
 
-    const onReceiveNotification = useCallback(async (data: BanProps)=>{
+    const onReceiveNotification = useCallback(async (data: BanProps) => {
         setUnreadNotification(1)
-    },[])
+    }, [])
 
     const getCountNotificationCountUnread = async (id) => {
-        const count :number = await countAllNotificationDeliveried(id);
+        const count: number = await countAllNotificationDeliveried(id);
         setUnreadNotification(count);
     }
-    const onCloseDetails=()=>{
+    const onCloseDetails = () => {
         setIsViewDetail(false);
     }
-    const fetchCompanyInfo=async (id)=>{
-        try{
-            const info : CompanyInfo= await getCompanyInfo(id)
+    const fetchCompanyInfo = async (id) => {
+        try {
+            const info: CompanyInfo = await getCompanyInfo(id)
             setCompanyInfo(info)
-        }catch(error){
+        } catch (error) {
             console.log(error);
         }
+    }
+    const handleGetCompanyPlan = async (id: string) => {
+        const plan = await fetchCompanyPlan(id)
+        setCompanyPlan(plan)
+        setPlan(plan)
     }
 
     useEffect(() => {
@@ -132,6 +142,7 @@ export const EmployerHeader = () => {
             getCountNotificationCountUnread(id)
             fetchCompanyInfo(id)
             checkCompanyStatus(id)
+            handleGetCompanyPlan(id)
         }
 
     }, []);
@@ -139,11 +150,11 @@ export const EmployerHeader = () => {
         navigate(`${item}`)
         setCurrentNav(item)
     }
-    const openLocation=(location: string, isBlank: boolean)=>{
-        if(isBlank){
+    const openLocation = (location: string, isBlank: boolean) => {
+        if (isBlank) {
             window.open(location, '_blank')
-        }else {
-            window.location.href=location
+        } else {
+            window.location.href = location
         }
 
     }
@@ -177,7 +188,16 @@ export const EmployerHeader = () => {
                         đăng</p>
                 </div>
 
-
+                {
+                    companyPlan ? (
+                        <span className={'job-pro-icon text-14 rounded-md p-2 mr-4'}>{companyPlan.name}</span>
+                    ) : (
+                        <Tooltip placement={'bottom'} title={'Nâng cấp tài khoản'}>
+                            <span onClick={()=>openLocation("/prices",false)}
+                                className={'job-pro-icon !bg-white !from-5% !from-gray-50 !to-gray-100 text-14 border border-[#ffb94b]  cursor-pointer rounded-md p-2 mr-4'}>Upgrade</span>
+                        </Tooltip>
+                    )
+                }
                 <Dropdown
                     overlayStyle={{width: '400px'}}
                     menu={{items}}
@@ -193,16 +213,17 @@ export const EmployerHeader = () => {
                 </Dropdown>
                 <div className={`flex gap-3 ml-3`}>
                     <div
-                        onClick={()=>openLocation(`/message/${companyInfo?.id}`,true)}
+                        onClick={() => openLocation(`/message/${companyInfo?.id}`, true)}
                         className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
                         <button className={`disabled:opacity-50`} disabled={isBanned}>
                             <AiFillMessage size={24} fill={"#00B14F"}/>
                         </button>
                     </div>
-                    <div onClick={()=>openLocation('/employer/profile',false)}
-                         className={`w-9 cursor-pointer  bg-white  aspect-square rounded-full overflow-y-hidden`}>
+                    <div onClick={() => openLocation('/employer/profile', false)}
+                         className={` cursor-pointer relative  bg-white  aspect-square rounded-full`}>
                         <img src={companyInfo?.logo} alt={`avatar`}
-                             className="object-cover aspect-square"/>
+                             className="object-cover rounded-full w-9 aspect-square"/>
+
                     </div>
                 </div>
             </div>
@@ -241,10 +262,10 @@ interface MessageProps {
     href?: string;
 }
 
-const DynamicMessage: React.FC<MessageProps> = ({ message, title, as = "span", href, reason }) => {
+const DynamicMessage: React.FC<MessageProps> = ({message, title, as = "span", href, reason}) => {
     // Split the message around "${title}"
     const parts = message.split("${title}");
-    const part0= parts[0]
+    const part0 = parts[0]
     const part1 = parts[1]
     const part2 = part1.split('${reason}.')
 

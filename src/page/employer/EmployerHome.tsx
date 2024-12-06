@@ -136,7 +136,6 @@ export const HomeContent = () => {
                                 alt={currentCompany?.name}
                                 src={currentCompany?.logo}
                                 className={`h-full object-cover aspect-square`}/>
-
                         </div>
 
                     </div>

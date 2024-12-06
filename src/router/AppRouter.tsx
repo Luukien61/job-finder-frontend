@@ -25,6 +25,7 @@ import UpdateJob from "@/page/employer/UpdateJob.tsx";
 import EmployerProfile from "@/page/employer/EmployerProfile.tsx";
 import Payment from "@/page/payment/Payment.tsx";
 import SuccessPage from "@/page/payment/SuccessPage.tsx";
+import CustomPriceTable from "@/page/payment/CustomPriceTable.tsx";
 
 const AppRouter = () => {
     return (
@@ -53,6 +54,7 @@ const AppRouter = () => {
             <Route path={'/profile/complete'} element={<CompleteProfile/>}/>
             <Route path={'/payment'} element={<Payment/>}/>
             <Route path={'/payment/success'} element={<SuccessPage/>}/>
+            <Route path={'/prices'} element={<CustomPriceTable/>}/>
 
             <Route path={'/employer'} element={<Employer/>}>
                 <Route path={''} element={<EmployerHomeAdmin/>}>

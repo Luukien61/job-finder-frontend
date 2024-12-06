@@ -398,7 +398,7 @@ export const EmployerJobs = () => {
             if (canPost) {
                 window.location.href = `/employer/new`
             } else {
-                openNotification("Bạn đã vượt quá số bài đăng hàng tháng.")
+                openNotification("Bạn đã vượt quá số bài đăng cho phép, nâng cấp tài khoản để tiếp tục đăng tin.")
             }
         } catch (err) {
             console.log(err);

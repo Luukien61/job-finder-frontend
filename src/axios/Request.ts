@@ -321,3 +321,34 @@ export const customHeaders = async (): Promise<void> => {
         }
     })
 }
+const pricePath ='/webhook'
+export const getPrices=async () => {
+    return await instance.get(`${pricePath}/prices`).then((response: any) => response.data)
+}
+
+export const priceCheckOut = async ( body ) => {
+    return await instance.post(`${pricePath}/create-checkout-session`, body).then((response: any) => response.data)
+}
+export const verifySession=async (body: any)=>{
+    return await instance.post(`${pricePath}/verify-session`, body).then((response: any) => response.data)
+}
+
+export const getCompanyPlan=async (companyId: string) => {
+    return await instance.get(`subscription/${companyId}`).then((response: any) => response.data)
+}
+
+export const getPlanPriority = async () => {
+    return await instance.get(`subscription/plan/priority`).then((response: any) => response.data)
+}
+
+export const getUpgradeCheckoutUrl =async (body) => {
+    return await instance.get(`subscription/upgrade-session`, body).then((response: any) => response.data)
+}
+
+export const upgradeVerify=async (body: any) => {
+    return await instance.post(`subscription/update-subscription`, body).then((response: any) => response.data)
+}
+
+export const cancelSubscription=async (body: any) => {
+    return await instance.post(`subscription/cancel-subscription`, body).then((response: any) => response.data)
+}

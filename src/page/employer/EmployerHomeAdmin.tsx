@@ -31,6 +31,9 @@ import {HiNewspaper} from "react-icons/hi";
 import {SiPaperlessngx} from "react-icons/si";
 import PulsatingSphere from "@/component/PulsatingSphere.tsx";
 import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
+import {useCompanyPlanState} from "@/zustand/AppState.ts";
+import {CompanyPlan} from "@/info/ApplicationType.ts";
+import {DEFAULT_LIMIT, getLimitPost, LimitProps} from "@/service/ApplicationService.ts";
 
 
 const EmployerHomeAdmin = () => {
@@ -74,6 +77,10 @@ export const EmployerDashboard = () => {
     const date = new Date();
     const currentMonth = date.getMonth() + 1;
     const currentYear = date.getFullYear();
+    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const [limitProp, setLimitProp] = useState<LimitProps>();
+    const {plan}= useCompanyPlanState()
+
     const fetchCompanyStatistics = async (id: string, month: number, year: number) => {
         try {
             const result: AdminProps = await getCompanyStatistics(id, month, year)
@@ -111,6 +118,16 @@ export const EmployerDashboard = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if(plan){
+            setCompanyPlan(plan);
+            const isLimit = getLimitPost(plan)
+            setLimitProp(isLimit)
+        }else {
+            setLimitProp({isLimit: true, limit: DEFAULT_LIMIT})
+        }
+    }, [plan]);
+
     return (
         <div className={`px-[60px] py-10 `}>
             <div>
@@ -146,15 +163,19 @@ export const EmployerDashboard = () => {
                     name={'Bài đăng trong tháng'}
                     icon={<HiNewspaper size={20} color={'#3B7DDD'}/>}
                 />
-                <CompanyStatisticCard
-                    style={'text-[#dc3545]'}
-                    statistic={15 - companyStatistics?.newJobs}
-                    name={'Bài đăng còn lại trong tháng'}
-                    icon={<SiPaperlessngx size={20} color={'#3B7DDD'}/>}
-                />
+                {
+                    (limitProp && limitProp.isLimit ) && (
+                        <CompanyStatisticCard
+                            style={'text-[#dc3545]'}
+                            statistic={limitProp.limit - companyStatistics?.newJobs}
+                            name={'Bài đăng còn lại trong tháng'}
+                            icon={<SiPaperlessngx size={20} color={'#3B7DDD'}/>}
+                        />
+                    )
+                }
             </div>
             <div className={`flex w-full p-3 `}>
-                <div className={`w-full py-3 px-3 pl-0`}>
+                <div className={`w-full py-3`}>
                     <div className={`h-[300px] pr-3 py-3 bg-white rounded-lg`}>
                         <ResponsiveContainer>
                             <BarChart data={monthlyJobs} width={530} height={250}>

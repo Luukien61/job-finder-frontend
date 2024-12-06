@@ -6595,5 +6595,7 @@ export const reportOptions = [
     { value: 'Lý do khác', label: 'Lý do khác' },
 ];
 
+export const portalUrl = "https://billing.stripe.com/p/login/test_28og089mjdiD62Y5kl"
+
 
 

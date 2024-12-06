@@ -307,3 +307,18 @@ input{
     height: 180px;
     vertical-align: top;
 }
+
+span.job-pro-icon {
+    background: linear-gradient(259.43deg, #ffb94b -3.83%, #ffe7bf 29.35%, #ffb94b 92.22%);
+    color: #513101;
+    display: flex;
+    font-family: Inter, sans-serif;
+    font-weight: 600;
+    letter-spacing: .01em;
+    line-height: 14.52px;
+    text-align: center;
+    align-items: center;
+    border-radius: 111px;
+    justify-content: center;
+
+}
