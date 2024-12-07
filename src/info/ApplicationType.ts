@@ -91,7 +91,8 @@ export type JobSearchResult = {
     "minSalary": number,
     "maxSalary": number,
     "expiryDate": Date,
-    "createDate": Date
+    "createDate": Date,
+    "tier": string,
 }
 
 export type UserStatistics = {

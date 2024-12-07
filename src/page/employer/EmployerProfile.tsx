@@ -240,11 +240,11 @@ const EmployerProfile = () => {
     const handleViewInvoice = () => {
         window.open(portalUrl, '_blank');
     }
-    const handleCancelSubscription=async ()=>{
-        try{
+    const handleCancelSubscription = async () => {
+        try {
             await cancelSubscription({companyId: currentCompanyId, priceId: companyPlan?.priceId})
             window.location.reload();
-        }catch(error){
+        } catch (error) {
             console.log(error);
         }
     }
@@ -330,8 +330,8 @@ const EmployerProfile = () => {
                                         )}
                                     </div>
                                     {
-                                        companyPlan && <span
-                                            className={'job-pro-icon w-fit absolute left-[120px] bottom-[10%]  text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                        companyPlan &&
+                                        <span className={'job-pro-icon drop-shadow w-fit absolute left-[120px] bottom-[10%]  text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
                                     }
                                 </div>
                             </div>
@@ -530,9 +530,12 @@ const EmployerProfile = () => {
                                 </div>
                                 <div className={`flex flex-col w-full justify-start`}>
                                     {
-                                        companyPlan && <div className={`mb-6 flex flex-col `}>
-                                        <span onClick={handleOpenPlan}
-                                              className={'job-pro-icon w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                        companyPlan &&
+                                        <div className={`mb-6 flex flex-col `}>
+                                            <Tooltip placement={'bottom'} title={'Nâng cấp tài khoản'}>
+                                                <span onClick={handleOpenPlan}
+                                                      className={'job-pro-icon drop-shadow hover:scale-105 w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                            </Tooltip>
                                         </div>
                                     }
                                     <CustomInput

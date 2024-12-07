@@ -23,7 +23,7 @@ import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {Checkbox, Form, FormProps, Input, Modal, Select, Spin, Tag, Tooltip} from "antd";
 import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
-import {UserResponse} from "@/page/GoogleCode.tsx";
+import {delay, UserResponse} from "@/page/GoogleCode.tsx";
 import {UserDto} from "@/page/UserProfile.tsx";
 import {
     checkIsJobSaved,
@@ -32,7 +32,7 @@ import {
     refinePdfName,
     unSaveJobHandler
 } from "@/service/ApplicationService.ts";
-import {JobDetailProps} from "@/info/ApplicationType.ts";
+import {JobDetailProps, ProPlan, UltimatePlan} from "@/info/ApplicationType.ts";
 import {reportOptions, reportQuota} from "@/info/AppInfo.ts";
 
 type FieldType = {
@@ -74,8 +74,8 @@ const JobDetail = () => {
         setOpenModal(false);
     }, [])
     const handleGetJobById = async (id: string | number, userId: string | null) => {
-        let headers=null
-        if(userId){
+        let headers = null
+        if (userId) {
             headers = {
                 headers: {
                     "X-custom-userId": userId
@@ -83,7 +83,7 @@ const JobDetail = () => {
             }
         }
         try {
-            const jobDetail: JobDetailProps = await getJobDetailByIdWithHistory(id,headers)
+            const jobDetail: JobDetailProps = await getJobDetailByIdWithHistory(id, headers)
             if (jobDetail) {
                 setJob(jobDetail)
             } else {
@@ -92,6 +92,8 @@ const JobDetail = () => {
         } catch (e: any) {
             toast.error(e.response.data)
         }
+        await delay(500)
+        setIsLoading(false)
     }
 
     const handleGetCompanyInfo = async (id: string) => {
@@ -121,12 +123,13 @@ const JobDetail = () => {
     }, [job]);
 
     useEffect(() => {
+        setIsLoading(true)
         const user = JSON.parse(localStorage.getItem('user'));
-        let userId =null
-        if(user && user.id){
+        let userId = null
+        if (user && user.id) {
             userId = user.id;
         }
-        handleGetJobById(id,userId)
+        handleGetJobById(id, userId)
         if (user) {
             setCurrentUser(user)
             setIsLogin(true)
@@ -292,7 +295,7 @@ const JobDetail = () => {
             toast.error(e.response.data)
         }
     }
-    const handleCloseReport=()=>{
+    const handleCloseReport = () => {
         setOpenReports(false)
     }
 
@@ -385,7 +388,8 @@ const JobDetail = () => {
                                         </div>
                                         <div className={`flex overflow-x-hidden flex-col gap-[2px]`}>
                                             <div>Địa điểm</div>
-                                            <div className={`font-bold truncate break-words`}>{job?.province || ''}</div>
+                                            <div
+                                                className={`font-bold truncate break-words`}>{job?.province || ''}</div>
                                         </div>
                                     </div>
                                     {/*experience*/}
@@ -635,7 +639,7 @@ const JobDetail = () => {
                                     <div className={`flex flex-col w-full *:mb-3`}>
                                         {/*company name and logo*/}
                                         <a className={``}
-                                           href="https://www.topcv.vn/cong-ty/cong-ty-tnhh-nhap-khau-va-phan-phoi-greenhome/167523.html"
+                                           href={`/company/${company?.id}`}
                                            target="_blank" data-toggle="tooltip" title={company?.name}
                                            data-placement="top">
                                             <div className={`flex cursor-pointer gap-4 items-start`}>
@@ -702,7 +706,8 @@ const JobDetail = () => {
                                             </div>
                                         </div>
                                         <div className={`flex items-center gap-2 justify-center `}>
-                                            <a className={`text-green_default text-[14px] cursor-pointer font-bold hover:underline`}>
+                                            <a href={`/company/${company?.id}`}
+                                               className={`text-green_default text-[14px] cursor-pointer font-bold hover:underline`}>
                                                 Xem trang công ty
                                             </a>
                                         </div>
@@ -1080,7 +1085,8 @@ const JobDetail = () => {
                                     <p className={`font-semibold`}>Số điện thoại</p>
                                 </div>
                                 <div className={`w-3/4 pl-4`}>
-                                    <Form.Item rules={[{required:true, message: "Số điện thoại không được để trống "}]} name={'phone'} style={{marginBottom: '0px'}}>
+                                    <Form.Item rules={[{required: true, message: "Số điện thoại không được để trống "}]}
+                                               name={'phone'} style={{marginBottom: '0px'}}>
                                         <Input
                                             allowClear={true}
                                             style={{marginBottom: '0px'}}
@@ -1110,7 +1116,8 @@ const JobDetail = () => {
                                     <p className={`font-semibold`}>Nội dung</p>
                                 </div>
                                 <div className={`w-3/4 pl-4`}>
-                                    <Form.Item rules={[{required:true, message:"Nội dung không được để trống"}]} name={'reason'} style={{marginBottom: '0px'}}>
+                                    <Form.Item rules={[{required: true, message: "Nội dung không được để trống"}]}
+                                               name={'reason'} style={{marginBottom: '0px'}}>
                                         <TextArea
                                             showCount={true}
                                             className={'text-14'}
@@ -1180,6 +1187,7 @@ export type JobWidthCardProps = {
     quickView: boolean,
     onClick?: () => void,
     onQuickViewClick?: (event: React.MouseEvent, id: number) => void,
+    tier?: string
 }
 
 
@@ -1189,7 +1197,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
         navigate(`/job/detail/${job.jobId}`)
     }
     const expireDate = new Date(job.expireDate);
-    const isExpire= expireDate.getTime() < new Date().getTime();
+    const isExpire = expireDate.getTime() < new Date().getTime();
     const formattedDate = expireDate.toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
@@ -1197,7 +1205,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
     });
     return (
         <div onClick={handleJobCardClick}
-             className={`rounded-[8px] outline outline-1 outline-[#acf2cb] group hover:border relative hover:border-solid ${isExpire ? 'hover:border-red-500 bg-red-50': 'hover:border-green_default bg-highlight_default'}  w-full  cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
+             className={`rounded-[8px] outline outline-1 outline-[#acf2cb] group hover:border relative hover:border-solid ${isExpire ? 'hover:border-red-500 bg-red-50' : 'hover:border-green_default bg-highlight_default'}  w-full  cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
             {/*company logo*/}
             <div
                 className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
@@ -1227,9 +1235,17 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                                     </a>
                                 </h3>
                                 <div className={`w-fit max-w-full overflow-hidden`}>
-                                    <a  href={`/company/${job.companyId}`}
+                                    <a className={`flex gap-2`} href={`/company/${job.companyId}`}
                                        target="_blank">
-                                        <p className={`break-words max-w-full w-fit  text-[14px] opacity-70 hover:underline truncate`}>{job.companyName}</p>
+                                        {
+                                            job.tier && (
+                                                <div>
+                                                    <span
+                                                        className={'job-pro-icon drop-shadow hover:scale-105 cursor-pointer text-[12px] !rounded-[111px] !h-[17px] !w-[33px] px-1'}>{job.tier.slice(0, 3)}</span>
+                                                </div>
+                                            )
+                                        }
+                                        <p className={`break-words max-w-full w-fit ${job.tier == UltimatePlan || job.tier == ProPlan ? 'text-[#e39314] font-extrabold' : ''} uppercase  text-[14px] leading-5 opacity-70 hover:underline truncate`}>{job.companyName}</p>
                                     </a>
                                 </div>
                             </div>
@@ -1269,7 +1285,7 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
                 {
                     job.quickView && (
                         <div
-                            onClick={(e)=>job.onQuickViewClick(e,job.jobId)}
+                            onClick={(e) => job.onQuickViewClick(e, job.jobId)}
                             className={`absolute top-[40%] right-10 group-hover:block hidden transition-transform duration-500`}>
                             <div className={`rounded-full flex p-1 border bg-[#e3faed] items-center  text-[#15bf61]`}>
                                 <p className={`text-[12px]`}>Xem nhanh</p>

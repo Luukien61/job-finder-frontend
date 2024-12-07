@@ -5,17 +5,18 @@ import ExpandableCard from "@/component/ExpandableCard.tsx";
 import {MdLocationPin} from "react-icons/md";
 import LocationMap from "@/component/employer/LocationMap.tsx";
 import {IoMdMap} from "react-icons/io";
-import {Avatar, Input, notification, Pagination} from "antd";
+import {Avatar, Input, notification, Pagination, Tooltip} from "antd";
 import {useLocation, useNavigate} from "react-router-dom";
 import {getCompanyInfo, getJobsByCompanyId} from "@/axios/Request.ts";
 import {
+    CompanyPlan,
     DefaultPageSize,
     JobApplication,
     JobCardResponse,
     JobDetailProps,
     PageableResponse
 } from "@/info/ApplicationType.ts";
-import {convertDate} from "@/service/ApplicationService.ts";
+import {convertDate, fetchCompanyPlan} from "@/service/ApplicationService.ts";
 import {useMessageReceiverState} from "@/zustand/AppState.ts";
 import {JobWidthCard} from "@/page/JobDetail.tsx";
 
@@ -54,7 +55,7 @@ export const HomeContent = () => {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [totalJobs, setTotalJobs] = useState<number>(0);
     const [jobsCards, setJobsCards] = useState<JobCardResponse[]>([]);
-    const [currentJob, setCurrentJob] = useState<JobDetailProps>();
+    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
 
     const scrollRef = useRef(null);
     const priorityMap = {
@@ -66,7 +67,10 @@ export const HomeContent = () => {
     const navigate = useNavigate();
     const [api, contextHolder] = notification.useNotification();
 
-
+    const handleGetCompanyPlan = async (id: string) => {
+        const plan = await fetchCompanyPlan(id)
+        setCompanyPlan(plan)
+    }
 
 
     const handleGetCompanyInfo = async (id: string) => {
@@ -89,6 +93,7 @@ export const HomeContent = () => {
         setCurrentCompanyId(companyId);
         handleGetCompanyInfo(companyId);
         handleGetJobsByCompanyId(companyId, 0, DefaultPageSize)
+        handleGetCompanyPlan(companyId)
     }, [location])
     const handleCopy = async () => {
         try {
@@ -100,19 +105,18 @@ export const HomeContent = () => {
     }
 
 
-
     const onPageNumberChange = async (page: number, size: number) => {
         await handleGetJobsByCompanyId(currentCompanyId, page - 1);
         handleScroll()
     }
 
 
-    const handleScroll=()=>{
-        if(scrollRef.current){
+    const handleScroll = () => {
+        if (scrollRef.current) {
             const offset = 100; // Khoảng cách cách top (100px)
             const elementTop = scrollRef.current.getBoundingClientRect().top;
             const scrollPosition = window.pageYOffset + elementTop - offset;
-            window.scrollTo({ top: scrollPosition, behavior: "smooth" });
+            window.scrollTo({top: scrollPosition, behavior: "smooth"});
         }
     }
 
@@ -141,10 +145,16 @@ export const HomeContent = () => {
                     </div>
                     <div className={`items-center flex gap-8 my-6 pl-[252px] pr-10 relative`}>
                         <div className={`flex flex-1 flex-col`}>
-                            <div>
-                                <p className={`text-white line-clamp-2 font-bold leading-7 mb-4 text-[24px]`}>
+                            <div className={`flex w-full`}>
+                                <p className={`text-white w-[80%] line-clamp-2 font-bold leading-7 mb-4 text-[24px]`}>
                                     {currentCompany?.name}
                                 </p>
+                                {
+                                    companyPlan &&
+                                    <div className={`mb-6 flex-1 flex justify-end`}>
+                                        <span className={'job-pro-icon drop-shadow hover:scale-105 w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                    </div>
+                                }
                             </div>
                             <div className={`flex gap-10`}>
                                 <div className={`flex gap-2 items-center `}>
@@ -157,6 +167,7 @@ export const HomeContent = () => {
                                     <p className={`text-white`}>{currentCompany?.phone}</p>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -193,7 +204,7 @@ export const HomeContent = () => {
                             <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
                                 {
                                     jobsCards.map((value, index) => (
-                                        <div className={`relative`} >
+                                        <div className={`relative`}>
                                             <JobWidthCard
                                                 createDate={value.createdAt}
                                                 key={index}

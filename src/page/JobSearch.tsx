@@ -14,8 +14,8 @@ import {
     DefaultPageSize, DefaultRecommendationPageSize,
     JobDetailProps,
     JobSearchResult,
-    PageableResponse,
-    SearchProps
+    PageableResponse, ProPlan,
+    SearchProps, UltimatePlan
 } from "@/info/ApplicationType.ts";
 import {MdKeyboardDoubleArrowRight} from "react-icons/md";
 import {IoCloseCircleSharp} from "react-icons/io5";
@@ -348,6 +348,7 @@ const JobSearch = () => {
                                                             expireDate={value.expiryDate}
                                                             province={value.location}
                                                             title={value.title}
+                                                            tier={value.tier}
                                                             minSalary={value.minSalary}
                                                             maxSalary={value.maxSalary}
                                                             currentJobSelectedId={job?.jobId}
@@ -378,6 +379,7 @@ const JobSearch = () => {
                                                             province={value.province}
                                                             title={value.title}
                                                             minSalary={value.minSalary}
+                                                            tier={value.tier}
                                                             maxSalary={value.maxSalary}
                                                             currentJobSelectedId={job?.jobId}
                                                             index={index}
@@ -481,6 +483,7 @@ const JobSearch = () => {
                                                                             companyName={value.companyName}
                                                                             logo={value.logo}
                                                                             jobId={value.id}
+                                                                            tier={value.tier}
                                                                             companyId={value.companyId}
                                                                             experience={value.experience}
                                                                             expireDate={value.expiryDate}
@@ -717,10 +720,19 @@ const SideViewJobCard: React.FC<SideCardJobProps> = (value) => {
                                         </p>
                                     </a>
                                 </h3>
-                                <div className={`w-fit`}>
-                                    <a href={`/company/${value.companyId}`}
+                                <div className={`max-w-full overflow-hidden`}>
+                                    <a className={`flex gap-2 overflow-hidden`}
+                                       href={`/company/${value.companyId}`}
                                        target="_blank">
-                                        <p className={`break-words max-w-full  text-[14px] opacity-70 hover:underline truncate`}>
+                                        {
+                                            value.tier && (
+                                                <div>
+                                                    <span
+                                                        className={'job-pro-icon drop-shadow hover:scale-105 cursor-pointer text-[12px] !rounded-[111px] !h-[17px] !w-[33px] px-1'}>{value.tier.slice(0, 3)}</span>
+                                                </div>
+                                            )
+                                        }
+                                        <p className={`break-words  max-w-full ${value.tier == UltimatePlan || value.tier == ProPlan ? 'text-[#e39314] font-extrabold' : ''} uppercase text-[14px] opacity-70 hover:underline truncate`}>
                                             {value.companyName}
                                         </p>
                                     </a>

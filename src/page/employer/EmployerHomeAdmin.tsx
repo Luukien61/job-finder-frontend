@@ -34,6 +34,7 @@ import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
 import {useCompanyPlanState} from "@/zustand/AppState.ts";
 import {CompanyPlan} from "@/info/ApplicationType.ts";
 import {DEFAULT_LIMIT, getLimitPost, LimitProps} from "@/service/ApplicationService.ts";
+import {AiFillThunderbolt} from "react-icons/ai";
 
 
 const EmployerHomeAdmin = () => {
@@ -164,13 +165,28 @@ export const EmployerDashboard = () => {
                     icon={<HiNewspaper size={20} color={'#3B7DDD'}/>}
                 />
                 {
-                    (limitProp && limitProp.isLimit ) && (
+                    (limitProp && limitProp.isLimit ) ? (
                         <CompanyStatisticCard
                             style={'text-[#dc3545]'}
                             statistic={limitProp.limit - companyStatistics?.newJobs}
                             name={'Bài đăng còn lại trong tháng'}
                             icon={<SiPaperlessngx size={20} color={'#3B7DDD'}/>}
                         />
+                    ): (
+                        <div className={`p-3 w-1/4`}>
+                            <div
+                                className={`rounded-lg bg-white relative  border-[#ffb94b] border-2 overflow-hidden p-6 h-[170px]`}>
+                                <div className={`bg-custom-gradient flex justify-end absolute top-0 right-0  px-4 rounded-bl-xl py-2`}>
+                                    <p className={`text-[#513101] font-bold`}>{companyPlan?.name} company</p>
+                                </div>
+                                <div className={`h-full flex items-center text-[#513101] justify-center`}>
+                                   <div className={`flex items-start justify-center gap-4`}>
+                                       <AiFillThunderbolt size={48} fill={'#ffb94b'} />
+                                       <p className={`text-[#513101] font-bold text-[20px]`}>Không giới hạn bài đăng </p>
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
                     )
                 }
             </div>
