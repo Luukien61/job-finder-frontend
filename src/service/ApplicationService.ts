@@ -2,8 +2,7 @@ import {toast} from "react-toastify";
 import {getCompanyPlan, isCompanyBanned, isSavedJob, saveJob, unSaveJob} from "@/axios/Request.ts";
 import {SelectProps} from "@/page/JobDetail.tsx";
 import {format} from "date-fns";
-import {CompanyPlan, SearchProps} from "@/info/ApplicationType.ts";
-import {pl} from "date-fns/locale";
+import {CompanyPlan, CompanySubscription, Price, SearchProps} from "@/info/ApplicationType.ts";
 
 export const handleSaveJob = async (jobId: number | string, userId: string, action: any): Promise<boolean> => {
     try {
@@ -95,7 +94,7 @@ export const checkIsCompanyBanned = async (id): Promise<boolean> => {
 
 export const fetchCompanyPlan = async (companyId) => {
     try {
-        const plan: CompanyPlan = await getCompanyPlan(companyId);
+        const plan: CompanySubscription = await getCompanyPlan(companyId);
         return plan;
     } catch (err) {
         console.log(err)
@@ -109,8 +108,8 @@ export interface LimitProps {
 export const BASIC_LIMIT=30
 export const DEFAULT_LIMIT=15
 
-export const getLimitPost = (plan: CompanyPlan): LimitProps => {
-    switch (plan.name) {
+export const getLimitPost = (plan: string): LimitProps => {
+    switch (plan) {
         case 'Ultimate':
             return {isLimit: false};
         case 'Pro':
@@ -121,4 +120,16 @@ export const getLimitPost = (plan: CompanyPlan): LimitProps => {
             return {isLimit: true, limit: DEFAULT_LIMIT};
     }
 }
+
+export const moveToMiddle = (id: string , items : Price[]): Price[] => {
+    const targetItem = items.find((item) => item.product === id);
+    if (!targetItem) return;
+    const remainingItems = items.filter((item) => item.product !== id);
+    const middleIndex = Math.floor(remainingItems.length / 2);
+    return [
+        ...remainingItems.slice(0, middleIndex),
+        targetItem,
+        ...remainingItems.slice(middleIndex),
+    ];
+};
 

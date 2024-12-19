@@ -3,7 +3,7 @@ import {UserDto} from "@/page/UserProfile.tsx";
 import {UserSignupResponse} from "@/page/SignUp.tsx";
 import {createJSONStorage, persist} from 'zustand/middleware'
 import {isCompanyBanned} from "@/axios/Request.ts";
-import {CompanyPlan} from "@/info/ApplicationType.ts";
+import {CompanyPlan, CompanySubscription} from "@/info/ApplicationType.ts";
 
 interface BearState {
     bears: number
@@ -105,15 +105,30 @@ export const useIsCompanyBannedState = create<IsCompanyBannedState>(
         setIsCompanyBanned: (status: boolean) => {set({isCompanyBanned: status})}
     })
 )
-
+export interface MinimalPlan{
+    name: string,
+    priceId: string,
+    planPriority: number,
+}
 type CompanyPlanProps = {
-    plan: CompanyPlan | null,
-    setPlan: (plan: CompanyPlan) => void
+    plan: MinimalPlan | null,
+    setPlan: (plan: MinimalPlan) => void
 }
 
 export const useCompanyPlanState = create<CompanyPlanProps>(
     (set) => ({
         plan: null,
-        setPlan: (plan: CompanyPlan) => set({plan: plan}),
+        setPlan: (plan: MinimalPlan) => set({plan: plan}),
+    })
+)
+interface UseCompanmySubscritopnProps {
+    subscription: CompanySubscription | null,
+    setSubscription: (subscription: CompanySubscription) => void
+}
+
+export const useCompanySubscription= create<UseCompanmySubscritopnProps>(
+    (set)=>({
+        subscription: null,
+        setSubscription: (subscription: CompanySubscription) => set({subscription: subscription}),
     })
 )

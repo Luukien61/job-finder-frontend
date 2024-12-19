@@ -20,7 +20,7 @@ import {BiEdit, BiSolidCity} from "react-icons/bi";
 import {fullProvinces, portalUrl} from "@/info/AppInfo.ts";
 import {ProvinceProps} from "@/page/employer/EmployerSignup.tsx";
 import TextArea from "antd/es/input/TextArea";
-import {IoPersonCircleSharp} from "react-icons/io5";
+import {IoPersonCircleSharp, IoWarning} from "react-icons/io5";
 import {RiLockPasswordFill} from "react-icons/ri";
 import {
     cancelSubscription,
@@ -33,12 +33,12 @@ import {
 } from "@/axios/Request.ts";
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {PlusOutlined} from '@ant-design/icons';
-import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
+import {checkIsCompanyBanned, moveToMiddle} from "@/service/ApplicationService.ts";
 import {MdCancel} from "react-icons/md";
 import imageUpload from "@/axios/ImageUpload.ts";
 import {delay} from "@/page/GoogleCode.tsx";
-import {useCompanyPlanState} from "@/zustand/AppState.ts";
-import {CompanyPlan, Price, priceless} from "@/info/ApplicationType.ts";
+import {MinimalPlan, useCompanyPlanState} from "@/zustand/AppState.ts";
+import {CompanyPlan, Price, priceless, UltimatePlanId} from "@/info/ApplicationType.ts";
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
@@ -79,7 +79,7 @@ const EmployerProfile = () => {
     const [isEdit, setIsEdit] = useState<boolean>(false);
     const [isEditAccount, setIsEditAccount] = useState<boolean>(false);
     const {plan} = useCompanyPlanState()
-    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const [companyPlan, setCompanyPlan] = useState<MinimalPlan>();
     const [isOpenPlan, setIsOpenPlan] = useState<boolean>(false);
     const [prices, setPrices] = useState<Price[]>([]);
 
@@ -91,7 +91,8 @@ const EmployerProfile = () => {
             ...item,
             priority: localPrice[item.id]
         }))
-        setPrices(updatePlan);
+        const sortedPlan = moveToMiddle(UltimatePlanId, updatePlan);
+        setPrices(sortedPlan);
     };
 
     const checkCompanyStatus = async (id) => {
@@ -249,412 +250,423 @@ const EmployerProfile = () => {
         }
     }
     return (
-        <div className={`flex justify-center`}>
+        <div className={`w-full flex justify-center`}>
+            <div className={`flex justify-center w-[1100px]`}>
 
-            {
-                isLoading ? <Spin style={{color: 'green'}} fullscreen={true} size={"large"} tip="Đang tải"></Spin>
-                    : (
-                        <div className={`bg-white rounded-lg my-6 py-10 px-6 w-[1170px]`}>
-                            <div className={`flex items-start  pr-6 w-full gap-6 justify-start`}>
-                                <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                    Hồ sơ nhà tuyển dụng
-                                </h2>
-                                <div>
-                                    {
-                                        !isEdit ? (
-                                            <Tooltip placement={'top'} title={`${!isBanned ? 'Chỉnh sửa' : ''}`}>
-                                                <button
-                                                    onClick={() => setIsEdit(true)}
-                                                    className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
-                                                    disabled={isBanned}>
-                                                    <BiEdit size={24}
-                                                            fill={"#00b14f"}/>
-                                                </button>
-                                            </Tooltip>
-                                        ) : (
-                                            <Tooltip placement={'top'} title={`Hủy`}>
-                                                <button
-                                                    onClick={() => setIsEdit(false)}
-                                                    className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
-                                                    disabled={isBanned}>
-                                                    <MdCancel size={24}
-                                                              fill={"#00b14f"}/>
-                                                </button>
-                                            </Tooltip>
-                                        )
-                                    }
-
-
-                                </div>
-                            </div>
-                            <div className={`w-full rounded-lg relative overflow-hidden min-h-[358px]`}>
-                                <div className={`h-[224px] overflow-hidden`}>
-                                    <img
-                                        alt={currentCompany?.name}
-                                        className={`h-full object-cover object-center w-full`}
-                                        src={currentCompany?.wallpaper}/>
-
-                                </div>
-                                <div className={``}>
-                                    <div
-                                        className={`items-center justify-center  overflow-hidden absolute  bottom-[10%]  aspect-square bg-white border rounded-full flex h-[180px]`}>
+                {
+                    isLoading ? <Spin style={{color: 'green'}} fullscreen={true} size={"large"} tip="Đang tải"></Spin>
+                        : (
+                            <div className={`bg-white rounded-lg my-6 py-10 px-6 w-[1170px]`}>
+                                <div className={`flex items-start  pr-6 w-full gap-6 justify-start`}>
+                                    <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                                        Hồ sơ nhà tuyển dụng
+                                    </h2>
+                                    <div>
                                         {
-                                            isEdit ? (
-                                                <Upload {...props}
-                                                        listType="picture-circle"
-                                                        fileList={fileList}
-                                                        onPreview={handlePreview}
-                                                        onChange={handleChange}
-                                                >
-                                                    {fileList.length >= 1 ? null : uploadButton}
-                                                </Upload>
-
+                                            !isEdit ? (
+                                                <Tooltip placement={'top'} title={`${!isBanned ? 'Chỉnh sửa' : ''}`}>
+                                                    <button
+                                                        onClick={() => setIsEdit(true)}
+                                                        className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
+                                                        disabled={isBanned}>
+                                                        <BiEdit size={24}
+                                                                fill={"#00b14f"}/>
+                                                    </button>
+                                                </Tooltip>
                                             ) : (
-                                                <img
-                                                    alt={currentCompany?.name}
-                                                    src={currentCompany?.logo}
-                                                    className={`h-[180px] object-cover aspect-square`}/>
+                                                <Tooltip placement={'top'} title={`Hủy`}>
+                                                    <button
+                                                        onClick={() => setIsEdit(false)}
+                                                        className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
+                                                        disabled={isBanned}>
+                                                        <MdCancel size={24}
+                                                                  fill={"#00b14f"}/>
+                                                    </button>
+                                                </Tooltip>
                                             )
                                         }
 
-                                        {previewImage && (
-                                            <Image
-                                                wrapperStyle={{display: 'none'}}
-                                                preview={{
-                                                    visible: previewOpen,
-                                                    onVisibleChange: (visible) => setPreviewOpen(visible),
-                                                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                                                }}
-                                                src={previewImage}
-                                            />
-                                        )}
-                                    </div>
-                                    {
-                                        companyPlan &&
-                                        <span className={'job-pro-icon drop-shadow w-fit absolute left-[120px] bottom-[10%]  text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
-                                    }
-                                </div>
-                            </div>
-                            <Form
-                                onFinish={updateInfo}
-                                name={'info'}
-                                scrollToFirstError={true}
-                            >
-                                <div className={`flex flex-col pr-6 w-full gap-6 justify-start`}>
-                                    <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                        Thông tin chung
-                                    </h2>
-                                    <div className={`flex flex-col w-full justify-start gap-10`}>
-                                        <div className={`flex w-full`}>
-
-                                            <div className={`w-full  justify-start`}>
-                                                <Form.Item
-                                                    name='name'
-                                                    rules={[
-                                                        {
-                                                            validator: (_) =>
-                                                                companyName ? Promise.resolve() : Promise.reject(new Error('Tên nhà tuyển dụng không thể bỏ trống'))
-
-                                                        },
-                                                    ]}
-                                                >
-                                                    <CustomInput
-                                                        prefix={<GoOrganization className={`mr-2`} size={24}
-                                                                                fill={"#00b14f"}/>}
-                                                        allowClear={true}
-                                                        showPlainText={!isEdit}
-                                                        value={companyName}
-                                                        defaultValue={companyName}
-                                                        label={"Tên tổ chức"}
-                                                        isBoldLabel={true}
-                                                        width={'w-full text-16'}
-                                                        onChange={(e) => setCompanyName(e.target.value)}/>
-                                                </Form.Item>
-                                            </div>
-                                        </div>
-                                        <div className={`flex items-start w-full`}>
-                                            <div className={`flex flex-col w-1/2 pr-6 justify-start`}>
-                                                <CustomInput
-                                                    allowClear={true}
-                                                    addBefore={'https://'}
-                                                    value={website}
-                                                    defaultValue={website}
-                                                    label={"Website"}
-                                                    showPlainText={!isEdit}
-                                                    isBoldLabel={true}
-                                                    width={'w-full text-16 '}
-                                                    onChange={(e) => setWebsite(e.target.value)}/>
-                                            </div>
-                                            <div className={`flex flex-col w-1/2 justify-start`}>
-                                                <Form.Item
-                                                    style={{marginBottom: '0px'}}
-                                                    name='phone'
-                                                    rules={[
-                                                        {
-                                                            validator: (_) =>
-                                                                phone ? Promise.resolve() : Promise.reject(new Error('Số điện thoại không thể bỏ trống'))
-
-                                                        },
-                                                    ]}
-                                                >
-                                                    <CustomInput
-                                                        prefix={<HiPhone className={`mr-2`} size={24}
-                                                                         fill={"#00b14f"}/>}
-                                                        type={'text'}
-                                                        allowClear={true}
-                                                        value={phone}
-                                                        defaultValue={phone}
-                                                        showPlainText={!isEdit}
-                                                        label={"Số điện thoại"}
-                                                        isBoldLabel={true}
-                                                        width={'w-full text-16'}
-                                                        onChange={(e) => setPhone(e.target.value)}/>
-                                                </Form.Item>
-                                            </div>
-                                        </div>
-                                        <div className={`flex w-full`}>
-                                            <div className={`w-1/2 pr-6 justify-start`}>
-                                                <p className={`ml-1 mb-1 font-semibold`}>Tỉnh thành phố</p>
-                                                {
-                                                    !isEdit ? (
-                                                        <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold `}>{province}</p>
-                                                    ) : (
-                                                        <Select
-                                                            placeholder={'Tỉnh thành phố'}
-                                                            prefix={<BiSolidCity className={`mr-2`} size={24}
-                                                                                 fill={"#00b14f"}/>}
-                                                            className={`h-[42px] w-full `}
-                                                            optionFilterProp="label"
-                                                            options={provincesName}
-                                                            value={province}
-                                                            onChange={(value, option) => getDistrictsByProvinceCode(value, option)}
-                                                        />
-                                                    )
-                                                }
-                                            </div>
-                                            <div className={`w-1/2  justify-start`}>
-                                                <p className={`ml-1 mb-1 font-semibold`}>Quận huyện</p>
-                                                {
-                                                    !isEdit ? (
-                                                        <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold `}>{district}</p>
-                                                    ) : (
-                                                        <Select
-                                                            placeholder={'Quận huyện'}
-                                                            prefix={<BiSolidCity className={`mr-2`} size={24}
-                                                                                 fill={"#00b14f"}/>}
-                                                            className={`h-[42px] w-full `}
-                                                            value={district}
-                                                            optionFilterProp="label"
-                                                            onChange={onDistrictSelected}
-                                                            options={districtsName}
-                                                        />
-                                                    )
-                                                }
-                                            </div>
-                                        </div>
 
                                     </div>
+                                </div>
+                                <div className={`w-full rounded-lg relative overflow-hidden min-h-[358px]`}>
+                                    <div className={`h-[224px] overflow-hidden`}>
+                                        <img
+                                            alt={currentCompany?.name}
+                                            className={`h-full object-cover object-center w-full`}
+                                            src={currentCompany?.wallpaper}/>
 
-                                </div>
-                                <div className={`flex flex-col pr-6 w-full gap-6 justify-start mt-16`}>
-                                    <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                        Mô tả
-                                    </h2>
-                                    {
-                                        isEdit ? (
-                                            <TextArea
-                                                disabled={!isEdit || isBanned}
-                                                spellCheck={false}
-                                                value={description}
-                                                defaultValue={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                                size={"large"}
-                                                placeholder={"Mô tả công ty/tổ chức của bạn là một cách để thu hút ứng viên..."}
-                                                style={{height: 200}}
-                                            />
-                                        ) : (
-                                            <div className={`px-2 py-2 rounded-lg border border-green_default`}>
-                                                <pre className={`min-h-20`}>{description}</pre>
-                                            </div>
-                                        )
-                                    }
-                                </div>
-                                {
-                                    isEdit && (
-                                        <div className={`w-full flex justify-end gap-6 mt-6 px-6 `}>
-                                            <button onClick={handleCancelEditProfile}
-                                                    type={'button'}
-                                                    className={`font-semibold`}>
-                                                Hủy
-                                            </button>
-                                            <Form.Item style={{marginBottom: '0px'}}>
-                                                <button
-                                                    type="submit"
-                                                    className={`w-fit px-2 hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>
-                                                    Xác nhận
-                                                </button>
-                                            </Form.Item>
+                                    </div>
+                                    <div className={``}>
+                                        <div
+                                            className={`items-center  justify-center  overflow-hidden absolute  bottom-[10%]  aspect-square bg-white border rounded-full flex h-[180px]`}>
+                                            {
+                                                isEdit ? (
+                                                    <Upload {...props}
+                                                            listType="picture-circle"
+                                                            fileList={fileList}
+                                                            onPreview={handlePreview}
+                                                            onChange={handleChange}
+                                                    >
+                                                        {fileList.length >= 1 ? null : uploadButton}
+                                                    </Upload>
+
+                                                ) : (
+                                                    <img
+                                                        alt={currentCompany?.name}
+                                                        src={currentCompany?.logo}
+                                                        className={`h-[180px] object-cover aspect-square`}/>
+                                                )
+                                            }
+
+                                            {previewImage && (
+                                                <Image
+                                                    wrapperStyle={{display: 'none'}}
+                                                    preview={{
+                                                        visible: previewOpen,
+                                                        onVisibleChange: (visible) => setPreviewOpen(visible),
+                                                        afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                                    }}
+                                                    src={previewImage}
+                                                />
+                                            )}
                                         </div>
-                                    )
-                                }
-                            </Form>
-                            <div
-                                className={`flex flex-col pr-6 w-full justify-start mt-10 border-t border-solid border-green_default pt-10`}>
-                                <div className={`w-full flex gap-4 items-start`}>
-                                    <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
-                                        Tài khoản
-                                    </h2>
-                                    {
-                                        !isEditAccount ? (
-                                            <Tooltip placement={'top'} title={`${!isBanned ? 'Chỉnh sửa' : ''}`}>
-                                                <button
-                                                    onClick={() => setIsEditAccount(true)}
-                                                    className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
-                                                    disabled={isBanned}>
-                                                    <BiEdit size={24}
-                                                            fill={"#00b14f"}/>
-                                                </button>
-                                            </Tooltip>
-                                        ) : (
-                                            <Tooltip placement={'top'} title={`Hủy`}>
-                                                <button
-                                                    onClick={() => setIsEditAccount(false)}
-                                                    className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
-                                                    disabled={isBanned}>
-                                                    <MdCancel size={24}
-                                                              fill={"#00b14f"}/>
-                                                </button>
-                                            </Tooltip>
-                                        )
-                                    }
+                                        {
+                                            (companyPlan) &&
+                                            <span
+                                                className={'job-pro-icon drop-shadow w-fit absolute left-[120px] bottom-[10%]  text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                        }
+                                    </div>
                                 </div>
-                                <div className={`flex flex-col w-full justify-start`}>
-                                    {
-                                        companyPlan &&
-                                        <div className={`mb-6 flex flex-col `}>
-                                            <Tooltip placement={'bottom'} title={'Nâng cấp tài khoản'}>
-                                                <span onClick={handleOpenPlan}
-                                                      className={'job-pro-icon drop-shadow hover:scale-105 w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
-                                            </Tooltip>
-                                        </div>
-                                    }
-                                    <CustomInput
-                                        prefix={<IoPersonCircleSharp className={`mr-2`} size={24}
-                                                                     fill={"#00b14f"}/>}
-                                        allowClear={true}
-                                        value={email}
-                                        label={"Email"}
-                                        isBoldLabel={true}
-                                        disable={true}
-                                        width={'w-1/2 text-16'}
-                                        onChange={(e) => setEmail(e.target.value)}/>
-                                </div>
-                                {
-                                    isEditAccount && (
-                                        <div className={`flex flex-col gap-6 mt-6`}>
-                                            <div className={`flex flex-col w-full justify-start`}>
-                                                <CustomInput
-                                                    prefix={<RiLockPasswordFill className={`mr-2`} size={24}
-                                                                                fill={"#00b14f"}/>}
-                                                    type={'password'}
-                                                    allowClear={true}
-                                                    autoComplete={'new-password'}
-                                                    value={password}
-                                                    isBoldLabel={true}
-                                                    label={"Mật khẩu"}
-                                                    disable={isBanned}
-                                                    width={'w-1/2 text-16'}
-                                                    onChange={(e) => setPassword(e.target.value)}/>
+                                <Form
+                                    onFinish={updateInfo}
+                                    name={'info'}
+                                    scrollToFirstError={true}
+                                >
+                                    <div className={`flex flex-col pr-6 w-full gap-6 justify-start`}>
+                                        <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                                            Thông tin chung
+                                        </h2>
+                                        <div className={`flex flex-col w-full justify-start gap-10`}>
+                                            <div className={`flex w-full`}>
+
+                                                <div className={`w-full  justify-start`}>
+                                                    <Form.Item
+                                                        name='name'
+                                                        rules={[
+                                                            {
+                                                                validator: (_) =>
+                                                                    companyName ? Promise.resolve() : Promise.reject(new Error('Tên nhà tuyển dụng không thể bỏ trống'))
+
+                                                            },
+                                                        ]}
+                                                    >
+                                                        <CustomInput
+                                                            prefix={<GoOrganization className={`mr-2`} size={24}
+                                                                                    fill={"#00b14f"}/>}
+                                                            allowClear={true}
+                                                            showPlainText={!isEdit}
+                                                            value={companyName}
+                                                            defaultValue={companyName}
+                                                            label={"Tên tổ chức"}
+                                                            isBoldLabel={true}
+                                                            width={'w-full text-16'}
+                                                            onChange={(e) => setCompanyName(e.target.value)}/>
+                                                    </Form.Item>
+                                                </div>
                                             </div>
-                                            <div className={`flex flex-col  w-full justify-start`}>
-                                                <CustomInput
-                                                    prefix={<RiLockPasswordFill className={`mr-2`} size={24}
-                                                                                fill={"#00b14f"}/>}
-                                                    type={'password'}
-                                                    allowClear={true}
-                                                    autoComplete={'new-password'}
-                                                    value={password}
-                                                    isBoldLabel={true}
-                                                    label={"Xác nhận mật khẩu"}
-                                                    disable={isBanned}
-                                                    width={'w-1/2 text-16'}
-                                                    onChange={(e) => setPassword(e.target.value)}/>
-                                                <div className={`w-1/2 flex gap-6  justify-end mt-6`}>
-                                                    <button
-                                                        onClick={() => setIsEditAccount(false)}
+                                            <div className={`flex items-start w-full`}>
+                                                <div className={`flex flex-col w-1/2 pr-6 justify-start`}>
+                                                    <CustomInput
+                                                        allowClear={true}
+                                                        addBefore={'https://'}
+                                                        value={website}
+                                                        defaultValue={website}
+                                                        label={"Website"}
+                                                        showPlainText={!isEdit}
+                                                        isBoldLabel={true}
+                                                        width={'w-full text-16 '}
+                                                        onChange={(e) => setWebsite(e.target.value)}/>
+                                                </div>
+                                                <div className={`flex flex-col w-1/2 justify-start`}>
+                                                    <Form.Item
+                                                        style={{marginBottom: '0px'}}
+                                                        name='phone'
+                                                        rules={[
+                                                            {
+                                                                validator: (_) =>
+                                                                    phone ? Promise.resolve() : Promise.reject(new Error('Số điện thoại không thể bỏ trống'))
+
+                                                            },
+                                                        ]}
+                                                    >
+                                                        <CustomInput
+                                                            prefix={<HiPhone className={`mr-2`} size={24}
+                                                                             fill={"#00b14f"}/>}
+                                                            type={'text'}
+                                                            allowClear={true}
+                                                            value={phone}
+                                                            defaultValue={phone}
+                                                            showPlainText={!isEdit}
+                                                            label={"Số điện thoại"}
+                                                            isBoldLabel={true}
+                                                            width={'w-full text-16'}
+                                                            onChange={(e) => setPhone(e.target.value)}/>
+                                                    </Form.Item>
+                                                </div>
+                                            </div>
+                                            <div className={`flex w-full`}>
+                                                <div className={`w-1/2 pr-6 justify-start`}>
+                                                    <p className={`ml-1 mb-1 font-semibold`}>Tỉnh thành phố</p>
+                                                    {
+                                                        !isEdit ? (
+                                                            <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold `}>{province}</p>
+                                                        ) : (
+                                                            <Select
+                                                                placeholder={'Tỉnh thành phố'}
+                                                                prefix={<BiSolidCity className={`mr-2`} size={24}
+                                                                                     fill={"#00b14f"}/>}
+                                                                className={`h-[42px] w-full `}
+                                                                optionFilterProp="label"
+                                                                options={provincesName}
+                                                                value={province}
+                                                                onChange={(value, option) => getDistrictsByProvinceCode(value, option)}
+                                                            />
+                                                        )
+                                                    }
+                                                </div>
+                                                <div className={`w-1/2  justify-start`}>
+                                                    <p className={`ml-1 mb-1 font-semibold`}>Quận huyện</p>
+                                                    {
+                                                        !isEdit ? (
+                                                            <p className={`ml-1 mt-1 p-2 border border-green_default rounded-md font-semibold `}>{district}</p>
+                                                        ) : (
+                                                            <Select
+                                                                placeholder={'Quận huyện'}
+                                                                prefix={<BiSolidCity className={`mr-2`} size={24}
+                                                                                     fill={"#00b14f"}/>}
+                                                                className={`h-[42px] w-full `}
+                                                                value={district}
+                                                                optionFilterProp="label"
+                                                                onChange={onDistrictSelected}
+                                                                options={districtsName}
+                                                            />
+                                                        )
+                                                    }
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                    <div className={`flex flex-col pr-6 w-full gap-6 justify-start mt-16`}>
+                                        <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                                            Mô tả
+                                        </h2>
+                                        {
+                                            isEdit ? (
+                                                <TextArea
+                                                    disabled={!isEdit || isBanned}
+                                                    spellCheck={false}
+                                                    value={description}
+                                                    defaultValue={description}
+                                                    onChange={(e) => setDescription(e.target.value)}
+                                                    size={"large"}
+                                                    placeholder={"Mô tả công ty/tổ chức của bạn là một cách để thu hút ứng viên..."}
+                                                    style={{height: 200}}
+                                                />
+                                            ) : (
+                                                <div className={`px-2 py-2 rounded-lg border border-green_default`}>
+                                                    <pre className={`min-h-20`}>{description}</pre>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
+                                    {
+                                        isEdit && (
+                                            <div className={`w-full flex justify-end gap-6 mt-6 px-6 `}>
+                                                <button onClick={handleCancelEditProfile}
+                                                        type={'button'}
                                                         className={`font-semibold`}>
-                                                        Hủy
-                                                    </button>
+                                                    Hủy
+                                                </button>
+                                                <Form.Item style={{marginBottom: '0px'}}>
                                                     <button
+                                                        type="submit"
                                                         className={`w-fit px-2 hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>
                                                         Xác nhận
                                                     </button>
+                                                </Form.Item>
+                                            </div>
+                                        )
+                                    }
+                                </Form>
+                                <div
+                                    className={`flex flex-col pr-6 w-full justify-start mt-10 border-t border-solid border-green_default pt-10`}>
+                                    <div className={`w-full flex gap-4 items-start`}>
+                                        <h2 className="border-l-[6px] mb-6 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default ">
+                                            Tài khoản
+                                        </h2>
+                                        {
+                                            !isEditAccount ? (
+                                                <Tooltip placement={'top'} title={`${!isBanned ? 'Chỉnh sửa' : ''}`}>
+                                                    <button
+                                                        onClick={() => setIsEditAccount(true)}
+                                                        className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
+                                                        disabled={isBanned}>
+                                                        <BiEdit size={24}
+                                                                fill={"#00b14f"}/>
+                                                    </button>
+                                                </Tooltip>
+                                            ) : (
+                                                <Tooltip placement={'top'} title={`Hủy`}>
+                                                    <button
+                                                        onClick={() => setIsEditAccount(false)}
+                                                        className={`${!isBanned && 'cursor-pointer'} disabled:opacity-50`}
+                                                        disabled={isBanned}>
+                                                        <MdCancel size={24}
+                                                                  fill={"#00b14f"}/>
+                                                    </button>
+                                                </Tooltip>
+                                            )
+                                        }
+                                    </div>
+                                    <div className={`flex flex-col w-full justify-start`}>
+                                        {
+                                            companyPlan &&
+                                            <div className={`mb-6 flex flex-col `}>
+                                                <Tooltip placement={'bottom'} title={'Nâng cấp tài khoản'}>
+                                                <span onClick={handleOpenPlan}
+                                                      className={'job-pro-icon drop-shadow hover:scale-105 w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                                </Tooltip>
+                                            </div>
+                                        }
+                                        <CustomInput
+                                            prefix={<IoPersonCircleSharp className={`mr-2`} size={24}
+                                                                         fill={"#00b14f"}/>}
+                                            allowClear={true}
+                                            value={email}
+                                            label={"Email"}
+                                            isBoldLabel={true}
+                                            disable={true}
+                                            width={'w-1/2 text-16'}
+                                            onChange={(e) => setEmail(e.target.value)}/>
+                                    </div>
+                                    {
+                                        isEditAccount && (
+                                            <div className={`flex flex-col gap-6 mt-6`}>
+                                                <div className={`flex flex-col w-full justify-start`}>
+                                                    <CustomInput
+                                                        prefix={<RiLockPasswordFill className={`mr-2`} size={24}
+                                                                                    fill={"#00b14f"}/>}
+                                                        type={'password'}
+                                                        allowClear={true}
+                                                        autoComplete={'new-password'}
+                                                        value={password}
+                                                        isBoldLabel={true}
+                                                        label={"Mật khẩu"}
+                                                        disable={isBanned}
+                                                        width={'w-1/2 text-16'}
+                                                        onChange={(e) => setPassword(e.target.value)}/>
+                                                </div>
+                                                <div className={`flex flex-col  w-full justify-start`}>
+                                                    <CustomInput
+                                                        prefix={<RiLockPasswordFill className={`mr-2`} size={24}
+                                                                                    fill={"#00b14f"}/>}
+                                                        type={'password'}
+                                                        allowClear={true}
+                                                        autoComplete={'new-password'}
+                                                        value={password}
+                                                        isBoldLabel={true}
+                                                        label={"Xác nhận mật khẩu"}
+                                                        disable={isBanned}
+                                                        width={'w-1/2 text-16'}
+                                                        onChange={(e) => setPassword(e.target.value)}/>
+                                                    <div className={`w-1/2 flex gap-6  justify-end mt-6`}>
+                                                        <button
+                                                            onClick={() => setIsEditAccount(false)}
+                                                            className={`font-semibold`}>
+                                                            Hủy
+                                                        </button>
+                                                        <button
+                                                            className={`w-fit px-2 hover:bg-green-600  rounded bg-green_default py-2 text-white font-bold`}>
+                                                            Xác nhận
+                                                        </button>
 
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )
-                                }
+                                        )
+                                    }
+                                    {
+                                        !isEditAccount && (
+                                            <div className={`w-full flex mt-6`}>
+                                                <button
+                                                    className={`w-fit px-2 hover:bg-red-600  rounded bg-red-500 py-2 text-white font-bold`}
+                                                    onClick={handleLogout}>Đăng xuất
+                                                </button>
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                            </div>
+                        )
+                }
+                <Modal
+                    onCancel={() => setIsOpenPlan(false)}
+                    footer={null}
+                    open={isOpenPlan}
+                    width={1170}
+                >
+                    <div className={`bg-white pt-10 flex flex-col gap-4`}>
+                        <div className={`w-full flex justify-center items-center`}>
+                            <div className={`flex gap-6 items-center`}>
                                 {
-                                    !isEditAccount && (
-                                        <div className={`w-full flex mt-6`}>
-                                            <button
-                                                className={`w-fit px-2 hover:bg-red-600  rounded bg-red-500 py-2 text-white font-bold`}
-                                                onClick={handleLogout}>Đăng xuất
-                                            </button>
+                                    prices.length > 0 && prices.map((price, index) => (
+                                        <div key={index}>
+                                            <PriceCard
+                                                priority={price.priority}
+                                                currentPlantPriority={companyPlan?.planPriority}
+                                                isCurrentPlan={companyPlan?.priceId == price.id}
+                                                {...price}/>
                                         </div>
-                                    )
+                                    ))
                                 }
                             </div>
                         </div>
-                    )
-            }
-            <Modal
-                onCancel={() => setIsOpenPlan(false)}
-                footer={null}
-                open={isOpenPlan}
-                width={1170}
-            >
-                <div className={`bg-white pt-10 flex flex-col gap-4`}>
-                    <div className={`w-full flex justify-center items-center`}>
-                        <div className={`flex gap-6 items-center`}>
-                            {
-                                prices.length > 0 && prices.map((price, index) => (
-                                    <div key={index}>
-                                        <PriceCard
-                                            priority={price.priority}
-                                            currentPlantPriority={companyPlan?.priority}
-                                            isCurrentPlan={companyPlan?.priceId == price.id}
-                                            {...price}/>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                    </div>
-                    <div className={`w-full flex px-10 gap-4 justify-end items-end`}>
-                        <div className={`cursor-pointer`}>
-                            {/*<p className={`text-text_color text-14 font-semibold hover:underline`}>Hủy đăng ký</p>*/}
+                        <div className={`w-full flex px-10 gap-4 justify-end items-end`}>
+                            <div className={`cursor-pointer`}>
+                                {/*<p className={`text-text_color text-14 font-semibold hover:underline`}>Hủy đăng ký</p>*/}
 
-                            <Popconfirm
-                                onConfirm={handleCancelSubscription}
-                                title="Hủy đăng ký"
-                                description={`Bạn có muốn hủy đăng ký ${companyPlan?.name} company?`}
-                                okText="Tôi muốn hủy"
-                                cancelText="Thoát"
-                            >
-                                <p className={`text-text_color text-14 font-semibold hover:underline`}>Hủy đăng ký</p>
-                            </Popconfirm>
-                        </div>
-                        <div className={`cursor-pointer`}>
-                            <button
-                                onClick={handleViewInvoice}
-                                className={`font-bold bg-[#343A46FF] text-white px-2 hover:bg-[#191A1CFF] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
-                                Xem lịch sử
-                            </button>
+                                <Popconfirm
+                                    icon={<IoWarning  color={'red'} size={'24'}/>}
+                                    onConfirm={handleCancelSubscription}
+                                    title="Hủy đăng ký"
+                                    description={
+                                    <div className={'flex flex-col'}>
+                                        <p>Bạn có muốn hủy đăng ký {companyPlan?.name} company?</p>
+                                        <p>Mọi số tiền còn lại sẽ không được hoàn trả.</p>
+                                        <p>Ưu đãi còn lại sẽ được sử dụng đến hết chu kì.</p>
+                                    </div>}
+                                    okText="Tôi muốn hủy"
+                                    okButtonProps={{color: "danger", danger: true}}
+                                    cancelText="Thoát"
+                                >
+                                    <p className={`text-text_color text-14 font-semibold hover:underline`}>Hủy đăng
+                                        ký</p>
+                                </Popconfirm>
+                            </div>
+                            <div className={`cursor-pointer`}>
+                                <button
+                                    onClick={handleViewInvoice}
+                                    className={`font-bold bg-[#343A46FF] text-white px-2 hover:bg-[#191A1CFF] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                                    Xem lịch sử
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Modal>
+                </Modal>
+            </div>
         </div>
     );
 };
@@ -707,10 +719,10 @@ const PriceCard = ({product, currency, interval, id, unit_amount, isCurrentPlan,
 
     return (
         <div
-            className={`bg-white border ${currentPlantPriority > priority && 'opacity-50 pointer-events-none'} ${product == 'prod_RLNFfMLbTol7FK' ? 'pt-0 border border-green_default' : 'pt-4'}  cursor-pointer group hover:scale-110 transition-all hover:border-green_default duration-300 hover:border-2 relative shadow-lg rounded-lg p-10 pt-0 w-[310px] max-w-sm mx-auto`}>
+            className={`bg-white border ${currentPlantPriority > priority && 'opacity-50 pointer-events-none'} ${product == UltimatePlanId ? 'pt-0 border border-green_default' : 'pt-4'}  cursor-pointer group hover:scale-110 transition-all hover:border-green_default duration-300 hover:border-2 relative shadow-lg rounded-lg p-10 pt-0 w-[310px] max-w-sm mx-auto`}>
             <div className={`w-full flex justify-center`}>
                 {
-                    product == 'prod_RLNFfMLbTol7FK' && (
+                    product == UltimatePlanId && (
                         <div className={`bg-green-500 rounded-b-xl p-3`}>
                             <p className={`text-white font-bold`}>Phổ biến nhất</p>
                         </div>
@@ -739,6 +751,13 @@ const PriceCard = ({product, currency, interval, id, unit_amount, isCurrentPlan,
                 </div>
             </div>
             {
+                product == UltimatePlanId && (
+                    <div className={`w-full flex justify-center`}>
+                        <p className={`text-red-600  opacity-70 italic`}>tức chỉ với hơn <span className={`font-bold text-red-600`}>333.000đ/tháng</span></p>
+                    </div>
+                )
+            }
+            {
                 product == 'prod_RLdPii9sz0QMtX' && (
                     <div className="border-t pt-4 mt-4">
                         <ul className={`list-disc `}>
@@ -750,11 +769,11 @@ const PriceCard = ({product, currency, interval, id, unit_amount, isCurrentPlan,
             }
 
             {
-                product == 'prod_RLNFfMLbTol7FK' && (
+                product == UltimatePlanId && (
                     <div className="border-t pt-4 mt-4">
                         <ul className={`list-disc`}>
                             <li>Không giới hạn số lượng bài đăng</li>
-                            <li>Hiển thị ưu tiên khi tìm kiếm</li>
+                            <li>Tối đa hiển thị ưu tiên khi tìm kiếm</li>
                         </ul>
                     </div>
                 )
@@ -773,14 +792,14 @@ const PriceCard = ({product, currency, interval, id, unit_amount, isCurrentPlan,
                 isCurrentPlan ? (
                     <button
                         disabled={isCurrentPlan}
-                        className={`w-full pointer-events-none disabled:opacity-70  ${product == 'prod_RLNFfMLbTol7FK' ? 'bg-[#343A46FF] hover:bg-[#26262a] text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                        className={`w-full pointer-events-none disabled:opacity-70  ${product == UltimatePlanId ? 'bg-[#343A46FF] hover:bg-[#26262a] text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
                         Gói hiện tại
                     </button>
                 ) : (
                     <button
                         disabled={isCurrentPlan}
                         onClick={() => handleCheckout(id)}
-                        className={`w-full disabled:opacity-70  ${product == 'prod_RLNFfMLbTol7FK' ? 'bg-[#343A46FF] hover:bg-[#26262a] hover:scale-105 text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                        className={`w-full disabled:opacity-70  ${product == UltimatePlanId ? 'bg-[#343A46FF] hover:bg-[#26262a] hover:scale-105 text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
                         Đăng Ký Ngay
                     </button>
                 )

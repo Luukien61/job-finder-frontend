@@ -14,7 +14,7 @@ import Employer from "@/page/employer/Employer.tsx";
 import EmployerSignup from "@/page/employer/EmployerSignup.tsx";
 import EmployerEntry from "@/page/employer/EmployerEntry.tsx";
 import EmployerLogin from "@/page/employer/EmployerLogin.tsx";
-import EmployerHome, {HomeContent} from "@/page/employer/EmployerHome.tsx";
+import EmployerHome from "@/page/employer/EmployerHome.tsx";
 import AddJob from "@/page/employer/AddJob.tsx";
 import JobSearch from "@/page/JobSearch.tsx";
 import Admin, {AdminDashboard, AdminMessage} from "@/page/admin/Admin.tsx";
@@ -26,10 +26,12 @@ import EmployerProfile from "@/page/employer/EmployerProfile.tsx";
 import Payment from "@/page/payment/Payment.tsx";
 import SuccessPage from "@/page/payment/SuccessPage.tsx";
 import CustomPriceTable from "@/page/payment/CustomPriceTable.tsx";
+import AdminLogin from "@/page/admin/AdminLogin.tsx";
 
 const AppRouter = () => {
     return (
         <Routes>
+            <Route path={'/admin/login'} element={<AdminLogin/>}/>
             <Route path="/admin" element={<Admin/>}>
                 <Route index={true} element={<AdminDashboard/>}/>
                 <Route path={'messages'} element={<AdminMessage/>}/>

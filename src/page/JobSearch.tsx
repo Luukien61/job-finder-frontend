@@ -91,7 +91,7 @@ const JobSearch = () => {
 
     const fetchRecommendJobs = async () => {
         if (user && user.id) {
-            const job = await getRecommendedJob({userId: user.id})
+            const job = await getRecommendedJob({userId: user.id, title: ''})
             setRecommendJobs(job)
             setHeaderName("Gợi ý từ Finder AI")
         } else {

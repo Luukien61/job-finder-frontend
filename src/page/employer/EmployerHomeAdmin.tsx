@@ -31,9 +31,9 @@ import {HiNewspaper} from "react-icons/hi";
 import {SiPaperlessngx} from "react-icons/si";
 import PulsatingSphere from "@/component/PulsatingSphere.tsx";
 import EmployerHeader from "@/component/employer/EmployerHeader.tsx";
-import {useCompanyPlanState} from "@/zustand/AppState.ts";
-import {CompanyPlan} from "@/info/ApplicationType.ts";
-import {DEFAULT_LIMIT, getLimitPost, LimitProps} from "@/service/ApplicationService.ts";
+import {MinimalPlan, useCompanyPlanState, useCompanySubscription} from "@/zustand/AppState.ts";
+import {CompanyPlan, CompanySubscription} from "@/info/ApplicationType.ts";
+import {DEFAULT_LIMIT, formatDate, getLimitPost, LimitProps} from "@/service/ApplicationService.ts";
 import {AiFillThunderbolt} from "react-icons/ai";
 
 
@@ -78,9 +78,9 @@ export const EmployerDashboard = () => {
     const date = new Date();
     const currentMonth = date.getMonth() + 1;
     const currentYear = date.getFullYear();
-    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const [companySubscription, setCompanySubscription] = useState<CompanySubscription>();
     const [limitProp, setLimitProp] = useState<LimitProps>();
-    const {plan}= useCompanyPlanState()
+    const {subscription}=useCompanySubscription()
 
     const fetchCompanyStatistics = async (id: string, month: number, year: number) => {
         try {
@@ -120,14 +120,22 @@ export const EmployerDashboard = () => {
     }, []);
 
     useEffect(() => {
-        if(plan){
-            setCompanyPlan(plan);
-            const isLimit = getLimitPost(plan)
+        if(subscription){
+            setCompanySubscription(subscription);
+            const isLimit = getLimitPost(subscription.planName)
             setLimitProp(isLimit)
         }else {
             setLimitProp({isLimit: true, limit: DEFAULT_LIMIT})
         }
-    }, [plan]);
+    }, [subscription]);
+
+    const formatDate = (date: Date): string => {
+        if(date){
+            const validDate = new Date(date)
+            return validDate.toLocaleDateString("en-GB");
+        }
+        else return "";
+    };
 
     return (
         <div className={`px-[60px] py-10 `}>
@@ -174,13 +182,29 @@ export const EmployerDashboard = () => {
                         />
                     ): (
                         <div className={`p-3 w-1/4`}>
-                            <div
-                                className={`rounded-lg bg-white relative  border-[#ffb94b] border-2 overflow-hidden p-6 h-[170px]`}>
-                                <div className={`bg-custom-gradient flex justify-end absolute top-0 right-0  px-4 rounded-bl-xl py-2`}>
-                                    <p className={`text-[#513101] font-bold`}>{companyPlan?.name} company</p>
-                                </div>
+                            <div className={`rounded-lg bg-white relative border-[#ffb94b] border-2 overflow-hidden p-6 h-[170px]`}>
+                                {
+                                    subscription?.status=='cancelled' ? (
+                                        <div
+                                            className={`bg-custom-gradient opacity-50 flex flex-col justify-end absolute top-0 right-0 px-4 rounded-bl-xl py-1`}>
+                                            <p className={`text-[#513101] font-bold`}>{subscription?.planName} company</p>
+                                            <div>
+                                                <p className={'text-[12px]'}>Hạn: <span
+                                                    className={'text-[12px]'}>{formatDate(subscription?.endDate)}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`bg-custom-gradient flex flex-col justify-end absolute top-0 right-0 px-4 rounded-bl-xl py-2`}>
+                                            <p className={`text-[#513101] font-bold`}>{subscription?.planName} company</p>
+                                        </div>
+                                    )
+                                }
+
+
                                 <div className={`h-full flex items-center text-[#513101] justify-center`}>
-                                   <div className={`flex items-start justify-center gap-4`}>
+                                    <div className={`flex items-start justify-center gap-4`}>
                                        <AiFillThunderbolt size={48} fill={'#ffb94b'} />
                                        <p className={`text-[#513101] font-bold text-[20px]`}>Không giới hạn bài đăng </p>
                                    </div>

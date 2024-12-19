@@ -116,6 +116,19 @@ export interface CompanyPlan {
     limitPost: number,
 }
 
+export interface CompanySubscription{
+    id: string,
+    companyId: string,
+    startDate: Date,
+    endDate: Date,
+    planId: string,
+    planName: string,
+    status: string,
+    email : string,
+    planPriceId: string,
+    planPriority: number,
+}
+
 export interface Price {
     id: string;
     product: string;
@@ -125,8 +138,9 @@ export interface Price {
     priority?: number;
 }
 
-export const priceless = ['prod_RLdPii9sz0QMtX', 'prod_RLNFfMLbTol7FK', 'prod_RLNEo0klDpuWTM']
+export const priceless = ['prod_RLdPii9sz0QMtX', 'prod_RQV5VTL6sh2mQ6', 'prod_RLNEo0klDpuWTM']
 
 export const UltimatePlan = "Ultimate"
 export const ProPlan = "Pro"
 export const BasicPlan = "Basic"
+export const UltimatePlanId= 'prod_RQV5VTL6sh2mQ6'

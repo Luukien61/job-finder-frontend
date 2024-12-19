@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {getPrices, priceCheckOut} from "@/axios/Request.ts";
-import {Price, priceless} from "@/info/ApplicationType.ts";
+import {Price, priceless, UltimatePlanId} from "@/info/ApplicationType.ts";
+import {moveToMiddle} from "@/service/ApplicationService.ts";
 
 
 const CustomPriceTable = () => {
@@ -10,7 +11,8 @@ const CustomPriceTable = () => {
         const fetchPrices = async () => {
             const response: Price[] = await getPrices();
             const filter = response.filter((price) => priceless.includes(price.product));
-            setPrices(filter);
+            const sortPrices = moveToMiddle(UltimatePlanId,filter)
+            setPrices(sortPrices);
         };
         fetchPrices();
     }, []);
@@ -25,7 +27,7 @@ const CustomPriceTable = () => {
                 <div className={`w-full flex justify-center items-center`}>
                     <div className={`flex gap-6 items-center`}>
                         {
-                            prices.length > 0 && prices.map((price, index) => (
+                            prices?.length > 0 && prices.map((price, index) => (
                                 <div key={index}>
                                     <PriceCard {...price}/>
                                 </div>
@@ -57,7 +59,7 @@ const PriceCard = ({product, currency, interval, id, unit_amount}) => {
             case 300000:
                 planName = 'Basic'
                 break;
-            case 5000000 :
+            case 4000000 :
                 planName = 'Ultimate'
                 break;
             case 500000 :
@@ -88,10 +90,10 @@ const PriceCard = ({product, currency, interval, id, unit_amount}) => {
 
     return (
         <div
-            className={`bg-white border ${product == 'prod_RLNFfMLbTol7FK' ? 'pt-0 border border-green_default' : 'pt-4'} cursor-pointer group hover:scale-110 transition-all hover:border-green_default duration-300 hover:border-2 relative shadow-lg rounded-lg p-10 pt-0 w-[310px] max-w-sm mx-auto`}>
+            className={`bg-white border ${product == UltimatePlanId ? 'pt-0 border border-green_default' : 'pt-4'} cursor-pointer group hover:scale-110 transition-all hover:border-green_default duration-300 hover:border-2 relative shadow-lg rounded-lg p-10 pt-0 w-[310px] max-w-sm mx-auto`}>
             <div className={`w-full flex justify-center`}>
                 {
-                    product == 'prod_RLNFfMLbTol7FK' && (
+                    product == UltimatePlanId && (
                         <div className={`bg-green-500 rounded-b-xl p-3`}>
                             <p className={`text-white font-bold`}>Phổ biến nhất</p>
                         </div>
@@ -112,6 +114,14 @@ const PriceCard = ({product, currency, interval, id, unit_amount}) => {
                     <span className={`text-text_color`}>/ {formatInterval(interval)}</span>
                 </div>
             </div>
+
+            {
+                product == UltimatePlanId && (
+                    <div className={`w-full flex justify-center`}>
+                        <p className={`text-red-600  opacity-70 italic`}>tức chỉ với hơn <span className={`font-bold text-red-600`}>333.000đ/tháng</span></p>
+                    </div>
+                )
+            }
             {
                 product == 'prod_RLdPii9sz0QMtX' && (
                     <div className="border-t pt-4 mt-4">
@@ -124,11 +134,11 @@ const PriceCard = ({product, currency, interval, id, unit_amount}) => {
             }
 
             {
-                product == 'prod_RLNFfMLbTol7FK' && (
+                product == UltimatePlanId && (
                     <div className="border-t pt-4 mt-4">
                         <ul className={`list-disc`}>
                             <li>Không giới hạn số lượng bài đăng</li>
-                            <li>Hiển thị ưu tiên khi tìm kiếm</li>
+                            <li><span className={'font-bold'}>Tối đa</span> hiển thị ưu tiên khi tìm kiếm</li>
                         </ul>
                     </div>
                 )
@@ -146,7 +156,7 @@ const PriceCard = ({product, currency, interval, id, unit_amount}) => {
 
             <button
                 onClick={() => handleCheckout(id)}
-                className={`w-full ${product == 'prod_RLNFfMLbTol7FK' ? 'bg-[#343A46FF] hover:bg-[#26262a] hover:scale-105 text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
+                className={`w-full ${product == UltimatePlanId ? 'bg-[#343A46FF] hover:bg-[#26262a] hover:scale-105 text-white' : ' text-[#272C35]'} font-bold hover:bg-[#272C35] border-solid border-2 border-[#272C35] py-2 rounded-md mt-4 hover:text-white  transition`}>
                 Đăng Ký Ngay
             </button>
         </div>

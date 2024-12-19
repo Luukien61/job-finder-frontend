@@ -83,6 +83,10 @@ interface JobByCompanyMonths {
 }
 
 const Admin = () => {
+
+    useEffect(() => {
+
+    }, []);
     const navigate = useNavigate();
     const menuItems = [
         {

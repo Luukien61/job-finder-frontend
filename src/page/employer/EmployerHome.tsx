@@ -5,19 +5,17 @@ import ExpandableCard from "@/component/ExpandableCard.tsx";
 import {MdLocationPin} from "react-icons/md";
 import LocationMap from "@/component/employer/LocationMap.tsx";
 import {IoMdMap} from "react-icons/io";
-import {Avatar, Input, notification, Pagination, Tooltip} from "antd";
-import {useLocation, useNavigate} from "react-router-dom";
+import {Avatar, Input, notification, Pagination} from "antd";
+import {useLocation} from "react-router-dom";
 import {getCompanyInfo, getJobsByCompanyId} from "@/axios/Request.ts";
 import {
-    CompanyPlan,
+    CompanyPlan, CompanySubscription,
     DefaultPageSize,
     JobApplication,
     JobCardResponse,
-    JobDetailProps,
     PageableResponse
 } from "@/info/ApplicationType.ts";
 import {convertDate, fetchCompanyPlan} from "@/service/ApplicationService.ts";
-import {useMessageReceiverState} from "@/zustand/AppState.ts";
 import {JobWidthCard} from "@/page/JobDetail.tsx";
 
 
@@ -55,21 +53,15 @@ export const HomeContent = () => {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [totalJobs, setTotalJobs] = useState<number>(0);
     const [jobsCards, setJobsCards] = useState<JobCardResponse[]>([]);
-    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const today = new Date();
+    const [companySubscription, setCompanySubscription] = useState<CompanySubscription>();
 
     const scrollRef = useRef(null);
-    const priorityMap = {
-        'PENDING': 0,
-        'ACCEPTED': 1,
-        'REJECTED': 2
-    };
-    const {setReceiverId} = useMessageReceiverState()
-    const navigate = useNavigate();
     const [api, contextHolder] = notification.useNotification();
 
     const handleGetCompanyPlan = async (id: string) => {
         const plan = await fetchCompanyPlan(id)
-        setCompanyPlan(plan)
+        setCompanySubscription(plan)
     }
 
 
@@ -150,9 +142,9 @@ export const HomeContent = () => {
                                     {currentCompany?.name}
                                 </p>
                                 {
-                                    companyPlan &&
+                                    (companySubscription && companySubscription.status.toLowerCase()=='active')&&
                                     <div className={`mb-6 flex-1 flex justify-end`}>
-                                        <span className={'job-pro-icon drop-shadow hover:scale-105 w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companyPlan?.name} company</span>
+                                        <span className={'job-pro-icon drop-shadow hover:scale-105 w-fit cursor-pointer text-14 rounded-md p-2 mr-4'}>{companySubscription?.planName} company</span>
                                     </div>
                                 }
                             </div>

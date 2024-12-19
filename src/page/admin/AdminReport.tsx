@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Avatar, List, Modal, notification, Select, Table, TableColumnsType, Tooltip} from "antd";
-import {banCompany, getJobDetailById, getReportDetails, getReportedJobs} from "@/axios/Request.ts";
+import {banCompany, getJobDetailById, getReportDetails, getReportedJobs, rejectBanRequest} from "@/axios/Request.ts";
 import {IoCloseCircleSharp} from "react-icons/io5";
 import {JobDetailProps} from "@/info/ApplicationType.ts";
 import {toast} from "react-toastify";
@@ -151,8 +151,10 @@ export const AdminReport = () => {
 
     }
 
-    const onBanCancel = () => {
+    const onBanCancel =async (jobId: number) => {
+        await rejectBanRequest(jobId)
         setIsViewDetail(false)
+        window.location.reload();
     }
     const onBan = async () => {
         if (reason) {
@@ -372,7 +374,7 @@ export const AdminReport = () => {
                         <div className={`w-full flex justify-center`}>
                             <div className={`bg-bg_default rounded-b-lg py-2 w-full justify-end px-2 flex gap-6`}>
                                 <button
-                                    onClick={onBanCancel}
+                                    onClick={()=>onBanCancel(jobDetail?.jobId)}
                                     className={`w-fit px-2  mx-3 rounded disabled:opacity-50 disabled:bg-gray-400 transition-all duration-300  min-w-[70px] py-1 text-black opacity-70 hover:bg-gray-100 font-bold`}>
                                     Xác nhận không có gì bất thường
                                 </button>

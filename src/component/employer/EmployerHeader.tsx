@@ -13,8 +13,8 @@ import {AiFillMessage} from "react-icons/ai";
 import {useNavigate} from "react-router-dom";
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {checkIsCompanyBanned, fetchCompanyPlan} from "@/service/ApplicationService.ts";
-import {useCompanyPlanState, useIsCompanyBannedState} from "@/zustand/AppState.ts";
-import {CompanyPlan} from "@/info/ApplicationType.ts";
+import {useCompanyPlanState, useCompanySubscription, useIsCompanyBannedState} from "@/zustand/AppState.ts";
+import {CompanyPlan, CompanySubscription} from "@/info/ApplicationType.ts";
 
 interface BanProps {
     id: number;
@@ -53,8 +53,9 @@ export const EmployerHeader = () => {
     }
     const {setIsCompanyBanned} = useIsCompanyBannedState()
     const [isBanned, setIsBanned] = useState<boolean>(false);
-    const [companyPlan, setCompanyPlan] = useState<CompanyPlan>();
+    const [companySubscription, setCompanySubscription] = useState<CompanySubscription>();
     const {setPlan}=useCompanyPlanState()
+    const {setSubscription}=useCompanySubscription()
     const checkCompanyStatus = async (id) => {
         try {
             const isBanned: boolean = await checkIsCompanyBanned(id);
@@ -127,8 +128,15 @@ export const EmployerHeader = () => {
     }
     const handleGetCompanyPlan = async (id: string) => {
         const plan = await fetchCompanyPlan(id)
-        setCompanyPlan(plan)
-        setPlan(plan)
+        setCompanySubscription(plan)
+        setSubscription(plan)
+        if(plan.status.toLowerCase()=='active'){
+            setPlan({
+                name: plan.planName,
+                priceId: plan.planPriceId,
+                planPriority: plan.planPriority,
+            })
+        }
     }
 
     useEffect(() => {
@@ -189,8 +197,8 @@ export const EmployerHeader = () => {
                 </div>
 
                 {
-                    companyPlan ? (
-                        <span className={'job-pro-icon text-14 rounded-md p-2 mr-4'}>{companyPlan.name}</span>
+                    (companySubscription && companySubscription.status.toLowerCase()=='active') ? (
+                        <span className={'job-pro-icon text-14 rounded-md p-2 mr-4'}>{companySubscription.planName}</span>
                     ) : (
                         <Tooltip placement={'bottom'} title={'Nâng cấp tài khoản'}>
                             <span onClick={()=>openLocation("/prices",false)}

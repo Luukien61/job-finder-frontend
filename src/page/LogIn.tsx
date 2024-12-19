@@ -115,6 +115,11 @@ const LogIn = () => {
                                 <p onClick={handleForwardSignup}
                                    className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Đăng ký</p>
                             </div>
+                            <div className={`flex items-center justify-center my-4 gap-x-1`}>
+                                <p className={`text-[14px] text-gray-700`}>Bạn là nhà tuyển dụng? </p>
+                                <p onClick={()=>window.location.href='/employer/entry/login'}
+                                   className={`text-[14px] text-green-400 cursor-pointer hover:underline`}>Đăng nhập </p>
+                            </div>
                         </div>
 
                     </div>

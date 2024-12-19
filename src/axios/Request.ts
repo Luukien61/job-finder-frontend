@@ -232,6 +232,10 @@ export const getEmployeesInMonth = async (month, year) => {
         }
     }).then((response: any) => response.data)
 }
+
+export const adminLogin=async (body: any) => {
+    return await instance.post(`${ADMIN_PATH}/login`, body)
+}
 export const getTotalEmployees = async () => {
     return await instance.get(`${ADMIN_PATH}/user/total`).then((response: any) => response.data)
 }
@@ -343,6 +347,10 @@ export const getPlanPriority = async () => {
 
 export const getUpgradeCheckoutUrl =async (body) => {
     return await instance.get(`subscription/upgrade-session`, body).then((response: any) => response.data)
+}
+
+export const rejectBanRequest=async (jobId)=>{
+    return await instance.put(`${ADMIN_PATH}/report/rejection/${jobId}`).then((response: any) => response.data)
 }
 
 export const upgradeVerify=async (body: any) => {

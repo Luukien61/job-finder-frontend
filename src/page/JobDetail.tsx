@@ -13,7 +13,7 @@ import {
     applyJob,
     createReport,
     getCompanyInfo,
-    getJobDetailById, getJobDetailByIdWithHistory,
+    getJobDetailById, getJobDetailByIdWithHistory, getNewJobs, getRecommendedJob,
     getUserDto,
     isAppliedJob,
     loginUser
@@ -32,7 +32,13 @@ import {
     refinePdfName,
     unSaveJobHandler
 } from "@/service/ApplicationService.ts";
-import {JobDetailProps, ProPlan, UltimatePlan} from "@/info/ApplicationType.ts";
+import {
+    DefaultRecommendationPageSize,
+    JobDetailProps,
+    PageableResponse,
+    ProPlan,
+    UltimatePlan
+} from "@/info/ApplicationType.ts";
 import {reportOptions, reportQuota} from "@/info/AppInfo.ts";
 
 type FieldType = {
@@ -66,6 +72,8 @@ const JobDetail = () => {
     const {TextArea} = Input;
     const [modalTypeRequestOpen, setModalTypeRequestOpen] = useState<string>('');
     const user = JSON.parse(localStorage.getItem('user'));
+    const [recommendJobs, setRecommendJobs] = useState([]);
+    const [newJobs, setNewJobs] = useState<JobWidthCardProps[]>([]);
 
     const handleModalClicks = useCallback((event: React.MouseEvent) => {
         event.stopPropagation()
@@ -119,7 +127,10 @@ const JobDetail = () => {
 
 
     useEffect(() => {
-        if (job) handleGetCompanyInfo(job.companyId)
+        if (job){
+            handleGetCompanyInfo(job.companyId)
+            fetchRecommendJobs()
+        }
     }, [job]);
 
     useEffect(() => {
@@ -298,6 +309,32 @@ const JobDetail = () => {
     const handleCloseReport = () => {
         setOpenReports(false)
     }
+
+    const fetchRecommendJobs = async () => {
+        const recommendJobs : any[]= await getRecommendedJob({userId: user?.id, title: job.title})
+        const filteredJobs = recommendJobs.filter((value)=>{
+            return value.jobId != job.jobId;
+        })
+        setRecommendJobs(filteredJobs)
+        try {
+            const jobs: PageableResponse<JobWidthCardProps> = await getNewJobs(0)
+            if (jobs) {
+                const filtered = jobs.content.filter(value=>{
+                    for(const recommend of filteredJobs ){
+                        if(recommend.jobId === value.jobId){
+                            return false
+                        }
+                    }
+                    return value.jobId != job.jobId;
+
+                })
+                setNewJobs(filtered)
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
 
 
     return (
@@ -539,89 +576,50 @@ const JobDetail = () => {
                                         {/*jobs suggestion*/}
                                         <div className={`flex flex-col `}>
                                             {/*job suggestion items*/}
-                                            {
-                                                Array.from(Array(20).keys()).map((item, index) => (
-                                                    <div
-                                                        className={`rounded-[8px] hover:border hover:border-solid hover:border-green_default w-full  bg-highlight_default cursor-pointer flex gap-[16px] m-auto mb-[16px] p-[12px] relative transition-transform`}>
-                                                        {/*company logo*/}
-                                                        <div
-                                                            className={`flex items-center w-[105px] bg-white border-solid border border-[#e9eaec] rounded-[8px] h-[120px] m-auto object-contain p-2 relative `}>
-                                                            <a className={` block overflow-hidden bg-white`}
-                                                               target={"_blank"}
-                                                               href={''}>
-                                                                <img
-                                                                    src="https://cdn-new.topcv.vn/unsafe/150x/https://static.topcv.vn/company_logos/cong-ty-co-phan-thiet-bi-va-cong-nghe-leanway-1f012ccf747554bd0c2468ff4a032a6c-661dd470c6d24.jpg"
-                                                                    className="object-contain align-middle overflow-clip cursor-pointer w-[85px] h-[102px]"
-                                                                    alt="CÔNG TY CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ LEANWAY"
-                                                                    title="The company's logo"/>
-                                                            </a>
-                                                        </div>
-                                                        {/*card body*/}
-                                                        <div className={`flex-1`}>
-                                                            <div className={`flex flex-col h-full`}>
-                                                                <div className={`mb-auto`}>
-                                                                    <div className={`flex `}>
-                                                                        <div
-                                                                            className={`flex flex-col w-3/4 max-w-[490px] gap-2`}>
-                                                                            <h3>
-                                                                                <a
-                                                                                    target="_blank"
-                                                                                    href="https://www.topcv.vn/viec-lam/nhan-vien-ke-toan-thu-nhap-7-9-trieu-thanh-tri-ha-noi/1508427.html?ta_source=SuggestSimilarJob_LinkDetail&amp;jr_i=dense-hertz%3A%3A1730538183569-25caaf%3A%3Af1144ce3ac3c47fdae7d2597270d3c1a%3A%3A1%3A%3A0.9500">
-                                                                                    <p className={`font-[600] hover:text-green_default text-[18px] text-[#212f3f] leading-6 cursor-pointer`}>
-                                                                                        Nhân Viên Kế Toán, Thu Nhập 7 -
-                                                                                        9
-                                                                                        Triệu
-                                                                                        (Thanh
-                                                                                        Trì - Hà Nội) </p>
-                                                                                </a>
-                                                                            </h3>
-                                                                            <div className={`w-full`}>
-                                                                                <a target="_blank">
-                                                                                    <p className={`break-words text-[14px] hover:underline truncate`}>CÔNG
-                                                                                        TY
-                                                                                        CỔ PHẦN THIẾT BỊ VÀ CÔNG NGHỆ
-                                                                                        LEANWAY </p>
-                                                                                </a>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className={`w-1/4 flex justify-end pr-2`}>
-                                                                            <p className={`text-green_default font-bold`}>7-9
-                                                                                triệu</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div
-                                                                    className={`mt-auto flex items-end justify-between py-2`}>
-                                                                    <div className={`flex gap-4`}>
-                                                                        <div
-                                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>Hà
-                                                                                Nội</p>
-                                                                        </div>
-                                                                        <div
-                                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>Kinh
-                                                                                nghiệm: 3 năm</p>
-                                                                        </div>
-                                                                        <div
-                                                                            className={`rounded-[5px] bg-[#E9EAEC] py-1 px-2 flex items-center justify-center`}>
-                                                                            <p className={`text-black text-[14px] truncate `}>Hạn:
-                                                                                29/12/2024</p>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div
-                                                                        className={`bg-white p-1 rounded-full`}>
-                                                                        <Tooltip title={'Lưu'}>
-                                                                            <FaRegHeart color={"green"}/>
-                                                                        </Tooltip>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                ))
-                                            }
+                                            {recommendJobs.map((value, index) => (
+                                                <JobWidthCard
+                                                    createDate={value.createDate}
+                                                    key={index}
+                                                    companyName={value.companyName}
+                                                    logo={value.logo}
+                                                    jobId={value.jobId}
+                                                    companyId={value.companyId}
+                                                    experience={value.experience}
+                                                    expireDate={value.expireDate}
+                                                    province={value.province}
+                                                    title={value.title}
+                                                    minSalary={value.minSalary}
+                                                    maxSalary={value.maxSalary}
+                                                    quickView={false}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className={`flex flex-col gap- h-fit mt-10 `}>
+                                        <div className={`flex items-center `}>
+                                            <h2 className={`border-l-[6px] mb-10 border-solid text-[20px] font-bold pl-[10px] leading-[28px] border-green_default `}
+                                            >Việc làm mới nhất</h2>
+                                        </div>
+                                        {/*jobs suggestion*/}
+                                        <div className={`flex flex-col `}>
+                                            {/*job suggestion items*/}
+                                            {newJobs.map((value, index) => (
+                                                <JobWidthCard
+                                                    createDate={value.createDate}
+                                                    key={index}
+                                                    companyName={value.companyName}
+                                                    logo={value.logo}
+                                                    jobId={value.jobId}
+                                                    companyId={value.companyId}
+                                                    experience={value.experience}
+                                                    expireDate={value.expireDate}
+                                                    province={value.province}
+                                                    title={value.title}
+                                                    minSalary={value.minSalary}
+                                                    maxSalary={value.maxSalary}
+                                                    quickView={false}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -1196,8 +1194,12 @@ export const JobWidthCard: React.FC<JobWidthCardProps> = (job) => {
     const handleJobCardClick = () => {
         navigate(`/job/detail/${job.jobId}`)
     }
+    const normalizeToMidnight = (date: Date): Date => {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
     const expireDate = new Date(job.expireDate);
-    const isExpire = expireDate.getTime() < new Date().getTime();
+    const today = normalizeToMidnight(new Date());
+    const isExpire = expireDate.getTime() < today.getTime();
     const formattedDate = expireDate.toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',

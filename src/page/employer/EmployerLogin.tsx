@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {AppLogo, requiredFields} from "@/info/AppInfo.ts";
 import {CustomInput} from "@/page/CompleteProfile.tsx";
 import {IoPersonCircleSharp} from "react-icons/io5";
@@ -26,6 +26,12 @@ const EmployerLogin = () => {
             toast.error(requiredFields)
         }
     }
+    useEffect(() => {
+        const company = JSON.parse(localStorage.getItem('company'));
+        if(company && company.id){
+            navigate("/employer");
+        }
+    }, []);
     return (
         <div className={`flex-1 h-screen overflow-hidden flex justify-center `}>
             <div className={`w-full rounded h-screen bg-white  my-auto `}>
