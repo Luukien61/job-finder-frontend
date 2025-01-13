@@ -688,7 +688,7 @@ const PriceCard = ({product, currency, interval, id, unit_amount, isCurrentPlan,
             case 300000:
                 planName = 'Basic'
                 break;
-            case 5000000 :
+            case 4000000 :
                 planName = 'Ultimate'
                 break;
             case 500000 :

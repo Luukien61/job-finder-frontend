@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {experiences, provinces, provinces_2, salaries} from "../info/AppInfo.ts";
 import {CiSearch} from "react-icons/ci";
 import {IoIosArrowDown} from "react-icons/io";
@@ -16,6 +16,7 @@ import Autoplay from "embla-carousel-autoplay";
 import {Select} from "antd";
 import {SearchProps} from "@/info/ApplicationType.ts";
 import {createSearchParams} from "@/service/ApplicationService.ts";
+import {getCompanies} from "@/axios/Request.ts";
 
 const Content = () => {
     const {ref, inView} = useInView({
@@ -237,6 +238,16 @@ export const SearchBar=()=>{
 }
 
 const CompanyList = () => {
+    const [companyList, setCompanyList] = useState([]);
+    const fetchCompanyList = async () => {
+        const companyPageable = await getCompanies(0,20)
+        if(companyPageable){
+            setCompanyList(companyPageable.content)
+        }
+    }
+    useEffect(() => {
+        fetchCompanyList();
+    },[])
     return (
         <div className={`drop-shadow `}>
             <div className="bg-company bg-cover rounded flex flex-col gap-4 p-8 relative">
@@ -250,7 +261,7 @@ const CompanyList = () => {
             <div className={`bg-white p-6 custom-shadow rounded-b-2xl`}>
                 <div className={`grid grid-cols-3 gap-4`}>
                     {
-                        Array.from(Array(20).keys()).map((_, i) => (
+                        companyList.map((company, i) => (
                             <a className={`border group border-solid hover:border-green_default hover:shadow-2xl duration-300 border-gray-400 rounded-2xl cursor-pointer overflow-hidden `}>
                                 <div className={`flex items-start gap-3 p-3 pb-2`}>
                                     {/*logo*/}
@@ -258,7 +269,7 @@ const CompanyList = () => {
                                         className={`border border-solid rounded-2xl flex-shrink-0 h-[82px] p-[5px] w-[82px] `}>
                                         <img
                                             className={`object-contain w-full h-full group-hover:scale-110 duration-300`}
-                                            src="https://static.topcv.vn/company_logos/cong-ty-an-ninh-mang-viettel-chi-nhanh-tap-doan-cong-nghiep-vien-thong-quan-doi-6141a58d0c762.jpg"
+                                            src={company.logo}
                                             alt=""/>
 
                                     </div>
@@ -266,11 +277,10 @@ const CompanyList = () => {
                                     <div className="flex items-start flex-col gap-1">
                                         <div
                                             className="text-[16px] group-hover:text-green_default font-bold leading-6 overflow-hidden uppercase line-clamp-2 ">
-                                            Công ty An ninh mạng Viettel- Chi nhánh Tập đoàn Công nghiệp- Viễn thông
-                                            quân đội
+                                            {company.name}
                                         </div>
                                         <div className="text-[14px] font-[500] leading-5 overflow-hidden opacity-70">
-                                            Thời trang
+                                            {company.address}
                                         </div>
                                     </div>
 
@@ -279,8 +289,7 @@ const CompanyList = () => {
                                 <div
                                     className="items-center group-hover:bg-green-100 flex gap-2 px-2 py-3 bg-[#fff5eb]">
                                     <PiShoppingBagOpen color={"#591e00"} size={20}/>
-                                    <p className="text-[#591e00] group-hover:text-green_default leading-4 font-bold">1
-                                        việc làm</p>
+                                    <p className="text-[#591e00] group-hover:text-green_default leading-4 font-bold">{company.jobCount} việc làm</p>
                                 </div>
                             </a>
                         ))

@@ -24,6 +24,8 @@ export default {
                 green_default: "#00b14f",
                 green_nga: "#25b849",
                 green_sidebar: "#39a251",
+                modern_default: "#636466",
+                modern_border: "#608abf",
                 bg_secondary: "#D9D9D9FF",
                 blue_light: "#E8F6F9",
                 green_light: "#D3FFDE",
@@ -89,6 +91,7 @@ export default {
                 'impress': "url('https://static.topcv.vn/v4/image/welcome/home/impressive_numbers_cover_new.png')",
                 'impress-item': "url('https://static.topcv.vn/v4/image/welcome/home/impressive_numbers_list_item.png')",
                 'custom-gradient': 'linear-gradient(259.43deg, #ffb94b -3.83%, #ffe7bf 29.35%, #ffb94b 92.22%)',
+                'modern': "url('public/cv/modern/background.png')"
             }
         }
     },

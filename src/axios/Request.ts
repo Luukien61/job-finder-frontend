@@ -2,6 +2,7 @@ import {instance} from "@/axios/Config.ts";
 import axios from "axios";
 import {companyBackendPath} from "@/info/AppInfo.ts";
 import {DefaultPageSize, DefaultRecommendationPageSize} from "@/info/ApplicationType.ts";
+import {ChatMessage} from "@/service/WebSocketService.ts";
 
 
 export const getMessages = async (id: string, page: number) => {
@@ -234,7 +235,7 @@ export const getEmployeesInMonth = async (month, year) => {
 }
 
 export const adminLogin=async (body: any) => {
-    return await instance.post(`${ADMIN_PATH}/login`, body)
+    return await instance.post(`${ADMIN_PATH}/login`, body).then((response: any) => response.data)
 }
 export const getTotalEmployees = async () => {
     return await instance.get(`${ADMIN_PATH}/user/total`).then((response: any) => response.data)
@@ -359,4 +360,26 @@ export const upgradeVerify=async (body: any) => {
 
 export const cancelSubscription=async (body: any) => {
     return await instance.post(`subscription/cancel-subscription`, body).then((response: any) => response.data)
+}
+
+export const getCompanies = async (page, size) => {
+    return await instance.get(`/api/companies?page=${page}&size=${size}&sortBy=name&sortOrder=desc`).then((response: any) => response.data)
+}
+
+export const getAudioCaption = async (body) => {
+    return await axios.post(`http://localhost:8000/transcribe`, body).then((response) => response.data)
+}
+
+export const updateMessage=async (message: ChatMessage) => {
+    return await instance.put(`/message`, message).then((response) => response.data)
+}
+
+export const sendVoice = async (formData) => {
+    return await instance
+        .post(`/voice`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then((response) => response.data)
 }

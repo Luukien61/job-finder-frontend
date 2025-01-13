@@ -12,9 +12,13 @@ const JobList = () => {
     const [totalPage, setTotalPage] = useState<number>(0);
     const fetchRecommendJobs = async () => {
         if (user && user.id) {
-            const job = await getRecommendedJob({userId: user.id})
-            setRecommendJobs(job)
-            setHeaderName("Việc làm có thể bạn quan tâm")
+            const job :any[] = await getRecommendedJob({userId: user.id})
+            if(job && job.length >0){
+                setRecommendJobs(job)
+                setHeaderName("Việc làm có thể bạn quan tâm")
+            }else {
+                fetchNewJobs(currentPage)
+            }
         } else {
             fetchNewJobs(currentPage)
         }

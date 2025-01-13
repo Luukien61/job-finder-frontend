@@ -149,7 +149,9 @@ const EmployerSignup = () => {
                     <div className={`flex-col relative my-4 w-full`}>
                         <div className={`sticky top-0 h-40 border-b bg-gray-50 border-green_default mx-4`}>
                             <div className={`flex justify-center`}>
-                                <img className={`w-28 rounded-full`} src={AppLogo} alt={`logo`}/>
+                                <a href={'/'}>
+                                    <img className={`w-28 rounded-full`} src={AppLogo} alt={`logo`}/>
+                                </a>
                             </div>
                             <div className={`flex justify-center w-full items-center`}>
                                 <p className={`text-[24px] text-green_default font-bold`}>Đăng ký tài khoản Nhà

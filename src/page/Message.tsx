@@ -31,7 +31,8 @@ import {AppInfo} from "@/info/AppInfo.ts";
 import {useMessageReceiverState} from "@/zustand/AppState.ts";
 import {checkIsCompanyBanned} from "@/service/ApplicationService.ts";
 import {Spin, Watermark} from "antd";
-
+import MessageItem from '@/component/MessageItem'
+import VoiceRecorder from "@/component/VoiceRecorder.tsx";
 
 export type QuickMessage = {
     id: number
@@ -109,7 +110,7 @@ const Message = () => {
                 }
                 return quickMessage
             }
-            if (userId.startsWith("u_")) {
+            if (userId.startsWith("u_") || userId.startsWith('google_')) {
                 quickMessagePromises = conversations.map(async (value) => {
                     const participantId = value.senderId
                     return refineQuickMessages(value, participantId)
@@ -189,13 +190,18 @@ const Message = () => {
             }
         }
 
-        let rawUser = JSON.parse(localStorage.getItem('user'))
-        if (!rawUser) {
-            rawUser = JSON.parse(localStorage.getItem('company'))
+        const getCompany = async (rawUser) => {
             if (rawUser) checkCompanyStatus(rawUser.id)
+            await delay(300)
             if (receiverId) {
                 handleGetConversationByUserIds(rawUser.id, receiverId)
             }
+        }
+
+        let rawUser = JSON.parse(localStorage.getItem('user'))
+        if (!rawUser) {
+            rawUser = JSON.parse(localStorage.getItem('company'))
+            getCompany(rawUser)
         }
         if (rawUser) {
             getLogInUser(rawUser.id)
@@ -223,9 +229,14 @@ const Message = () => {
         handleScroll()
     }, [privateChats.length])
 
-    const sendMessages = async (message: string | null) => {
+    const sendMessages = async (message: string | null, messageType: string | null) => {
         if (!isBanned) {
-            let type: string = 'image'
+            let type: string
+            if (messageType) {
+                type = messageType
+            } else {
+                type = 'text'
+            }
             if (message == null) {
                 message = typingMessage
                 type = 'text'
@@ -282,7 +293,7 @@ const Message = () => {
                 reader.onloadend = () => {
                     imageUpload({image: reader.result as string}).then((r) => {
                         if (r) {
-                            sendMessages(r)
+                            sendMessages(r, 'image')
                         }
                     })
                 }
@@ -298,7 +309,7 @@ const Message = () => {
                 return
             }
             e.preventDefault()
-            sendMessages(null)
+            sendMessages(null, null)
         }
     }
 
@@ -381,7 +392,9 @@ const Message = () => {
                                         </div>
                                         <div>
                                             <p className={`truncate max-w-[90%] text-gray-500`}>
-                                                {value.type == 'image' ? '[Hình ảnh]' : value.text}
+                                                {value.type == 'image' && '[Hình ảnh]'}
+                                                {value.type == 'audio' && '[Voice]'}
+                                                {value.type == 'text' && value.text}
                                             </p>
                                         </div>
                                     </div>
@@ -409,9 +422,9 @@ const Message = () => {
                                         senderName={loginUser ? loginUser.name : ''}
                                         senderAvatar={loginUser ? loginUser.avatar : ''}
                                         userName={currentRecipient.name}
-                                        client={client}
                                         userId={currentUserId}
                                         targetUserId={currentRecipient && currentRecipient.id}
+                                        display={true}
                                     />
                                 )}
                             </div>
@@ -424,34 +437,11 @@ const Message = () => {
                                         {/*message card*/}
                                         {privateChats.length > 0 &&
                                             privateChats.map((value, index) => (
-                                                <div
-                                                    key={index}
-                                                    className={`m-x-[16px] w-full flex ${value.senderId != loginUser?.id ? 'justify-start' : 'justify-end'}`}
-                                                >
-                                                    <div
-                                                        className={`w-fit min-w-[80px]  max-w-[50%]  drop-shadow relative block p-[12px] rounded-[8px] ${value.senderId != currentUserId ? 'bg-white' : 'bg-chat_me'}`}
-                                                    >
-                                                        {value.type == 'text' ? (
-                                                            <pre className={`break-words  py-1 font-sans text-wrap`}>
-                                                                {value.content}
-                                                            </pre>
-                                                        ) : (
-                                                            <div>
-                                                                <img
-                                                                    className={`object-contain rounded`}
-                                                                    src={value.content}
-                                                                    alt={value.content}
-                                                                />
-                                                            </div>
-                                                        )}
-
-                                                        <p className={`text-[#476285] text-[12px]`}>
-                                                            {new Date(value.timestamp).getHours().toString().padStart(2, '0') +
-                                                                ':' +
-                                                                new Date(value.timestamp).getMinutes().toString().padStart(2, '0')}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                <MessageItem
+                                                    currentUserId={currentUserId}
+                                                    index={index}
+                                                    value={value}
+                                                    isGroup={false}/>
                                             ))}
                                     </div>
                                     <div className={`h-[14px] break-words `} ref={bottomRef}></div>
@@ -460,7 +450,7 @@ const Message = () => {
                         </div>
                         {/*type*/}
                         <div className={`flex flex-col bg-white px-3`}>
-                            <div className={`flex items-center justify-start py-1 border-b w-full`}>
+                            <div className={`flex items-center gap-3 justify-start py-1 border-b w-full`}>
                                 <label
                                     className="flex flex-col items-center justify-start w-fit h-full  rounded-lg cursor-pointer  ">
                                     <CiImageOn size={26}/>
@@ -474,20 +464,21 @@ const Message = () => {
                                         className="hidden outline-none"
                                     />
                                 </label>
+                                <VoiceRecorder sendMessages={sendMessages}/>
                             </div>
 
                             <div className={`bg-white  flex py-2 items-center gap-x-3`}>
-              <textarea
-                  disabled={!currentRecipient || isBanned}
-                  onKeyDown={handleKeyDown}
-                  value={typingMessage}
-                  onChange={(e) => setTypingMessage(e.target.value)}
-                  spellCheck={false}
-                  placeholder={'Nhập tin nhắn...'}
-                  className={`w-full px-3 py-2 outline-none resize-none flex-1 self-center !h-[50px]`}
-              />
+                                <textarea
+                                    disabled={!currentRecipient || isBanned}
+                                    onKeyDown={handleKeyDown}
+                                    value={typingMessage}
+                                    onChange={(e) => setTypingMessage(e.target.value)}
+                                    spellCheck={false}
+                                    placeholder={'Nhập tin nhắn...'}
+                                    className={`w-full px-3 py-2 outline-none resize-none flex-1 self-center !h-[50px]`}
+                                />
                                 <div
-                                    onClick={() => sendMessages(null)}
+                                    onClick={() => sendMessages(null, null)}
                                     className={`${currentRecipient ? 'cursor-pointer hover:text-green-500' : 'disabled'}`}
                                 >
                                     <VscSend size={28}/>
@@ -503,7 +494,7 @@ const Message = () => {
                             width={150}
                             image={'public/logo.png'}
                         >
-                            <div className={`h-screen`} />
+                        <div className={`h-screen`}/>
                         </Watermark>
                     </div>
                 )}

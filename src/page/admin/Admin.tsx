@@ -83,9 +83,11 @@ interface JobByCompanyMonths {
 }
 
 const Admin = () => {
-
     useEffect(() => {
-
+        const adminId = localStorage.getItem("id");
+        if(!adminId){
+            navigate("/admin/login");
+        }
     }, []);
     const navigate = useNavigate();
     const menuItems = [

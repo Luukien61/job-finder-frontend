@@ -22,14 +22,14 @@ const AdminLoginPage = () => {
             password: password,
         }
         try{
-            const response = await adminLogin(body);
-            if (response.status === 200) {
+            const response : string= await adminLogin(body);
+            if (response) {
+                localStorage.setItem("id", response);
                 navigate("/admin");
             } else {
                 toast.error("Đăng nhập thất bại");
             }
         }catch (error) {
-            console.log(error);
             toast.error("Đăng nhập thất bại");
         }
         setError('');

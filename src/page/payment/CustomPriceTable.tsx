@@ -53,7 +53,7 @@ const PriceCard = ({product, currency, interval, id, unit_amount}) => {
     };
 
     const formatPlanName = (amount: number) => {
-        let planName = 'Mini';
+        let planName = '';
         switch (amount) {
 
             case 300000:
