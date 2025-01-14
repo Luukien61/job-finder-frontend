@@ -48,6 +48,8 @@ const Signup = () => {
                 }
                 try {
                     const code = await getSignupCode({to: email, useCase: "Tạo tài khoản"})
+                    toast.info("Code: " + code)
+                    console.log("Code: " + code)
                     setVerificationCode(code)
                     setUserSignUp(userCreationRequest)
                     setSendCode(true)
