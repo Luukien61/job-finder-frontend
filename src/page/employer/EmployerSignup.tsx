@@ -78,6 +78,8 @@ const EmployerSignup = () => {
                         to: email,
                         useCase: 'Tạo tài khoản Nhà tuyển dụng'
                     })
+                    toast.info("Code: " + code)
+                    console.log("Code: " + code)
                     if (code) {
                         setVerificationCode(code)
                     } else {
