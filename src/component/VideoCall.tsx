@@ -58,9 +58,9 @@ const VideoCall: React.FC<VideoCallProps> = ({
         iceServers: [
           {
             urls: [
-              'turn:18.141.161.56:3478',
-              'turn:18.141.161.56:3478?transport=udp',
-              'turn:18.141.161.56:3478?transport=tcp'
+              'turn:47.129.11.178:3478',
+              'turn:47.129.11.178:3478?transport=udp',
+              'turn:47.129.11.178:3478?transport=tcp'
             ],
             username: 'luukien',
             credential: '123456'
