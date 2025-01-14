@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {experiences, provinces, provinces_2, salaries} from "../info/AppInfo.ts";
+import {provinces_2} from "../info/AppInfo.ts";
 import {CiSearch} from "react-icons/ci";
-import {IoIosArrowDown} from "react-icons/io";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
-import {Label} from "@/components/ui/label.tsx";
 import CarouselBanner, {Banner} from "@/component/CarouselBanner.tsx";
 import JobList from "@/component/JobList.tsx";
 import {PiShoppingBagOpen} from "react-icons/pi";

@@ -1,9 +1,9 @@
 import {create} from 'zustand'
 import {UserDto} from "@/page/UserProfile.tsx";
 import {UserSignupResponse} from "@/page/SignUp.tsx";
-import {createJSONStorage, persist} from 'zustand/middleware'
-import {getParticipant, isCompanyBanned} from "@/axios/Request.ts";
-import {CompanyPlan, CompanySubscription} from "@/info/ApplicationType.ts";
+import {persist} from 'zustand/middleware'
+import {getParticipant} from "@/axios/Request.ts";
+import {CompanySubscription} from "@/info/ApplicationType.ts";
 import {Participant} from "@/service/WebSocketService.ts";
 
 interface BearState {

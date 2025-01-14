@@ -84,7 +84,7 @@ const EmployerSignup = () => {
                         toast.error("Có lỗi xảy ra, vui lòng thử lại sau")
                     }
                 } catch (e) {
-                    toast.error(e.response.data);
+                    toast.error(e);
                 }
             }
 

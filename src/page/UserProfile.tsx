@@ -3,7 +3,7 @@ import {RiHome4Fill, RiShoppingBag4Fill} from "react-icons/ri";
 import {AiFillCloud, AiFillMessage, AiFillSafetyCertificate} from "react-icons/ai";
 import {BsFillQuestionCircleFill, BsFillTelephoneFill} from "react-icons/bs";
 import {IoMail, IoNotifications} from "react-icons/io5";
-import { format } from 'date-fns';
+import {format} from 'date-fns';
 import {FaLocationDot} from "react-icons/fa6";
 import {IoIosAddCircle, IoIosCloseCircle} from "react-icons/io";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";

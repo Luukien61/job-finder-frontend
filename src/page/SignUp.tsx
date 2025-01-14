@@ -1,13 +1,12 @@
-import React, {ReactNode, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {MdOutlineMail} from "react-icons/md";
-import {RiFileCodeLine, RiLockPasswordLine} from "react-icons/ri";
+import {RiLockPasswordLine} from "react-icons/ri";
 import {useNavigate} from "react-router-dom";
 import {UserCreationState} from "@/zustand/AppState.ts";
 import {googleExchange} from "@/page/GoogleCode.tsx";
 import {toast, ToastContainer} from "react-toastify";
 import {getSignupCode, signUpUser} from "@/axios/Request.ts";
 import {AppLogo} from "@/info/AppInfo.ts";
-import {CgCloseO} from "react-icons/cg";
 import {LuQrCode} from "react-icons/lu";
 import {Input} from "antd";
 import {IoIosCloseCircle} from "react-icons/io";

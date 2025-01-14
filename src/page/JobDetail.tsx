@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {GoClock} from "react-icons/go";
 import {FiSend} from "react-icons/fi";
-import {FaRegHeart, FaHeart} from "react-icons/fa6";
+import {FaHeart, FaRegHeart} from "react-icons/fa6";
 import {MdEmail, MdKeyboardDoubleArrowRight, MdReportGmailerrorred} from "react-icons/md";
 import {BiSolidLeaf} from "react-icons/bi";
 import {SearchBar} from "@/component/Content.tsx";
@@ -13,7 +13,9 @@ import {
     applyJob,
     createReport,
     getCompanyInfo,
-    getJobDetailById, getJobDetailByIdWithHistory, getNewJobs, getRecommendedJob,
+    getJobDetailByIdWithHistory,
+    getNewJobs,
+    getRecommendedJob,
     getUserDto,
     isAppliedJob,
     loginUser
@@ -32,13 +34,7 @@ import {
     refinePdfName,
     unSaveJobHandler
 } from "@/service/ApplicationService.ts";
-import {
-    DefaultRecommendationPageSize,
-    JobDetailProps,
-    PageableResponse,
-    ProPlan,
-    UltimatePlan
-} from "@/info/ApplicationType.ts";
+import {JobDetailProps, PageableResponse, ProPlan, UltimatePlan} from "@/info/ApplicationType.ts";
 import {reportOptions, reportQuota} from "@/info/AppInfo.ts";
 
 type FieldType = {

@@ -1,10 +1,9 @@
-import { BiMessageSquareDetail } from 'react-icons/bi'
-import { ChatMessage, Participant } from '@/service/WebSocketService'
-import React, { useEffect, useState } from 'react'
-import { getAudioCaption, updateMessage } from '@/axios/Request'
-import { toast } from 'react-toastify'
-import { Avatar, Spin } from 'antd'
-import { useParticipantStore } from '@/zustand/AppState'
+import {BiMessageSquareDetail} from 'react-icons/bi'
+import {ChatMessage} from '@/service/WebSocketService'
+import React, {useState} from 'react'
+import {getAudioCaption, updateMessage} from '@/axios/Request'
+import {toast} from 'react-toastify'
+import {Spin} from 'antd'
 
 interface MessageItemProps {
   value: ChatMessage

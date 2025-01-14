@@ -155,6 +155,7 @@ const EmployerProfile = () => {
     }
 
     const resetInfo = (response: CompanyInfo) => {
+        console.log(response)
         setFileList([{
             uid: '0',
             name: 'logo.png',
@@ -164,8 +165,8 @@ const EmployerProfile = () => {
         setCompanyName(response.name);
         setWebsite(response.website);
         setPhone(response.phone);
-        const locations = response.address.split(',');
-        const provinceName = locations[1].trim()
+        const locations = response.address?.split(',');
+        const provinceName = locations[1]?.trim()
         setProvince(provinceName);
         setDistrict(locations[0].trim());
         const province = fullProvinces.find(p => p.name === provinceName);

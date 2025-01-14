@@ -130,7 +130,7 @@ export const EmployerHeader = () => {
         const plan = await fetchCompanyPlan(id)
         setCompanySubscription(plan)
         setSubscription(plan)
-        if(plan.status.toLowerCase()=='active'){
+        if(plan.status?.toLowerCase()=='active'){
             setPlan({
                 name: plan.planName,
                 priceId: plan.planPriceId,
@@ -197,7 +197,7 @@ export const EmployerHeader = () => {
                 </div>
 
                 {
-                    (companySubscription && companySubscription.status.toLowerCase()=='active') ? (
+                    (companySubscription && companySubscription.status?.toLowerCase()=='active') ? (
                         <span className={'job-pro-icon text-14 rounded-md p-2 mr-4'}>{companySubscription.planName}</span>
                     ) : (
                         <Tooltip placement={'bottom'} title={'Nâng cấp tài khoản'}>

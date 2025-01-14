@@ -11,11 +11,14 @@ import Autoplay from "embla-carousel-autoplay";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import {note, WarningNote} from "@/page/UserProfile.tsx";
 import {
-    DefaultPageSize, DefaultRecommendationPageSize,
+    DefaultPageSize,
+    DefaultRecommendationPageSize,
     JobDetailProps,
     JobSearchResult,
-    PageableResponse, ProPlan,
-    SearchProps, UltimatePlan
+    PageableResponse,
+    ProPlan,
+    SearchProps,
+    UltimatePlan
 } from "@/info/ApplicationType.ts";
 import {MdKeyboardDoubleArrowRight} from "react-icons/md";
 import {IoCloseCircleSharp} from "react-icons/io5";
