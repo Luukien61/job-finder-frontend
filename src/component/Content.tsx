@@ -261,7 +261,7 @@ const CompanyList = () => {
             <div className={`bg-white p-6 custom-shadow rounded-b-2xl`}>
                 <div className={`grid grid-cols-3 gap-4`}>
                     {
-                        companyList.map((company, i) => (
+                        companyList?.map((company, i) => (
                             <a className={`border group border-solid hover:border-green_default hover:shadow-2xl duration-300 border-gray-400 rounded-2xl cursor-pointer overflow-hidden `}>
                                 <div className={`flex items-start gap-3 p-3 pb-2`}>
                                     {/*logo*/}

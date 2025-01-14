@@ -70,7 +70,7 @@ const JobList = () => {
             </div>
             <div className={`w-[100%] p-4 flex flex-wrap items-center justify-start `}>
                 {
-                    recommendJobs.map((item, index) =>
+                    recommendJobs?.map((item, index) =>
                         <JobCard index={index} item={item}/>
                     )
                 }
