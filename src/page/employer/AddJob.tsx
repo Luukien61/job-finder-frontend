@@ -189,7 +189,8 @@ const AddJob = () => {
             if (response) {
                 toast.info("Đăng bài thành công!")
                 await delay(1500)
-                window.location.href = '/employer'
+                //window.location.href = '/employer/jobs'
+                window.location.reload()
             }
         } catch (error) {
             toast.error(error.response.data)

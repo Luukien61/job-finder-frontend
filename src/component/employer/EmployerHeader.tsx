@@ -228,9 +228,9 @@ export const EmployerHeader = () => {
                         </button>
                     </div>
                     <div onClick={() => openLocation('/employer/profile', false)}
-                         className={` cursor-pointer relative  bg-white  aspect-square rounded-full`}>
+                         className={`cursor-pointer relative border bg-white aspect-square w-10 rounded-full`}>
                         <img src={companyInfo?.logo} alt={`avatar`}
-                             className="object-cover rounded-full w-9 aspect-square"/>
+                             className="object-cover rounded-full w-9  aspect-square"/>
 
                     </div>
                 </div>

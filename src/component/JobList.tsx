@@ -146,7 +146,7 @@ export const JobCard: React.FC<ImplicitJobCardProps> = (item) => {
                             <div
                                 className={`bg-white overflow-hidden  transition-transform m-auto w-[96px] aspect-square flex items-center border border-[#dfdfdf] rounded-xl`}>
                                 <img
-                                    className={`aspect-square w-[80px] group-hover:scale-110 duration-300 object-contain`}
+                                    className={`aspect-square w-[96px] group-hover:scale-110 duration-300 object-contain`}
                                     src={job.logo} alt=""/>
                             </div>
                         </div>

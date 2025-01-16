@@ -265,7 +265,7 @@ const VideoCall: React.FC<VideoCallProps> = ({
             <div
                 className={`backdrop-blur-sm bg-black px-6 gap-4 bg-opacity-60 flex flex-col overflow-y-auto overflow-x-hidden fixed inset-0 z-50 justify-center items-center w-full h-full max-h-full`}
             >
-              <div className={`flex flex-col gap-4`}>
+              <div className={`flex items-center flex-col gap-4`}>
                 <img
                     src={callerAvatar}
                     className={`w-64 rounded-full aspect-square object-cover`}

@@ -172,7 +172,7 @@ export const HomeContent = () => {
                             <h2 className={`bg-gradient-to-green py-3 px-5 text-white text-18 font-semibold leading-7 m-0`}>
                                 Giới thiệu công ty
                             </h2>
-                            <div className={` w-full bg-white min-h-[100px] px-6 pt-4 flex-wrap overflow-hidden`}>
+                            <div className={`w-full bg-white min-h-[100px] pb-4 px-6 pt-4 flex-wrap overflow-hidden`}>
                                 {
                                     currentCompany && currentCompany.description ? (
                                         <ExpandableCard children={

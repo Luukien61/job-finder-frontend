@@ -11,7 +11,7 @@ import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious}
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import Autoplay from "embla-carousel-autoplay";
 import {Select} from "antd";
-import {SearchProps} from "@/info/ApplicationType.ts";
+import {DefaultRecommendationPageSize, SearchProps} from "@/info/ApplicationType.ts";
 import {createSearchParams} from "@/service/ApplicationService.ts";
 import {getCompanies} from "@/axios/Request.ts";
 
@@ -236,15 +236,33 @@ export const SearchBar=()=>{
 
 const CompanyList = () => {
     const [companyList, setCompanyList] = useState([]);
-    const fetchCompanyList = async () => {
-        const companyPageable = await getCompanies(0,20)
+    const [currentPage, setCurrentPage] = useState<number>(0);
+    const [totalPage, setTotalPage] = useState<number>(0);
+    const fetchCompanyList = async (page: number) => {
+        const companyPageable = await getCompanies(page,12)
         if(companyPageable){
             setCompanyList(companyPageable.content)
+            const totalCompany = companyPageable.totalElements
+            const totalPages = companyPageable.totalPages
+            setTotalPage(totalPages)
+            console.log(companyPageable)
         }
     }
     useEffect(() => {
-        fetchCompanyList();
-    },[])
+        fetchCompanyList(currentPage);
+    },[currentPage])
+
+    const onPrevious = () => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    }
+
+    const onNextClick = () => {
+        if (currentPage + 1 <= totalPage - 1) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
     return (
         <div className={`drop-shadow `}>
             <div className="bg-company bg-cover rounded flex flex-col gap-4 p-8 relative">
@@ -259,8 +277,8 @@ const CompanyList = () => {
                 <div className={`grid grid-cols-3 gap-4`}>
                     {
                         companyList?.map((company, i) => (
-                            <a className={`border group border-solid hover:border-green_default hover:shadow-2xl duration-300 border-gray-400 rounded-2xl cursor-pointer overflow-hidden `}>
-                                <div className={`flex items-start gap-3 p-3 pb-2`}>
+                            <a href={`/company/${company.id}`}  className={`border flex flex-col group border-solid hover:border-green_default hover:shadow-2xl duration-300 border-gray-400 rounded-2xl cursor-pointer overflow-hidden `}>
+                                <div className={`flex items-start flex-1 gap-3 p-3 pb-2`}>
                                     {/*logo*/}
                                     <div
                                         className={`border border-solid rounded-2xl flex-shrink-0 h-[82px] p-[5px] w-[82px] `}>
@@ -293,11 +311,11 @@ const CompanyList = () => {
                     }
                 </div>
                 <div className={`flex items-center gap-4 justify-center mt-6`}>
-                    <div
+                    <div onClick={onPrevious}
                         className={`aspect-square group w-8 rounded-full flex items-center cursor-pointer hover:bg-green_default justify-center p-1 border border-green_default `}>
                         <GrPrevious className={`group-hover:text-white text-green_default`}/>
                     </div>
-                    <div
+                    <div onClick={onNextClick}
                         className={`aspect-square group w-8 rounded-full flex items-center cursor-pointer hover:bg-green_default justify-center p-1 border border-green_default `}>
                         <GrNext className={`group-hover:text-white text-green_default`}/>
                     </div>
