@@ -300,6 +300,9 @@ const NOTIFICATION = '/notification'
 export const updateNotificationStatus = async (id: number, status: string) => {
     return await instance.post(`${NOTIFICATION}/${id}/status/update/${status}`).then((response: any) => response.data)
 }
+export const updateUserNotificationStatus = async (id: number, status: string) => {
+    return await instance.post(`${NOTIFICATION}/${id}/user/status/update/${status}`).then((response: any) => response.data)
+}
 export const getAllNotifications = async (userId: string) => {
     return await instance.get(`${NOTIFICATION}/${userId}/all`).then((response: any) => response.data)
 }

@@ -35,6 +35,7 @@ import {CompleteInfo} from "@/page/CompleteProfile.tsx";
 import dayjs, {Dayjs} from "dayjs";
 import imageUpload from "@/axios/ImageUpload.ts";
 import {LuQrCode} from "react-icons/lu";
+import {UserSection} from "@/component/Header.tsx";
 
 
 export interface UserDto {
@@ -92,6 +93,7 @@ const sideBarItem = [
 
 const UserProfile = () => {
     const [currentUser, setCurrentUser] = useState<UserDto>();
+    const [loginUser, setLoginUser] = useState<UserResponse>();
     const navigate = useNavigate();
     const [itemChoose, setItemChoose] = useState<number>(0);
     const warningItem: WarningNote[] = []
@@ -112,6 +114,10 @@ const UserProfile = () => {
                 const userInfo: UserDto = await getUserDto(logInUser.id);
                 if (userInfo) {
                     setCurrentUser(userInfo);
+                    const user :UserResponse ={
+                        ...userInfo,
+                    };
+                    setLoginUser(user);
                 } else {
                     toast.error("An error occurred.");
                     localStorage.clear()
@@ -192,18 +198,7 @@ const UserProfile = () => {
                 {/*header*/}
                 <div
                     className={`sticky z-50 top-0 h-[70px] bg-white py-3 px-4 shadow-accent-foreground border-b pr-6 flex gap-6 justify-end items-center`}>
-                    <div
-                        className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 bg-[#E5F7ED]`}>
-                        <IoNotifications size={24} fill={"#00B14F"}/>
-                    </div>
-                    <div
-                        onClick={() => navigate(`/message/${currentUser.id}`)}
-                        className={`cursor-pointer rounded-full aspect-square flex items-center justify-center w-10 p-1 bg-[#E5F7ED]`}>
-                        <AiFillMessage size={24} fill={"#00B14F"}/>
-                    </div>
-                    <div className={`w-9 cursor-pointer aspect-square rounded-full overflow-y-hidden`}>
-                        <img className={`object-cover aspect-square`} src={currentUser && currentUser.avatar} alt=""/>
-                    </div>
+                    <UserSection loginUser={loginUser} />
                 </div>
                 {/*content*/}
                 <div className={`my-6 flex-1 flex mx-6 gap-x-6 relative overflow-y-visible min-h-screen `}>

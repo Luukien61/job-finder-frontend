@@ -14,7 +14,7 @@ import {useNavigate} from "react-router-dom";
 import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {checkIsCompanyBanned, fetchCompanyPlan} from "@/service/ApplicationService.ts";
 import {useCompanyPlanState, useCompanySubscription, useIsCompanyBannedState} from "@/zustand/AppState.ts";
-import {CompanyPlan, CompanySubscription} from "@/info/ApplicationType.ts";
+import {CompanySubscription} from "@/info/ApplicationType.ts";
 
 interface BanProps {
     id: number;
