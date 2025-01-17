@@ -44,8 +44,8 @@ const JobSearch = () => {
     const [experience, setExperience] = useState<number | null>(queryParams.has('experience') ? parseInt(queryParams.get('experience')!) : null);
     const [page, setPage] = useState<number | null>(queryParams.has('page') ? parseInt(queryParams.get('page')!) : 0);
     const [size, setSize] = useState<number | null>(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
-    const [sort, setSort] = useState<string | null>(queryParams.get('sort') || 'create-date')
-    const [order, setOrder] = useState<string | null>(queryParams.get('order') || 'desc')
+    const [sort, setSort] = useState<string | null>(queryParams.get('sort') || null )
+    const [order, setOrder] = useState<string | null>(queryParams.get('order') || null)
     const [jobResult, setJobResult] = useState<JobSearchResult[]>([])
     const [pageableResult, setPageableResult] = useState<PageableResponse<JobSearchResult>>()
     const navigate = useNavigate();
@@ -82,8 +82,8 @@ const JobSearch = () => {
         setExperience(queryParams.has('experience') ? parseInt(queryParams.get('experience')!) : null);
         setPage(queryParams.has('page') ? parseInt(queryParams.get('page')!) : 0)
         setSize(queryParams.has('size') ? parseInt(queryParams.get('size')!) : DefaultPageSize);
-        setSort(queryParams.get('sort') || 'create-date');
-        setOrder(queryParams.get('order') || 'desc');
+        setSort(queryParams.get('sort') || null);
+        setOrder(queryParams.get('order') || null);
         let userId = null
         if (user && user.id) {
             userId = user.id;

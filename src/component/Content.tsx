@@ -281,7 +281,7 @@ const CompanyList = () => {
                                 <div className={`flex items-start flex-1 gap-3 p-3 pb-2`}>
                                     {/*logo*/}
                                     <div
-                                        className={`border border-solid rounded-2xl flex-shrink-0 h-[82px] p-[5px] w-[82px] `}>
+                                        className={`border border-solid overflow-hidden rounded-2xl flex-shrink-0 h-[82px] p-[5px] w-[82px] `}>
                                         <img
                                             className={`object-contain w-full h-full group-hover:scale-110 duration-300`}
                                             src={company.logo}
