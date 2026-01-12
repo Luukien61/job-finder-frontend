@@ -48,7 +48,6 @@ const Signup = () => {
                 }
                 try {
                     const code = await getSignupCode({to: email, useCase: "Tạo tài khoản"})
-                    console.log("Code: " + code)
                     setVerificationCode(code)
                     setUserSignUp(userCreationRequest)
                     setSendCode(true)
@@ -66,6 +65,7 @@ const Signup = () => {
             toast.error("Please enter require fields");
         }
     }
+
     useEffect(() => {
         if (timer === 0 && intervalTimer.current) {
             setExpired(true)
@@ -205,7 +205,7 @@ const Signup = () => {
                                     onClick={handleSignupWithGoogle}
                                     type={`button`}
                                     className=" flex w-fit px-4 justify-center gap-x-3 items-center rounded-lg bg-gray-100 p-2 hover:bg-gray-200">
-                                    <img className={`w-6`} src="/public/google.png" alt={`Google Signup`}/>
+                                    <img className={`w-6`} src="/google.png" alt={`Google Signup`}/>
                                     Đăng ký với Google
                                 </button>
                             </div>

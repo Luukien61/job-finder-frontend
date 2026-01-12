@@ -50,7 +50,7 @@ const CV_TEMPLATES = {
     modern: {
         name: "Modern",
         class: "bg-white",
-        previewImage: "public/cv/modern.png",
+        previewImage: "/cv/modern.png",
     },
     professional: {
         name: "Professional",

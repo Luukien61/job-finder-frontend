@@ -29,11 +29,11 @@ export type Conversation = {
 }
 
 export let client: Client | null = null
-const backendIP= import.meta.env.VITE_BACKEND_IP
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL
 // Hàm kết nối WebSocket
 export const connectWebSocket = (onConnected: () => void): void => {
   client = new Client({
-    brokerURL: `ws://${backendIP}:8088/ws`,
+    brokerURL: `${WS_BASE_URL}/ws`,
     onConnect: onConnected,
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,

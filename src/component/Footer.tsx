@@ -10,7 +10,7 @@ const Footer = () => {
                     <div className="col-span-2">
                         <a href="" className="flex mb-5">
                             <img
-                                src="../../public/job-finder.jpg"
+                                src="/job-finder.jpg"
                                 className="mr-3 aspect-square w-[200px] rounded-[100%]"
                                 alt="Flowbite Logo"
                             />

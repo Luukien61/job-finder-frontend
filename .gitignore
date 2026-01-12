@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 .env.development
 /src/page/payment/StripePricingTable.ts
+/.env.production

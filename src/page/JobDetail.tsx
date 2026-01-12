@@ -25,7 +25,7 @@ import {CompanyInfo} from "@/page/employer/EmployerHome.tsx";
 import {Checkbox, Form, FormProps, Input, Modal, Select, Spin, Tag, Tooltip} from "antd";
 import {IoMdCloseCircle} from "react-icons/io";
 import {RiLockPasswordFill} from "react-icons/ri";
-import {delay, UserResponse} from "@/page/GoogleCode.tsx";
+import {delay, googleExchange, UserResponse} from "@/page/GoogleCode.tsx";
 import {UserDto} from "@/page/UserProfile.tsx";
 import {
     checkIsJobSaved,
@@ -259,6 +259,11 @@ const JobDetail = () => {
         setIsLoading(false)
 
     }
+
+    const googleLogin = () => {
+        localStorage.setItem('action', 'login')
+        googleExchange()
+    };
 
     const handleSave = async () => {
         try {
@@ -932,96 +937,110 @@ const JobDetail = () => {
                                                fill={"#00b14f"}/>}
                    onCancel={handleCloseLoginModal}>
                 <div className={`w-full flex justify-center`}>
-                    <Form
-                        name={'login'}
-                        scrollToFirstError={true}
-                        form={form}
-                        onFinish={handleLogin}
-                        className={`w-full flex justify-center`}
-                    >
-                        <div className={`w-[90%] flex flex-col gap-6`}>
-                            <div>
-                                <div className={`flex gap-1 justify-start items-center`}>
-                                    <p className={`ml-1 font-semibold`}>Email</p>
+                    <div className={`w-[90%] flex flex-col gap-6`}>
+                        {/* Form chỉ chứa email/password login */}
+                        <Form
+                            name={'login'}
+                            scrollToFirstError={true}
+                            form={form}
+                            onFinish={handleLogin}
+                        >
+                            <div className={`flex flex-col gap-6`}>
+                                <div>
+                                    <div className={`flex gap-1 justify-start items-center`}>
+                                        <p className={`ml-1 font-semibold`}>Email</p>
+                                    </div>
+                                    <Form.Item
+                                        style={{marginBottom: '0px'}}
+                                        name='email'
+                                        rules={[{required: true, message: 'Vui lòng điền email'}]}
+                                    >
+                                        <Input
+                                            prefix={<IoPersonCircleSharp className={`mr-2`} size={24} fill={"#00b14f"}/>}
+                                            type={'email'}
+                                            allowClear={true}
+                                            value={loginEmail}
+                                            onChange={e => setLoginEmail(e.target.value)}
+                                            spellCheck={false}
+                                            className={`p-2 outline-none rounded border mt-2 w-full`}
+                                        />
+                                    </Form.Item>
                                 </div>
-                                <Form.Item
-                                    style={{marginBottom: '0px'}}
-                                    name='email' rules={[{required: true, message: 'Vui lòng điền email'}]}>
-                                    <Input
-                                        prefix={<IoPersonCircleSharp className={`mr-2`} size={24}
-                                                                     fill={"#00b14f"}/>}
 
-                                        type={'email'}
-                                        allowClear={true}
-                                        value={loginEmail}
-                                        onChange={e => setLoginEmail(e.target.value)}
-                                        spellCheck={false}
-                                        className={`p-2 outline-none  rounded border mt-2 w-full`}/>
+                                <div>
+                                    <div className={`flex gap-1 justify-start items-center`}>
+                                        <p className={`ml-1 font-semibold`}>Mật khẩu</p>
+                                    </div>
+                                    <Form.Item
+                                        style={{marginBottom: '0px'}}
+                                        name='password'
+                                        rules={[{required: true, message: 'Vui lòng điển mật khẩu'}]}
+                                    >
+                                        <Input
+                                            prefix={<RiLockPasswordFill className={`mr-2`} size={24} fill={"#00b14f"}/>}
+                                            type={'password'}
+                                            allowClear={true}
+                                            value={loginPassword}
+                                            onChange={e => setLoginPassword(e.target.value)}
+                                            spellCheck={false}
+                                            className={`p-2 outline-none rounded border mt-2 w-full`}
+                                        />
+                                    </Form.Item>
+                                </div>
+
+                                <div>
+                                    <Checkbox
+                                        checked={isConfirmCheck}
+                                        onChange={() => setIsConfirmCheck(pre => !pre)}
+                                        required={true}
+                                    >
+                                        Tôi đã đọc và đồng ý với <span className={`text-green_default font-bold`}>Điều khoản dịch vụ</span> và <span className={`text-green_default font-bold`}>Chính sách bảo mật</span> của JobFinder
+                                    </Checkbox>
+                                </div>
+
+                                <Form.Item style={{marginBottom: '0px'}}>
+                                    <div className={`w-full flex justify-center`}>
+                                        <button
+                                            disabled={!isConfirmCheck}
+                                            type="submit"
+                                            className={`py-2 rounded disabled:bg-gray-200 font-semibold hover:bg-green-600 bg-green_default w-full text-white`}
+                                        >
+                                            Đăng nhập
+                                        </button>
+                                    </div>
                                 </Form.Item>
                             </div>
-                            <div>
-                                <div className={`flex gap-1 justify-start items-center`}>
-                                    <p className={`ml-1 font-semibold`}>Mật khẩu</p>
-                                </div>
-                                <Form.Item
-                                    style={{marginBottom: '0px'}}
-                                    name='password'
-                                    rules={[{required: true, message: 'Vui lòng điển mật khẩu'}]}>
-                                    <Input
-                                        prefix={<RiLockPasswordFill className={`mr-2`} size={24}
-                                                                    fill={"#00b14f"}/>}
-                                        type={'password'}
-                                        allowClear={true}
-                                        value={loginPassword}
-                                        onChange={e => setLoginPassword(e.target.value)}
-                                        spellCheck={false}
-                                        className={`p-2 outline-none  rounded border mt-2 w-full`}/>
-                                </Form.Item>
-                            </div>
-                            <div>
-                                <Checkbox
-                                    checked={isConfirmCheck}
-                                    onChange={() => setIsConfirmCheck(pre => !pre)}
-                                    required={true}
-                                >Tôi đã đọc và đồng ý với <span
-                                    className={`text-green_default font-bold`}>Điều khoản dịch vụ</span> và <span
-                                    className={`text-green_default font-bold`}>Chính sách bảo mật</span> của
-                                    JobFinder</Checkbox>
-                            </div>
-                            <Form.Item>
-                                <div className={`w-full flex justify-center  `}>
-                                    <button
-                                        disabled={!isConfirmCheck}
-                                        type="submit"
-                                        className={`py-2 rounded disabled:bg-gray-200 font-semibold hover:bg-green-600 bg-green_default w-full text-white`}>
-                                        Đăng nhập
-                                    </button>
-                                </div>
-                            </Form.Item>
-                            <div>
-                                <div className={`w-full flex justify-center pb-2`}>
-                                    <p className={`opacity-70 italic`}>hoặc</p>
-                                </div>
-                                <div className={`w-full flex justify-center  `}>
-                                    <button
-                                        disabled={!isConfirmCheck}
-                                        className={`py-2 rounded flex gap-4 disabled:opacity-50 disabled:bg-gray-100 justify-center font-semibold hover:bg-gray-200 bg-gray-50 border w-full `}>
-                                        <img className={`w-6`} src="/public/google.png" alt={`Google Signup`}/>
-                                        <p> Đăng nhập với Google</p>
-                                    </button>
-                                </div>
+                        </Form>
 
-                            </div>
-                            <div className={`flex items-center justify-center`}>
-                                <p className={`text-14 opacity-70`}>Chưa có tài khoản? <span
-                                    onClick={() => navigate('/employer/entry/signup')}
-                                    className={`text-14 font-semibold  hover:underline cursor-pointer text-green_default`}>Đăng ký ngay</span>
-                                </p>
-
-                            </div>
+                        {/* Divider */}
+                        <div className={`w-full flex justify-center pb-2`}>
+                            <p className={`opacity-70 italic`}>hoặc</p>
                         </div>
-                    </Form>
 
+                        {/* Google login - Tách riêng ngoài form */}
+                        <div className={`w-full flex justify-center`}>
+                            <button
+                                disabled={!isConfirmCheck}
+                                onClick={googleLogin}
+                                className={`py-2 rounded flex gap-4 disabled:opacity-50 disabled:bg-gray-100 justify-center font-semibold hover:bg-gray-200 bg-gray-50 border w-full`}
+                            >
+                                <img className={`w-6`} src="/google.png" alt={`Google Signup`}/>
+                                <p>Đăng nhập với Google</p>
+                            </button>
+                        </div>
+
+                        {/* Sign up link */}
+                        <div className={`flex items-center justify-center`}>
+                            <p className={`text-14 opacity-70`}>
+                                Chưa có tài khoản? <span
+                                onClick={() => navigate('/employer/entry/signup')}
+                                className={`text-14 font-semibold hover:underline cursor-pointer text-green_default`}
+                            >
+                    Đăng ký ngay
+                </span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </Modal>
 

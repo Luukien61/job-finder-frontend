@@ -7,7 +7,7 @@ const EmployerEntry = () => {
             <Outlet/>
             <div className={`w-fit`}>
                 <img className={`w-full h-screen object-contain`}
-                     src={`/public/job-finder-employer.jpg`}
+                     src={`/job-finder-employer.jpg`}
                      alt={`bg-cv`}/>
             </div>
         </div>

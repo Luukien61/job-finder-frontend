@@ -4,7 +4,6 @@ import {useGoogleOneTap} from "../hook/useGoogleLogIn.tsx";
 
 
 const HomePage = () => {
-    useGoogleOneTap()
     return (
         <div className={'bg-default'}>
             <Content/>

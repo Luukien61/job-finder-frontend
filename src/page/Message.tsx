@@ -345,7 +345,7 @@ const Message = () => {
                             className={`w-full flex justify-start bg-green_nga px-2 py-2 rounded-lg gap-4 items-center`}>
                             <a className={`flex justify-start gap-4 items-center`}
                                href={homePage}>
-                                <img className={`w-8 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                                <img className={`w-8 mx-0 aspect-square`} src={'/logo.png'} alt={"logo"}/>
                                 <p className={`font-bold text-[24px] text-white font-inter`}>{AppInfo.appName}</p>
                             </a>
 
@@ -492,7 +492,7 @@ const Message = () => {
                             content={['JobFinder connector', 'Happy Working']}
                             height={40}
                             width={150}
-                            image={'public/logo.png'}
+                            image={'/logo.png'}
                         >
                         <div className={`h-screen`}/>
                         </Watermark>

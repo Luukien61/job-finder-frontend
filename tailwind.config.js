@@ -91,7 +91,7 @@ export default {
                 'impress': "url('https://static.topcv.vn/v4/image/welcome/home/impressive_numbers_cover_new.png')",
                 'impress-item': "url('https://static.topcv.vn/v4/image/welcome/home/impressive_numbers_list_item.png')",
                 'custom-gradient': 'linear-gradient(259.43deg, #ffb94b -3.83%, #ffe7bf 29.35%, #ffb94b 92.22%)',
-                'modern': "url('public/cv/modern/background.png')"
+                'modern': "url('/cv/modern/background.png')"
             }
         }
     },

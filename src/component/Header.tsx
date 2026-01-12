@@ -53,7 +53,7 @@ const Header = () => {
                         className="mr-3 flex-none overflow-hidden w-auto flex items-center gap-2"
                     >
                         <img
-                            src="/public/job-finder.jpg"
+                            src="/job-finder.jpg"
                             alt="App Home page"
                             className="object-cover w-[70%] max-w-[128px] "
                         />

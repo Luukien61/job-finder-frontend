@@ -11,6 +11,7 @@ import {default_avatar} from "@/info/AppInfo.ts";
 import imageUpload from "@/axios/ImageUpload.ts";
 import {completeProfile, updateCv, uploadCvToAWSSpring} from "@/axios/Request.ts";
 import {format} from "date-fns";
+import bgImportCv from "@/assets/images/background_import_cv.png";
 
 
 const CompleteProfile = () => {
@@ -193,7 +194,7 @@ const CompleteProfile = () => {
     return (
         <div>
             <div className={`w-full pb-10`}>
-                <img className={`w-full absolute`} src={`https://jobsgo.vn/media/import_cv/background_import_cv.png`}
+                <img className={`w-full absolute`} src={bgImportCv}
                      alt={`bg-cv`}/>
                 <div className={`relative max-w-[1190px] m-auto items-center  flex justify-center `}>
                     <div className={`w-[65%] rounded pb-4 shadow-2xl mt-10 flex flex-col bg-white`}>

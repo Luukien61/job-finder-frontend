@@ -180,7 +180,7 @@ export const HomeContent = () => {
                                         }/>
                                     ) : (
                                         <div className={`flex flex-col gap-4 pb-4 justify-center items-center`}>
-                                            <img src={'/public/no-avatar.png'} alt={""}/>
+                                            <img src={'/no-avatar.png'} alt={""}/>
                                             <p className={`font-bold text-text_color opacity-70`}>Chưa có mô tả</p>
                                         </div>
                                     )

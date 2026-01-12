@@ -221,7 +221,7 @@ export const fields = [
 export const backEndPage: string = import.meta.env.VITE_BACKEND_URL
 export const default_avatar = 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png'
 
-export const AppLogo = '/public/job-finder.jpg'
+export const AppLogo = '/job-finder.jpg'
 type item = {
     name: string,
     link: string
@@ -6526,7 +6526,7 @@ export const policies = [
 
 export const defaultPhoneNumber='0353795729'
 
-export const companyDefaultAvatr='/public/company_default.png'
+export const companyDefaultAvatr='/company_default.png'
 
 export const requiredFields= 'Vui lòng điền đầy đủ các thông tin'
 

@@ -106,7 +106,7 @@ const LogIn = () => {
                                     onClick={googleLogin}
                                     type={`button`}
                                     className=" flex  gap-x-3 items-center rounded-2xl bg-gray-100 p-2 hover:bg-gray-200">
-                                    <img className={`w-6`} src="/public/google.png" alt={`Google Signup`}/>
+                                    <img className={`w-6`} src="/google.png" alt={`Google Signup`}/>
                                     Đăng nhập với Google
                                 </button>
                             </div>

@@ -142,7 +142,7 @@ const JobSearch = () => {
     const warningItem: WarningNote[] = []
     for (let i = 1; i < 7; i++) {
         const item: WarningNote = {
-            img: `/public/warning/${i}.webp`,
+            img: `/warning/${i}.webp`,
             note: note[i - 1],
         }
         warningItem.push(item)

@@ -169,7 +169,7 @@ const Search = () => {
                     </div>
                 </div>
                 <div className={`w-1/3  flex justify-center items-center `}>
-                    <img className={`h-3/4 object-contain`} src={'.././public/img_2.png'} alt={"App"}/>
+                    <img className={`h-3/4 object-contain`} src={'img_2.png'} alt={"App"}/>
                 </div>
             </div>
         </div>
@@ -329,7 +329,7 @@ const CompanyList = () => {
 const SectionBanner=()=>{
     const items =[]
     for (let i = 1; i < 10; i++) {
-        const item = `/public/banner/banner-${i}.jpg`
+        const item = `/banner/banner-${i}.jpg`
         items.push(item)
     }
     return (

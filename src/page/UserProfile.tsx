@@ -100,7 +100,7 @@ const UserProfile = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     for (let i = 1; i < 7; i++) {
         const item: WarningNote = {
-            img: `/public/warning/${i}.webp`,
+            img: `/warning/${i}.webp`,
             note: note[i - 1],
         }
         warningItem.push(item)
@@ -154,7 +154,7 @@ const UserProfile = () => {
                 <div className={`flex flex-col pt-4 bg-green_sidebar w-[80px]`}>
                     <div className={`w-full flex justify-center `}>
                         <a href={homePage}>
-                            <img className={`w-10 mx-0 aspect-square`} src={'/public/logo.png'} alt={"logo"}/>
+                            <img className={`w-10 mx-0 aspect-square`} src={'/logo.png'} alt={"logo"}/>
                         </a>
 
                     </div>
@@ -1041,7 +1041,7 @@ export const SavedJobList = () => {
 
                     ) : (
                         <div className={`flex flex-col gap-4  justify-center items-center`}>
-                            <img src={'../../public/no-avatar.png'} alt={""}/>
+                            <img src={'/no-avatar.png'} alt={""}/>
                             <p className={`font-bold `}>Bạn chưa lưu bài viết nào</p>
                         </div>
                     )
@@ -1101,7 +1101,7 @@ export const AppliedJobList = () => {
 
                     ) : (
                         <div className={`flex flex-col gap-4  justify-center items-center`}>
-                            <img src={'../../public/no-avatar.png'} alt={""}/>
+                            <img src={'/no-avatar.png'} alt={""}/>
                             <p className={`font-bold `}>Bạn chưa ứng tuyển công việc nào</p>
                         </div>
                     )
