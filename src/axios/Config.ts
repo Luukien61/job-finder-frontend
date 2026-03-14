@@ -8,3 +8,7 @@ export const instance = axios.create({
         "Access-Control-Allow-Origin": "*"
     }
 })
+
+export const aiInstance = axios.create({
+    baseURL : import.meta.env.VITE_AI_URL,
+})

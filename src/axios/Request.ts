@@ -1,4 +1,4 @@
-import {instance} from "@/axios/Config.ts";
+import {aiInstance, instance} from "@/axios/Config.ts";
 import axios from "axios";
 import {companyBackendPath} from "@/info/AppInfo.ts";
 import {DefaultPageSize, DefaultRecommendationPageSize} from "@/info/ApplicationType.ts";
@@ -84,11 +84,11 @@ export const completeProfile = async (body) => {
 }
 
 export const uploadCvToAWS = async (body) => {
-    return await axios.post('http://localhost:8000/cv', body).then((response: any) => response.data)
+    return await aiInstance.post('/cv', body).then((response: any) => response.data)
 }
 
 export const uploadCvToAWSSpring = async (id, body) => {
-    return await axios.post(`http://localhost:8088/user/${id}/cv`, body, {
+    return await instance.post(`/user/${id}/cv`, body, {
         headers: {'Content-Type': 'multipart/form-data'}
     }).then((response: any) => response.data)
 }
@@ -216,7 +216,7 @@ export const searchJobs = async (params: string, headers: any | null) => {
 }
 
 export const getRecommendedJob = async (body: any) => {
-    return await axios.post(`http://localhost:8000/recommendations`, body, {
+    return await aiInstance.post(`/recommendations`, body, {
         headers: {'Content-Type': 'application/json'}
     }).then((response: any) => response.data)
 }
@@ -370,7 +370,8 @@ export const getCompanies = async (page, size) => {
 }
 
 export const getAudioCaption = async (body) => {
-    return await axios.post(`http://localhost:8000/transcribe`, body).then((response) => response.data)
+    const aiUrl = import.meta.env.VITE_AI_URL;
+    return await axios.post(`${aiUrl}/transcribe`, body).then((response) => response.data)
 }
 
 export const updateMessage=async (message: ChatMessage) => {

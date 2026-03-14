@@ -80,6 +80,7 @@ const CompleteProfile = () => {
             setFileName(event.target.files[0].name);
         }
     };
+    const aiUrl = import.meta.env.VITE_AI_URL;
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         setIsLoading(true)
@@ -91,7 +92,8 @@ const CompleteProfile = () => {
         formData.append('file', file);
 
         try {
-            const response = await fetch('http://localhost:8000/upload', {
+
+            const response = await fetch(`${aiUrl}/upload`, {
                 method: 'POST',
                 body: formData,
             });

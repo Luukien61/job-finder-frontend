@@ -6,7 +6,10 @@ interface ImportMetaEnv {
     readonly VITE_MAIL_SERVER_URL: string;
     readonly VITE_GOOGLE_CLIENT_ID: string;
     readonly VITE_GOOGLE_CLIENT_SECRET: string;
-    readonly VITE_WS_BASE_URL: string
+    readonly VITE_WS_BASE_URL: string;
+    readonly VITE_AI_URL: string;
+    readonly VITE_HOME_URL:string;
+    readonly VITE_CHATBOT_N8N_WEBHOOK: string
 }
 
 interface ImportMeta {

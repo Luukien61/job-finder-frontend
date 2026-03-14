@@ -29,7 +29,7 @@ interface ParsedElement {
     url?: string;
 }
 
-const MessageRenderer: React.FC<MessageRendererProps> = ({ text, isUser }) => {
+const MessageRenderer: React.FC<MessageRendererProps> = ({text, isUser}) => {
     const parseMessage = (message: string): ParsedElement[] => {
         const elements: ParsedElement[] = [];
         let remaining = message;
@@ -47,10 +47,10 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({ text, isUser }) => {
                     const lines = beforeLink.split('\n');
                     for (let i = 0; i < lines.length; i++) {
                         if (lines[i]) {
-                            elements.push({ type: 'text', content: lines[i] });
+                            elements.push({type: 'text', content: lines[i]});
                         }
                         if (i < lines.length - 1) {
-                            elements.push({ type: 'linebreak', content: '' });
+                            elements.push({type: 'linebreak', content: ''});
                         }
                     }
                 }
@@ -69,10 +69,10 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({ text, isUser }) => {
                 const lines = remaining.split('\n');
                 for (let i = 0; i < lines.length; i++) {
                     if (lines[i]) {
-                        elements.push({ type: 'text', content: lines[i] });
+                        elements.push({type: 'text', content: lines[i]});
                     }
                     if (i < lines.length - 1) {
-                        elements.push({ type: 'linebreak', content: '' });
+                        elements.push({type: 'linebreak', content: ''});
                     }
                 }
                 break;
@@ -102,11 +102,11 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({ text, isUser }) => {
                                 }`}
                             >
                                 {element.content}
-                                <ExternalLink size={12} />
+                                <ExternalLink size={12}/>
                             </a>
                         );
                     case 'linebreak':
-                        return <br key={index} />;
+                        return <br key={index}/>;
                     case 'text':
                     default:
                         return <span key={index}>{element.content}</span>;
@@ -138,7 +138,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
     };
 
     useEffect(() => {
@@ -234,19 +234,20 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                     onClick={() => setIsOpen(true)}
                     className="w-14 h-14 rounded-full shadow-lg bg-green_default hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-white"
                 >
-                    <MessageCircle size={24} />
+                    <MessageCircle size={24}/>
                 </button>
             )}
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+                <div
+                    className="w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
                     {/* Header */}
                     <div
                         className="p-4 text-white flex items-center justify-between bg-green_default"
                     >
                         <div className="flex items-center space-x-2">
-                            <Bot size={20} />
+                            <Bot size={20}/>
                             <span className="font-medium">{botName}</span>
                             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                         </div>
@@ -254,7 +255,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                             onClick={() => setIsOpen(false)}
                             className="hover:bg-black hover:bg-opacity-10 p-1 rounded transition-colors"
                         >
-                            <X size={20} />
+                            <X size={20}/>
                         </button>
                     </div>
 
@@ -265,13 +266,15 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                                 key={message.id}
                                 className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                             >
-                                <div className={`flex items-start space-x-2 max-w-[75%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                        message.isUser
-                                            ? 'bg-gray-300 text-gray-600'
-                                            : 'text-white'
-                                    }`}>
-                                        {message.isUser ? <User size={16} /> : <Bot size={16} />}
+                                <div
+                                    className={`flex items-start space-x-2 max-w-[75%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                                    <div
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                            message.isUser
+                                                ? 'bg-gray-300 text-gray-600'
+                                                : 'text-white'
+                                        }`}>
+                                        {message.isUser ? <User size={16}/> : <Bot size={16}/>}
                                     </div>
                                     <div className="flex flex-col">
                                         <div
@@ -281,7 +284,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                                                     : 'text-white bg-green_default'
                                             }`}
                                         >
-                                            <MessageRenderer text={message.text} isUser={message.isUser} />
+                                            <MessageRenderer text={message.text} isUser={message.isUser}/>
                                         </div>
                                         <span className="text-xs text-gray-500 mt-1 px-1">
                       {formatTime(message.timestamp)}
@@ -296,19 +299,21 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                                     <div
                                         className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-green_default"
                                     >
-                                        <Bot size={16} />
+                                        <Bot size={16}/>
                                     </div>
-                                    <div className="p-3 rounded-lg text-white bg-green_default" >
+                                    <div className="p-3 rounded-lg text-white bg-green_default">
                                         <div className="flex space-x-1">
                                             <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce"
+                                                 style={{animationDelay: '0.1s'}}></div>
+                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce"
+                                                 style={{animationDelay: '0.2s'}}></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         )}
-                        <div ref={messagesEndRef} />
+                        <div ref={messagesEndRef}/>
                     </div>
 
                     {/* Input */}
@@ -329,7 +334,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                                 disabled={!inputValue.trim() || isLoading}
                                 className="px-4 py-2 text-white rounded-lg bg-green_default hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
                             >
-                                <Send size={16} />
+                                <Send size={16}/>
                             </button>
                         </div>
                     </div>
@@ -340,12 +345,13 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 };
 
 const App = () => {
+    const chatbotWebhook = import.meta.env.VITE_CHATBOT_N8N_WEBHOOK
     return (
         <div className={'bg-default'}>
             <Header/>
             <Outlet/>
             <Footer/>
-            <ChatPopup webhookUrl={'http://localhost:5678/webhook/d82f7779-bfee-4f01-b819-6b945dca78a0/chat'} />
+            <ChatPopup webhookUrl={chatbotWebhook}/>
         </div>
     );
 };
